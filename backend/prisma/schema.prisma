@@ -1,0 +1,417 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== AUTHENTICATION & USERS ====================
+
+enum UserRole {
+  SUPER_ADMIN
+  PRACTICE_ADMIN
+  PROVIDER
+  STAFF
+  PATIENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String
+  firstName     String
+  lastName      String
+  phone         String?
+  role          UserRole    @default(STAFF)
+  status        UserStatus  @default(ACTIVE)
+  practiceId    String?
+  practice      Practice?   @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  
+  emailVerified Boolean     @default(false)
+  lastLoginAt   DateTime?
+  loginAttempts Int         @default(0)
+  lockedUntil   DateTime?
+  
+  refreshTokens RefreshToken[]
+  sessions      Session[]
+  conversations Conversation[]
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  @@index([email])
+  @@index([practiceId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  isRevoked   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model Session {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String   @unique
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+// ==================== PRACTICE & PROVIDERS ====================
+
+model Practice {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  phone           String
+  address         String?
+  city            String?
+  state           String?
+  zipCode         String?
+  timezone        String   @default("America/New_York")
+  
+  // Settings
+  businessHoursStart String @default("09:00")
+  businessHoursEnd   String @default("17:00")
+  workingDays        String @default("1,2,3,4,5") // Mon-Fri
+  
+  // EHR Integration
+  ehrSystem       String?  // "epic", "athena", etc.
+  ehrEnabled      Boolean  @default(false)
+  ehrConfig       Json?    // Encrypted credentials
+  
+  users           User[]
+  providers       Provider[]
+  appointmentTypes AppointmentType[]
+  appointments    Appointment[]
+  aiScripts       AIScript[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("practices")
+}
+
+model Provider {
+  id          String   @id @default(uuid())
+  practiceId  String
+  practice    Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  specialty   String?
+  npi         String?  @unique
+  
+  isActive    Boolean  @default(true)
+  
+  appointments Appointment[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([practiceId])
+  @@index([npi])
+  @@map("providers")
+}
+
+model AppointmentType {
+  id          String   @id @default(uuid())
+  practiceId  String
+  practice    Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  
+  name        String
+  duration    Int      // in minutes
+  color       String?
+  description String?
+  isActive    Boolean  @default(true)
+  
+  appointments Appointment[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([practiceId])
+  @@map("appointment_types")
+}
+
+// ==================== APPOINTMENTS ====================
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CHECKED_IN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  practiceId      String
+  practice        Practice          @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  
+  providerId      String
+  provider        Provider          @relation(fields: [providerId], references: [id])
+  
+  appointmentTypeId String
+  appointmentType   AppointmentType @relation(fields: [appointmentTypeId], references: [id])
+  
+  // Patient Info
+  patientFirstName String
+  patientLastName  String
+  patientEmail     String?
+  patientPhone     String
+  patientDOB       DateTime?
+  
+  // Appointment Details
+  startTime       DateTime
+  endTime         DateTime
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+  
+  // AI Booking
+  bookedByAI      Boolean          @default(false)
+  conversationId  String?
+  conversation    Conversation?    @relation(fields: [conversationId], references: [id])
+  
+  // Reminders
+  reminderSent    Boolean          @default(false)
+  reminderSentAt  DateTime?
+  confirmationSent Boolean         @default(false)
+  
+  // EHR Sync
+  ehrSynced       Boolean          @default(false)
+  ehrAppointmentId String?
+  ehrSyncedAt     DateTime?
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  @@index([practiceId])
+  @@index([providerId])
+  @@index([startTime])
+  @@index([status])
+  @@index([patientPhone])
+  @@map("appointments")
+}
+
+// ==================== VOICE AI & CONVERSATIONS ====================
+
+enum ConversationChannel {
+  VOICE_INBOUND
+  VOICE_OUTBOUND
+  CHAT
+  SMS
+}
+
+enum ConversationStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  ESCALATED
+}
+
+model Conversation {
+  id              String              @id @default(uuid())
+  userId          String?
+  user            User?               @relation(fields: [userId], references: [id])
+  
+  channel         ConversationChannel
+  status          ConversationStatus  @default(ACTIVE)
+  
+  // Call Details (if voice)
+  callSid         String?             @unique
+  phoneNumber     String?
+  duration        Int?                // seconds
+  recordingUrl    String?
+  
+  // Metadata
+  metadata        Json?
+  sentiment       String?             // positive, neutral, negative
+  outcome         String?             // booked, rescheduled, cancelled, info_only, escalated
+  
+  messages        Message[]
+  appointments    Appointment[]
+  voiceChunks     VoiceChunk[]
+  
+  startedAt       DateTime            @default(now())
+  endedAt         DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  @@index([userId])
+  @@index([callSid])
+  @@index([status])
+  @@index([startedAt])
+  @@map("conversations")
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+model Message {
+  id              String       @id @default(uuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  role            MessageRole
+  content         String       @db.Text
+  
+  // For tool calls
+  toolCalls       Json?
+  toolResults     Json?
+  
+  // Metadata
+  metadata        Json?
+  confidence      Float?
+  
+  createdAt       DateTime     @default(now())
+  
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model VoiceChunk {
+  id              String       @id @default(uuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  type            String       // "audio_input", "audio_output", "transcript"
+  data            Bytes?       // Audio data
+  transcript      String?      @db.Text
+  audioUrl        String?      // GCS URL
+  
+  duration        Int?         // milliseconds
+  timestamp       DateTime     @default(now())
+  
+  metadata        Json?
+  
+  @@index([conversationId])
+  @@index([timestamp])
+  @@map("voice_chunks")
+}
+
+// ==================== AI CONFIGURATION ====================
+
+model AIScript {
+  id          String   @id @default(uuid())
+  practiceId  String
+  practice    Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  
+  name        String
+  description String?
+  
+  // Prompts
+  systemPrompt String  @db.Text
+  greeting     String  @db.Text
+  
+  // Voice Settings
+  voiceId      String?
+  language     String  @default("en-US")
+  
+  // Behavior
+  maxTurns     Int     @default(20)
+  timeout      Int     @default(180) // seconds
+  
+  isActive     Boolean @default(true)
+  isDefault    Boolean @default(false)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([practiceId])
+  @@map("ai_scripts")
+}
+
+// ==================== NOTIFICATIONS ====================
+
+enum NotificationType {
+  SMS
+  EMAIL
+  PUSH
+  WEBHOOK
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  DELIVERED
+}
+
+model Notification {
+  id          String             @id @default(uuid())
+  type        NotificationType
+  status      NotificationStatus @default(PENDING)
+  
+  recipient   String
+  subject     String?
+  content     String             @db.Text
+  
+  // Metadata
+  metadata    Json?
+  errorMsg    String?
+  
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime           @default(now())
+  
+  @@index([status])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ==================== ANALYTICS & AUDIT ====================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  action      String
+  entity      String
+  entityId    String?
+  changes     Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
