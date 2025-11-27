@@ -144,6 +144,10 @@ export class AppointmentTools {
                         where: { id: providerId },
                     });
 
+                    if (!provider) {
+                        return JSON.stringify({ error: 'Provider not found' });
+                    }
+
                     // Create appointment
                     const appointment = await this.prisma.appointment.create({
                         data: {

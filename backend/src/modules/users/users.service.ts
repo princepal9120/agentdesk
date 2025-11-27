@@ -14,7 +14,7 @@ export class UsersService {
         return this.prisma.user.findUnique({ where: { email } });
     }
 
-    async findAll(practiceId?: string): Promise<User[]> {
+    async findAll(practiceId?: string): Promise<Partial<User>[]> {
         return this.prisma.user.findMany({
             where: practiceId ? { practiceId } : undefined,
             select: {
@@ -27,7 +27,6 @@ export class UsersService {
                 status: true,
                 createdAt: true,
                 updatedAt: true,
-                passwordHash: false,
             },
         });
     }

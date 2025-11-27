@@ -13,7 +13,7 @@ export class StorageService {
             projectId: this.configService.get<string>('GCP_PROJECT_ID'),
             keyFilename: this.configService.get<string>('GOOGLE_APPLICATION_CREDENTIALS'),
         });
-        this.bucketName = this.configService.get<string>('GCP_STORAGE_BUCKET');
+        this.bucketName = this.configService.get<string>('GCP_STORAGE_BUCKET') || '';
     }
 
     async uploadFile(

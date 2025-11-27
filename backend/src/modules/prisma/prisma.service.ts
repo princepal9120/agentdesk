@@ -17,19 +17,19 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     async onModuleInit() {
         // @ts-ignore
-        this.$on('query', (e) => {
+        this.$on('query', (e: any) => {
             if (process.env.NODE_ENV === 'development') {
                 this.logger.debug(`Query: ${e.query} - Params: ${e.params} - Duration: ${e.duration}ms`);
             }
         });
 
         // @ts-ignore
-        this.$on('error', (e) => {
+        this.$on('error', (e: any) => {
             this.logger.error(`Prisma Error: ${e.message}`);
         });
 
         // @ts-ignore
-        this.$on('warn', (e) => {
+        this.$on('warn', (e: any) => {
             this.logger.warn(`Prisma Warning: ${e.message}`);
         });
 
