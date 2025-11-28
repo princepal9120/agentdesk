@@ -1,0 +1,21 @@
+export const SERVICE_NAMES = {
+    AUTH: 'AUTH_SERVICE',
+    VOICE_AGENT: 'VOICE_AGENT_SERVICE',
+    APPOINTMENTS: 'APPOINTMENTS_SERVICE',
+    NOTIFICATIONS: 'NOTIFICATIONS_SERVICE',
+};
+
+export const SERVICE_PORTS = {
+    GATEWAY: 3000,
+    AUTH: 3001,
+    VOICE_AGENT: 3002,
+    APPOINTMENTS: 3003,
+    NOTIFICATIONS: 3004,
+};
+
+export const SERVICE_HOSTS = {
+    AUTH: 'localhost',
+    VOICE_AGENT: 'localhost',
+    APPOINTMENTS: 'localhost',
+    NOTIFICATIONS: 'localhost',
+};

@@ -1,355 +1,711 @@
-# Deployment Guide - MedVoice Backend
+# Deployment Guide - MedVoice Microservices
 
-## Google Cloud Platform (GCP) Deployment
+This guide covers deploying the MedVoice microservices to production environments.
 
-### Prerequisites
-- GCP account with billing enabled
-- `gcloud` CLI installed and configured
-- Docker installed locally
+## Table of Contents
 
-### 1. Setup GCP Project
+- [Prerequisites](#prerequisites)
+- [Environment Setup](#environment-setup)
+- [Docker Deployment](#docker-deployment)
+- [Kubernetes Deployment](#kubernetes-deployment)
+- [Cloud Platforms](#cloud-platforms)
+- [Database Setup](#database-setup)
+- [Monitoring](#monitoring)
+- [Security](#security)
+- [CI/CD](#cicd)
 
-```bash
-# Set project ID
-export PROJECT_ID="your-project-id"
-gcloud config set project $PROJECT_ID
+---
 
-# Enable required APIs
-gcloud services enable \
-  run.googleapis.com \
-  sql-component.googleapis.com \
-  sqladmin.googleapis.com \
-  storage-api.googleapis.com \
-  pubsub.googleapis.com \
-  cloudscheduler.googleapis.com
-```
-
-### 2. Create Cloud SQL Instance (PostgreSQL)
-
-```bash
-# Create instance
-gcloud sql instances create medvoice-db \
-  --database-version=POSTGRES_14 \
-  --tier=db-g1-small \
-  --region=us-central1 \
-  --root-password=SECURE_PASSWORD \
-  --storage-type=SSD \
-  --storage-size=10GB
-
-# Create database
-gcloud sql databases create medvoice \
-  --instance=medvoice-db
-
-# Create user
-gcloud sql users create medvoice \
-  --instance=medvoice-db \
-  --password=SECURE_PASSWORD
-```
-
-### 3. Setup Redis (Memorystore)
-
-```bash
-gcloud redis instances create medvoice-redis \
-  --size=1 \
-  --region=us-central1 \
-  --redis-version=redis_7_0
-```
-
-### 4. Create Cloud Storage Bucket
-
-```bash
-gsutil mb -l us-central1 gs://medvoice-storage
-gsutil iam ch allUsers:objectViewer gs://medvoice-storage
-```
-
-### 5. Build and Push Docker Image
-
-```bash
-# Build image
-gcloud builds submit --tag gcr.io/$PROJECT_ID/medvoice-backend
-
-# Or using Docker
-docker build -t gcr.io/$PROJECT_ID/medvoice-backend .
-docker push gcr.io/$PROJECT_ID/medvoice-backend
-```
-
-### 6. Deploy to Cloud Run
-
-```bash
-# Get Cloud SQL connection name
-export SQL_CONNECTION=$(gcloud sql instances describe medvoice-db \
-  --format='value(connectionName)')
-
-# Get Redis host
-export REDIS_HOST=$(gcloud redis instances describe medvoice-redis \
-  --region=us-central1 --format='value(host)')
-
-# Deploy
-gcloud run deploy medvoice-backend \
-  --image gcr.io/$PROJECT_ID/medvoice-backend \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --memory 1Gi \
-  --cpu 2 \
-  --timeout 300 \
-  --concurrency 80 \
-  --min-instances 1 \
-  --max-instances 10 \
-  --add-cloudsql-instances $SQL_CONNECTION \
-  --set-env-vars "NODE_ENV=production" \
-  --set-env-vars "PORT=8080" \
-  --set-env-vars "DATABASE_URL=postgresql://medvoice:PASSWORD@/medvoice?host=/cloudsql/$SQL_CONNECTION" \
-  --set-env-vars "REDIS_HOST=$REDIS_HOST" \
-  --set-env-vars "REDIS_PORT=6379"
-```
-
-### 7. Set Secrets (Recommended)
-
-```bash
-# Create secrets
-echo -n "your-jwt-secret" | gcloud secrets create jwt-secret --data-file=-
-echo -n "your-openai-key" | gcloud secrets create openai-api-key --data-file=-
-echo -n "your-deepgram-key" | gcloud secrets create deepgram-api-key --data-file=-
-echo -n "your-elevenlabs-key" | gcloud secrets create elevenlabs-api-key --data-file=-
-
-# Grant access to Cloud Run service account
-gcloud secrets add-iam-policy-binding jwt-secret \
-  --member="serviceAccount:PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
-
-# Update Cloud Run with secrets
-gcloud run services update medvoice-backend \
-  --update-secrets JWT_SECRET=jwt-secret:latest \
-  --update-secrets OPENAI_API_KEY=openai-api-key:latest \
-  --update-secrets DEEPGRAM_API_KEY=deepgram-api-key:latest \
-  --update-secrets ELEVENLABS_API_KEY=elevenlabs-api-key:latest
-```
-
-### 8. Run Database Migrations
-
-```bash
-# Connect to Cloud SQL
-gcloud sql connect medvoice-db --user=medvoice
-
-# Or use Cloud SQL Proxy
-cloud_sql_proxy -instances=$SQL_CONNECTION=tcp:5432
-
-# Run migrations locally
-DATABASE_URL="postgresql://medvoice:PASSWORD@localhost:5432/medvoice" \
-  npx prisma migrate deploy
-```
-
-### 9. Setup Custom Domain (Optional)
-
-```bash
-# Map custom domain
-gcloud run domain-mappings create \
-  --service medvoice-backend \
-  --domain api.yourdomain.com \
-  --region us-central1
-```
-
-### 10. Setup Cloud Scheduler (Cron Jobs)
-
-```bash
-# Create scheduler for reminders
-gcloud scheduler jobs create http appointment-reminders \
-  --schedule="0 */2 * * *" \
-  --uri="https://your-service-url/api/v1/cron/send-reminders" \
-  --http-method=POST \
-  --oidc-service-account-email=PROJECT_NUMBER-compute@developer.gserviceaccount.com
-```
-
-## AWS Deployment (Alternative)
-
-### 1. Setup RDS PostgreSQL
-
-```bash
-aws rds create-db-instance \
-  --db-instance-identifier medvoice-db \
-  --db-instance-class db.t3.micro \
-  --engine postgres \
-  --master-username medvoice \
-  --master-user-password SECURE_PASSWORD \
-  --allocated-storage 20
-```
-
-### 2. Setup ElastiCache Redis
-
-```bash
-aws elasticache create-cache-cluster \
-  --cache-cluster-id medvoice-redis \
-  --cache-node-type cache.t3.micro \
-  --engine redis \
-  --num-cache-nodes 1
-```
-
-### 3. Deploy to ECS Fargate
-
-```bash
-# Create ECR repository
-aws ecr create-repository --repository-name medvoice-backend
-
-# Build and push
-aws ecr get-login-password | docker login --username AWS --password-stdin ECR_URL
-docker build -t medvoice-backend .
-docker tag medvoice-backend:latest ECR_URL/medvoice-backend:latest
-docker push ECR_URL/medvoice-backend:latest
-
-# Create ECS cluster
-aws ecs create-cluster --cluster-name medvoice-cluster
-
-# Create task definition (see task-definition.json)
-aws ecs register-task-definition --cli-input-json file://task-definition.json
-
-# Create service
-aws ecs create-service \
-  --cluster medvoice-cluster \
-  --service-name medvoice-backend \
-  --task-definition medvoice-backend \
-  --desired-count 2 \
-  --launch-type FARGATE
-```
-
-## Environment Variables Checklist
+## Prerequisites
 
 ### Required
-- ✅ `NODE_ENV=production`
-- ✅ `PORT=8080`
-- ✅ `DATABASE_URL`
-- ✅ `REDIS_HOST`
-- ✅ `REDIS_PORT`
-- ✅ `JWT_SECRET`
-- ✅ `JWT_REFRESH_SECRET`
-- ✅ `OPENAI_API_KEY`
-- ✅ `DEEPGRAM_API_KEY`
-- ✅ `ELEVENLABS_API_KEY`
 
-### Optional
-- `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
-- `GCP_PROJECT_ID`
-- `GCP_STORAGE_BUCKET`
-- `SENTRY_DSN`
-- `CORS_ORIGIN`
+- **Docker** 20.10+
+- **Docker Compose** 2.0+
+- **Node.js** 20+
+- **PostgreSQL** 16+
+- **Redis** 7+
 
-## Post-Deployment
+### For Kubernetes
 
-### 1. Health Check
+- **kubectl** 1.28+
+- **Kubernetes cluster** (GKE, EKS, AKS, or self-hosted)
+- **Helm** 3.0+ (optional)
 
-```bash
-curl https://your-service-url/api/v1/health
-```
+### API Keys
 
-### 2. Test API
+- OpenAI API key
+- Deepgram API key
+- ElevenLabs API key
+- Twilio credentials (for SMS)
+- SMTP credentials (for email)
+- GCP credentials (for storage)
 
-```bash
-# Signup
-curl -X POST https://your-service-url/api/v1/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"Test123!","firstName":"Test","lastName":"User"}'
+---
 
-# Login
-curl -X POST https://your-service-url/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"Test123!"}'
-```
+## Environment Setup
 
-### 3. Monitor Logs
+### 1. Production Environment Variables
+
+Create `.env.production`:
 
 ```bash
-# GCP
-gcloud run logs read medvoice-backend --limit 50
+# Node Environment
+NODE_ENV=production
 
-# AWS
-aws logs tail /aws/ecs/medvoice-backend --follow
+# Database
+DATABASE_URL=postgresql://user:password@postgres-host:5432/medvoice?schema=public
+
+# Redis
+REDIS_HOST=redis-host
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password
+
+# JWT Secrets (CHANGE THESE!)
+JWT_SECRET=your-super-secret-production-jwt-key-min-32-chars
+JWT_REFRESH_SECRET=your-super-secret-production-refresh-key-min-32-chars
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+
+# AI Services
+OPENAI_API_KEY=sk-prod-your-openai-key
+DEEPGRAM_API_KEY=your-deepgram-key
+ELEVENLABS_API_KEY=your-elevenlabs-key
+
+# Twilio (SMS)
+TWILIO_ACCOUNT_SID=your-account-sid
+TWILIO_AUTH_TOKEN=your-auth-token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Email (SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM=noreply@medvoice.com
+
+# GCP Storage
+GCP_PROJECT_ID=your-project-id
+GCP_BUCKET_NAME=medvoice-storage
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+
+# CORS
+CORS_ORIGIN=https://yourdomain.com
+
+# Logging
+LOG_LEVEL=info
 ```
 
-### 4. Setup Monitoring
-
-- Configure Cloud Monitoring/CloudWatch alerts
-- Set up error tracking (Sentry)
-- Configure uptime checks
-- Set up performance monitoring
-
-## Scaling Configuration
-
-### Auto-scaling (GCP Cloud Run)
+### 2. Security Best Practices
 
 ```bash
-gcloud run services update medvoice-backend \
-  --min-instances 2 \
-  --max-instances 20 \
-  --cpu-throttling \
-  --concurrency 100
+# Generate secure secrets
+openssl rand -base64 32  # For JWT_SECRET
+openssl rand -base64 32  # For JWT_REFRESH_SECRET
+
+# Never commit .env files
+echo ".env*" >> .gitignore
 ```
 
-### Database Connection Pooling
+---
 
-Update DATABASE_URL:
-```
-postgresql://user:pass@host:5432/db?connection_limit=10&pool_timeout=20
-```
+## Docker Deployment
 
-## Backup Strategy
+### Option 1: Docker Compose (Simple Production)
 
-### Database Backups
+#### 1. Build Images
 
 ```bash
-# GCP Cloud SQL
-gcloud sql backups create \
-  --instance=medvoice-db \
-  --description="Manual backup"
+# Build all services
+docker-compose -f docker-compose.prod.yml build
 
-# Enable automated backups
-gcloud sql instances patch medvoice-db \
-  --backup-start-time=03:00
+# Or build individually
+docker build -f Dockerfile.gateway -t medvoice-gateway:latest .
+docker build -f Dockerfile.auth -t medvoice-auth:latest .
+docker build -f Dockerfile.voice-agent -t medvoice-voice-agent:latest .
+docker build -f Dockerfile.appointments -t medvoice-appointments:latest .
+docker build -f Dockerfile.notifications -t medvoice-notifications:latest .
 ```
 
-### Storage Backups
+#### 2. Create Production Docker Compose
+
+Create `docker-compose.prod.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: medvoice
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - medvoice-network
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - medvoice-network
+
+  gateway:
+    image: medvoice-gateway:latest
+    restart: always
+    ports:
+      - "80:3000"
+    env_file:
+      - .env.production
+    depends_on:
+      - postgres
+      - redis
+      - auth
+      - voice-agent
+      - appointments
+      - notifications
+    networks:
+      - medvoice-network
+
+  auth:
+    image: medvoice-auth:latest
+    restart: always
+    env_file:
+      - .env.production
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - medvoice-network
+
+  voice-agent:
+    image: medvoice-voice-agent:latest
+    restart: always
+    env_file:
+      - .env.production
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - medvoice-network
+
+  appointments:
+    image: medvoice-appointments:latest
+    restart: always
+    env_file:
+      - .env.production
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - medvoice-network
+
+  notifications:
+    image: medvoice-notifications:latest
+    restart: always
+    env_file:
+      - .env.production
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - medvoice-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  medvoice-network:
+    driver: bridge
+```
+
+#### 3. Deploy
 
 ```bash
-# GCP Cloud Storage versioning
-gsutil versioning set on gs://medvoice-storage
+# Start all services
+docker-compose -f docker-compose.prod.yml up -d
+
+# Run migrations
+docker-compose -f docker-compose.prod.yml exec gateway npm run prisma:migrate
+
+# Check status
+docker-compose -f docker-compose.prod.yml ps
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs -f
 ```
 
-## Security Checklist
+### Option 2: Docker Swarm (Multi-node)
 
-- ✅ Use secrets management (GCP Secret Manager / AWS Secrets Manager)
-- ✅ Enable HTTPS only
-- ✅ Configure CORS properly
-- ✅ Enable rate limiting
-- ✅ Use VPC for database connections
-- ✅ Enable Cloud Armor / WAF
-- ✅ Regular security updates
-- ✅ Audit logging enabled
+```bash
+# Initialize swarm
+docker swarm init
+
+# Deploy stack
+docker stack deploy -c docker-compose.prod.yml medvoice
+
+# Scale services
+docker service scale medvoice_voice-agent=3
+docker service scale medvoice_appointments=2
+
+# Check services
+docker service ls
+docker service logs medvoice_gateway
+```
+
+---
+
+## Kubernetes Deployment
+
+### 1. Create Namespace
+
+```yaml
+# namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: medvoice
+```
+
+```bash
+kubectl apply -f namespace.yaml
+```
+
+### 2. Create Secrets
+
+```bash
+# Create secret from .env file
+kubectl create secret generic medvoice-secrets \
+  --from-env-file=.env.production \
+  -n medvoice
+
+# Or create manually
+kubectl create secret generic medvoice-secrets \
+  --from-literal=DATABASE_URL='postgresql://...' \
+  --from-literal=JWT_SECRET='...' \
+  --from-literal=OPENAI_API_KEY='...' \
+  -n medvoice
+```
+
+### 3. Deploy PostgreSQL
+
+```yaml
+# postgres-deployment.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: medvoice
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: medvoice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:16-alpine
+        env:
+        - name: POSTGRES_DB
+          value: medvoice
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: medvoice-secrets
+              key: DB_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: medvoice-secrets
+              key: DB_PASSWORD
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: medvoice
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+```
+
+### 4. Deploy Redis
+
+```yaml
+# redis-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: medvoice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: medvoice
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+```
+
+### 5. Deploy Microservices
+
+```yaml
+# gateway-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway
+  namespace: medvoice
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gateway
+  template:
+    metadata:
+      labels:
+        app: gateway
+    spec:
+      containers:
+      - name: gateway
+        image: your-registry/medvoice-gateway:latest
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - secretRef:
+            name: medvoice-secrets
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  namespace: medvoice
+spec:
+  type: LoadBalancer
+  selector:
+    app: gateway
+  ports:
+  - port: 80
+    targetPort: 3000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gateway-hpa
+  namespace: medvoice
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gateway
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+```
+
+Repeat similar deployments for other services (auth, voice-agent, appointments, notifications).
+
+### 6. Deploy All
+
+```bash
+kubectl apply -f postgres-deployment.yaml
+kubectl apply -f redis-deployment.yaml
+kubectl apply -f gateway-deployment.yaml
+kubectl apply -f auth-deployment.yaml
+kubectl apply -f voice-agent-deployment.yaml
+kubectl apply -f appointments-deployment.yaml
+kubectl apply -f notifications-deployment.yaml
+
+# Check deployments
+kubectl get deployments -n medvoice
+kubectl get pods -n medvoice
+kubectl get services -n medvoice
+```
+
+---
+
+## Cloud Platforms
+
+### Google Cloud Platform (GKE)
+
+```bash
+# Create GKE cluster
+gcloud container clusters create medvoice-cluster \
+  --num-nodes=3 \
+  --machine-type=n1-standard-2 \
+  --zone=us-central1-a
+
+# Get credentials
+gcloud container clusters get-credentials medvoice-cluster
+
+# Deploy
+kubectl apply -f k8s/
+```
+
+### AWS (EKS)
+
+```bash
+# Create EKS cluster
+eksctl create cluster \
+  --name medvoice-cluster \
+  --region us-east-1 \
+  --nodegroup-name standard-workers \
+  --node-type t3.medium \
+  --nodes 3
+
+# Deploy
+kubectl apply -f k8s/
+```
+
+### Azure (AKS)
+
+```bash
+# Create AKS cluster
+az aks create \
+  --resource-group medvoice-rg \
+  --name medvoice-cluster \
+  --node-count 3 \
+  --node-vm-size Standard_D2s_v3
+
+# Get credentials
+az aks get-credentials --resource-group medvoice-rg --name medvoice-cluster
+
+# Deploy
+kubectl apply -f k8s/
+```
+
+---
+
+## Database Setup
+
+### Run Migrations
+
+```bash
+# Docker Compose
+docker-compose exec gateway npm run prisma:migrate
+
+# Kubernetes
+kubectl exec -it deployment/gateway -n medvoice -- npm run prisma:migrate
+```
+
+### Backup Strategy
+
+```bash
+# PostgreSQL backup
+pg_dump -h localhost -U medvoice medvoice > backup.sql
+
+# Automated backups (cron)
+0 2 * * * pg_dump -h localhost -U medvoice medvoice | gzip > /backups/medvoice-$(date +\%Y\%m\%d).sql.gz
+```
+
+---
+
+## Monitoring
+
+### Prometheus + Grafana
+
+```yaml
+# prometheus-config.yaml
+scrape_configs:
+  - job_name: 'medvoice-services'
+    static_configs:
+      - targets:
+        - 'gateway:3000'
+        - 'auth:3001'
+        - 'voice-agent:3002'
+```
+
+### Logging with ELK Stack
+
+```bash
+# Deploy Elasticsearch, Logstash, Kibana
+kubectl apply -f elk-stack.yaml
+```
+
+---
+
+## Security
+
+### SSL/TLS
+
+```bash
+# Let's Encrypt with cert-manager
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+
+# Create certificate
+kubectl apply -f ssl-certificate.yaml
+```
+
+### Network Policies
+
+```yaml
+# network-policy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+  namespace: medvoice
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+```
+
+---
+
+## CI/CD
+
+### GitHub Actions
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build Docker images
+        run: |
+          docker build -f Dockerfile.gateway -t ${{ secrets.REGISTRY }}/gateway:${{ github.sha }} .
+          docker build -f Dockerfile.auth -t ${{ secrets.REGISTRY }}/auth:${{ github.sha }} .
+      
+      - name: Push to registry
+        run: |
+          docker push ${{ secrets.REGISTRY }}/gateway:${{ github.sha }}
+          docker push ${{ secrets.REGISTRY }}/auth:${{ github.sha }}
+      
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/gateway gateway=${{ secrets.REGISTRY }}/gateway:${{ github.sha }} -n medvoice
+```
+
+---
+
+## Health Checks
+
+```bash
+# Check all services
+curl https://api.medvoice.com/api/v1/health
+
+# Individual services
+curl http://gateway:3000/api/v1/health
+curl http://auth:3001/health
+curl http://voice-agent:3002/health
+```
+
+---
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Database connection fails**
-   - Check Cloud SQL connection name
-   - Verify service account permissions
-   - Check VPC configuration
-
-2. **Redis connection timeout**
-   - Verify Redis host/port
-   - Check VPC peering
-   - Verify firewall rules
-
-3. **High latency**
-   - Increase CPU/memory
-   - Enable connection pooling
-   - Add Redis caching
-   - Scale instances
-
-4. **Out of memory**
-   - Increase memory allocation
-   - Check for memory leaks
-   - Optimize queries
+1. **Service won't start**: Check logs with `kubectl logs`
+2. **Database connection**: Verify `DATABASE_URL` in secrets
+3. **High memory usage**: Increase resource limits
+4. **Slow response**: Scale up replicas
 
 ---
 
-For more help, see the main README or contact support.
+## Rollback
+
+```bash
+# Kubernetes rollback
+kubectl rollout undo deployment/gateway -n medvoice
+
+# Docker Compose rollback
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
+**Last Updated**: 2024-01-01  
+**Version**: 2.0

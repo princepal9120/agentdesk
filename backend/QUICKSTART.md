@@ -1,103 +1,176 @@
-# Quick Start Guide - MedVoice Backend
+# Quick Start - MedVoice Microservices
 
-Get up and running in 5 minutes!
+Get all 5 microservices running in **5 minutes**! 🚀
 
 ## Prerequisites
 
-- Node.js 20+ installed
-- Docker and Docker Compose installed
-- API keys ready (OpenAI, Deepgram, ElevenLabs)
+- **Node.js 20+** installed
+- **Docker & Docker Compose** installed
+- **API Keys** ready: OpenAI, Deepgram, ElevenLabs
+
+---
 
 ## Option 1: Docker Compose (Recommended)
 
-### 1. Clone and Setup
+### Step 1: Setup Environment
 
 ```bash
 cd backend
 cp .env.example .env
 ```
 
-### 2. Edit .env file
+### Step 2: Configure API Keys
+
+Edit `.env`:
 
 ```bash
-# Required: Add your API keys
-OPENAI_API_KEY=sk-your-key-here
-DEEPGRAM_API_KEY=your-key-here
-ELEVENLABS_API_KEY=your-key-here
+# Required API Keys
+OPENAI_API_KEY=sk-your-openai-key
+DEEPGRAM_API_KEY=your-deepgram-key
+ELEVENLABS_API_KEY=your-elevenlabs-key
 
-# Optional: Change JWT secrets
-JWT_SECRET=your-super-secret-jwt-key
-JWT_REFRESH_SECRET=your-super-secret-refresh-key
+# JWT Secrets (change these!)
+JWT_SECRET=your-super-secret-jwt-key-change-me
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-me
+
+# Database (auto-configured by Docker)
+DATABASE_URL=postgresql://medvoice:medvoice_password@postgres:5432/medvoice?schema=public
+REDIS_HOST=redis
+REDIS_PORT=6379
 ```
 
-### 3. Start Everything
+### Step 3: Start All Services
 
 ```bash
 docker-compose up -d
 ```
 
 This starts:
-- PostgreSQL database
-- Redis cache
-- Backend API
+- ✅ PostgreSQL (port 5432)
+- ✅ Redis (port 6379)
+- ✅ API Gateway (port 3000)
+- ✅ Auth Service (port 3001)
+- ✅ Voice Agent Service (port 3002)
+- ✅ Appointments Service (port 3003)
+- ✅ Notifications Service (port 3004)
 
-### 4. Run Migrations
+### Step 4: Run Database Migrations
 
 ```bash
-# Wait 10 seconds for database to be ready, then:
-npm install
+# Install dependencies
+npm install --legacy-peer-deps
+
+# Generate Prisma client
 npm run prisma:generate
+
+# Run migrations
 npm run prisma:migrate
 ```
 
-### 5. Test It!
+### Step 5: Verify Everything Works
 
 ```bash
-# Check health
+# Check all services are running
+docker-compose ps
+
+# Test Gateway health
 curl http://localhost:3000/api/v1/health
 
-# View API docs
+# View API documentation
 open http://localhost:3000/api/docs
 ```
 
-## Option 2: Local Development
+**Expected Response:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "database": "connected",
+  "redis": "connected"
+}
+```
 
-### 1. Install PostgreSQL and Redis
+---
 
+## Option 2: Local Development (Without Docker)
+
+### Step 1: Install PostgreSQL & Redis
+
+**macOS:**
 ```bash
-# macOS
-brew install postgresql redis
-brew services start postgresql
+brew install postgresql@16 redis
+brew services start postgresql@16
 brew services start redis
+```
 
-# Ubuntu
-sudo apt install postgresql redis-server
+**Ubuntu:**
+```bash
+sudo apt install postgresql-16 redis-server
 sudo systemctl start postgresql redis
 ```
 
-### 2. Create Database
+### Step 2: Create Database
 
 ```bash
 createdb medvoice
 ```
 
-### 3. Setup Environment
+### Step 3: Setup Environment
 
 ```bash
 cp .env.example .env
-# Edit .env with your database URL and API keys
 ```
 
-### 4. Install and Run
+Edit `.env`:
+```bash
+DATABASE_URL=postgresql://YOUR_USER:YOUR_PASSWORD@localhost:5432/medvoice?schema=public
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# Add your API keys
+OPENAI_API_KEY=sk-...
+DEEPGRAM_API_KEY=...
+ELEVENLABS_API_KEY=...
+```
+
+### Step 4: Install & Setup
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npm run prisma:generate
 npm run prisma:migrate
-npm run start:dev
 ```
 
-## Quick Test
+### Step 5: Start Services (5 Terminals)
+
+**Terminal 1 - Gateway:**
+```bash
+npm run start:dev gateway
+```
+
+**Terminal 2 - Auth:**
+```bash
+npm run start:dev auth
+```
+
+**Terminal 3 - Voice Agent:**
+```bash
+npm run start:dev voice-agent
+```
+
+**Terminal 4 - Appointments:**
+```bash
+npm run start:dev appointments
+```
+
+**Terminal 5 - Notifications:**
+```bash
+npm run start:dev notifications
+```
+
+---
+
+## Quick API Test
 
 ### 1. Create a User
 
@@ -112,7 +185,7 @@ curl -X POST http://localhost:3000/api/v1/auth/signup \
   }'
 ```
 
-Response:
+**Response:**
 ```json
 {
   "accessToken": "eyJhbGc...",
@@ -120,17 +193,15 @@ Response:
   "user": {
     "id": "uuid",
     "email": "test@example.com",
-    "firstName": "Test",
-    "lastName": "User",
     "role": "STAFF"
   }
 }
 ```
 
-### 2. Start a Voice Session
+### 2. Start Voice Session
 
 ```bash
-# Save the accessToken from above
+# Save token from above
 TOKEN="your-access-token"
 
 curl -X POST http://localhost:3000/api/v1/agent/start-session \
@@ -139,7 +210,7 @@ curl -X POST http://localhost:3000/api/v1/agent/start-session \
   -d '{}'
 ```
 
-Response:
+**Response:**
 ```json
 {
   "conversationId": "uuid",
@@ -147,7 +218,7 @@ Response:
 }
 ```
 
-### 3. Send a Text Query
+### 3. Send Text Query
 
 ```bash
 CONVERSATION_ID="your-conversation-id"
@@ -161,92 +232,122 @@ curl -X POST http://localhost:3000/api/v1/agent/text-query \
   }'
 ```
 
-Response:
-```json
-{
-  "response": "I'd be happy to help you schedule an appointment! Could you please provide me with your full name and preferred date?"
-}
-```
+---
 
-## WebSocket Test
+## Service Ports Reference
 
-### Using JavaScript
+| Service | Port | URL |
+|---------|------|-----|
+| **Gateway** | 3000 | http://localhost:3000 |
+| **Auth** | 3001 | http://localhost:3001 |
+| **Voice Agent** | 3002 | http://localhost:3002 |
+| **Appointments** | 3003 | http://localhost:3003 |
+| **Notifications** | 3004 | http://localhost:3004 |
+| **PostgreSQL** | 5432 | localhost:5432 |
+| **Redis** | 6379 | localhost:6379 |
 
-```javascript
-const io = require('socket.io-client');
-
-const socket = io('http://localhost:3000/voice');
-
-socket.on('connected', (data) => {
-  console.log('Connected:', data);
-  
-  // Start session
-  socket.emit('start_session', {
-    practiceId: 'optional-practice-id'
-  });
-});
-
-socket.on('session_started', (data) => {
-  console.log('Session started:', data);
-  
-  // Send text message
-  socket.emit('text_message', {
-    conversationId: data.conversationId,
-    text: 'Hello, I need an appointment'
-  });
-});
-
-socket.on('agent_response', (data) => {
-  console.log('Agent response:', data.text);
-});
-```
+---
 
 ## Common Commands
 
+### Docker
+
 ```bash
-# Development
-npm run start:dev          # Start with hot reload
-npm run start:debug        # Start with debugger
+# Start all services
+docker-compose up -d
 
-# Database
-npm run prisma:studio      # Open database GUI
-npm run prisma:migrate     # Run migrations
-npm run db:reset           # Reset database (careful!)
+# View logs (all services)
+docker-compose logs -f
 
-# Docker
-docker-compose up -d       # Start services
-docker-compose logs -f     # View logs
-docker-compose down        # Stop services
+# View logs (specific service)
+docker-compose logs -f gateway
+docker-compose logs -f auth
 
-# Testing
-npm run test               # Unit tests
-npm run test:e2e           # E2E tests
-npm run test:cov           # Coverage report
+# Stop all services
+docker-compose down
+
+# Rebuild and restart
+docker-compose up -d --build
+
+# Remove everything (including volumes)
+docker-compose down -v
 ```
+
+### Development
+
+```bash
+# Start with hot reload
+npm run start:dev gateway
+npm run start:dev auth
+
+# Build all services
+npm run build
+
+# Build specific service
+npx @nestjs/cli build gateway
+```
+
+### Database
+
+```bash
+# Open database GUI
+npm run prisma:studio
+
+# Run migrations
+npm run prisma:migrate
+
+# Generate Prisma client
+npm run prisma:generate
+
+# Reset database (⚠️ deletes all data)
+npm run db:reset
+```
+
+### Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Coverage
+npm run test:cov
+```
+
+---
 
 ## Troubleshooting
 
 ### Port Already in Use
 
 ```bash
-# Kill process on port 3000
+# Find and kill process on port 3000
 lsof -ti:3000 | xargs kill -9
+
+# Or use different port
+PORT=3001 npm run start:dev gateway
 ```
 
 ### Database Connection Error
 
 ```bash
 # Check PostgreSQL is running
+docker-compose ps postgres
+# or
 pg_isready
 
-# Check connection string in .env
-DATABASE_URL="postgresql://user:password@localhost:5432/medvoice?schema=public"
+# Verify connection string in .env
+DATABASE_URL=postgresql://medvoice:medvoice_password@localhost:5432/medvoice?schema=public
 ```
 
 ### Redis Connection Error
 
 ```bash
 # Check Redis is running
+docker-compose ps redis
+# or
 redis-cli ping
 # Should return: PONG
 ```
@@ -257,21 +358,75 @@ redis-cli ping
 npm run prisma:generate
 ```
 
-## Next Steps
+### Docker Build Fails
 
-1. **Explore API Docs**: http://localhost:3000/api/docs
-2. **Read Architecture**: See `ARCHITECTURE.md`
-3. **Deploy to Cloud**: See `DEPLOYMENT.md`
-4. **Customize AI Prompts**: Edit system prompts in `agent.service.ts`
-5. **Add Providers**: Create providers and appointment types via API
+```bash
+# Clean rebuild
+docker-compose down -v
+docker-compose build --no-cache
+docker-compose up -d
+```
 
-## Need Help?
+### Service Won't Start
 
-- Check logs: `docker-compose logs -f backend`
-- View database: `npm run prisma:studio`
-- API documentation: http://localhost:3000/api/docs
-- GitHub Issues: Report bugs and ask questions
+```bash
+# Check logs
+docker-compose logs service-name
+
+# Common issues:
+# 1. Database not ready - wait 10 seconds and retry
+# 2. Missing .env file - copy from .env.example
+# 3. Port conflict - change port in docker-compose.yml
+```
 
 ---
 
-Happy coding! 🚀
+## Next Steps
+
+1. ✅ **Explore API Docs**: http://localhost:3000/api/docs
+2. 📖 **Read Architecture**: See [ARCHITECTURE.md](./ARCHITECTURE.md)
+3. 🚀 **Deploy to Cloud**: See [DEPLOYMENT.md](./DEPLOYMENT.md)
+4. 🎨 **Customize AI**: Edit system prompts in `apps/voice-agent/src/agent-core/services/agent.service.ts`
+5. 📊 **Monitor Services**: `docker-compose logs -f`
+
+---
+
+## WebSocket Example
+
+```javascript
+const io = require('socket.io-client');
+
+const socket = io('http://localhost:3000/voice');
+
+socket.on('connected', (data) => {
+  console.log('Connected:', data);
+  
+  socket.emit('start_session', {});
+});
+
+socket.on('session_started', (data) => {
+  console.log('Session:', data.conversationId);
+  
+  socket.emit('text_message', {
+    conversationId: data.conversationId,
+    text: 'Hello, I need an appointment'
+  });
+});
+
+socket.on('agent_response', (data) => {
+  console.log('Agent:', data.text);
+});
+```
+
+---
+
+## Need Help?
+
+- 📚 **Documentation**: See `/docs` folder
+- 🐛 **Issues**: GitHub Issues
+- 💬 **Community**: Discord/Slack
+- 📧 **Email**: support@medvoice.com
+
+---
+
+**Happy coding!** 🎉

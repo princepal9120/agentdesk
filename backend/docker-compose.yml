@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database (Shared)
   postgres:
     image: postgres:16-alpine
     container_name: medvoice-postgres
@@ -19,8 +19,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - medvoice-network
 
-  # Redis Cache
+  # Redis Cache (Shared)
   redis:
     image: redis:7-alpine
     container_name: medvoice-redis
@@ -34,13 +36,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - medvoice-network
 
-  # Backend API
-  backend:
+  # API Gateway
+  gateway:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: medvoice-backend
+      dockerfile: apps/gateway/Dockerfile
+    container_name: medvoice-gateway
     restart: unless-stopped
     ports:
       - '3000:3000'
@@ -49,16 +53,135 @@ services:
       DATABASE_URL: postgresql://medvoice:medvoice_password@postgres:5432/medvoice?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      PORT: 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      auth:
+        condition: service_started
+      voice-agent:
+        condition: service_started
+      appointments:
+        condition: service_started
+      notifications:
+        condition: service_started
+    volumes:
+      - ./apps/gateway:/app/apps/gateway
+      - ./libs:/app/libs
+      - ./logs:/app/logs
+    networks:
+      - medvoice-network
+
+  # Auth Service
+  auth:
+    build:
+      context: .
+      dockerfile: apps/auth/Dockerfile
+    container_name: medvoice-auth
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://medvoice:medvoice_password@postgres:5432/medvoice?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 3001
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
-      - ./src:/app/src
-      - ./logs:/app/logs
-    command: npm run start:dev
+      - ./apps/auth:/app/apps/auth
+      - ./libs:/app/libs
+    networks:
+      - medvoice-network
+
+  # Voice Agent Service
+  voice-agent:
+    build:
+      context: .
+      dockerfile: apps/voice-agent/Dockerfile
+    container_name: medvoice-voice-agent
+    restart: unless-stopped
+    ports:
+      - '3002:3002'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://medvoice:medvoice_password@postgres:5432/medvoice?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 3002
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/voice-agent:/app/apps/voice-agent
+      - ./libs:/app/libs
+    networks:
+      - medvoice-network
+
+  # Appointments Service
+  appointments:
+    build:
+      context: .
+      dockerfile: apps/appointments/Dockerfile
+    container_name: medvoice-appointments
+    restart: unless-stopped
+    ports:
+      - '3003:3003'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://medvoice:medvoice_password@postgres:5432/medvoice?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/appointments:/app/apps/appointments
+      - ./libs:/app/libs
+    networks:
+      - medvoice-network
+
+  # Notifications Service
+  notifications:
+    build:
+      context: .
+      dockerfile: apps/notifications/Dockerfile
+    container_name: medvoice-notifications
+    restart: unless-stopped
+    ports:
+      - '3004:3004'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://medvoice:medvoice_password@postgres:5432/medvoice?schema=public
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PORT: 3004
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./apps/notifications:/app/apps/notifications
+      - ./libs:/app/libs
+    networks:
+      - medvoice-network
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  medvoice-network:
+    driver: bridge

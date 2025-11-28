@@ -1,393 +1,449 @@
-# System Architecture - MedVoice Backend
+# Architecture - MedVoice Microservices
 
 ## Overview
 
-MedVoice is a production-ready voice AI agent backend built with NestJS, designed to handle real-time voice interactions for medical appointment scheduling. The system integrates multiple AI services (OpenAI, Deepgram, ElevenLabs) with LangChain for intelligent conversation management.
+MedVoice Backend is built using a **microservices architecture** with NestJS monorepo. Each service is independently deployable, scalable, and maintains its own bounded context.
 
-## Architecture Diagram
+## System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         CLIENT LAYER                             │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   Web App    │  │  Mobile App  │  │ Twilio Voice │          │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
-└─────────┼──────────────────┼──────────────────┼──────────────────┘
-          │                  │                  │
-          │ HTTPS/WS         │ HTTPS/WS         │ Webhook
-          │                  │                  │
-┌─────────▼──────────────────▼──────────────────▼──────────────────┐
-│                      API GATEWAY LAYER                            │
-│  ┌────────────────────────────────────────────────────────────┐  │
-│  │  NestJS Application (Port 3000)                            │  │
-│  │  - Helmet (Security)                                       │  │
-│  │  - CORS                                                    │  │
-│  │  - Rate Limiting (Throttler)                               │  │
-│  │  - JWT Authentication                                      │  │
-│  │  - Request Validation (class-validator)                    │  │
-│  └────────────────────────────────────────────────────────────┘  │
-└───────────────────────────────────────────────────────────────────┘
-          │
-          │
-┌─────────▼──────────────────────────────────────────────────────┐
-│                     APPLICATION LAYER                           │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │                    Core Modules                          │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │  │
-│  │  │   Auth   │  │  Users   │  │ Practices│              │  │
-│  │  └──────────┘  └──────────┘  └──────────┘              │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │              Voice AI Pipeline                           │  │
-│  │  ┌──────────────────────────────────────────────────┐   │  │
-│  │  │  1. Audio Input (WebSocket/HTTP)                 │   │  │
-│  │  │  2. Speech-to-Text (Deepgram)                    │   │  │
-│  │  │  3. LLM Agent (OpenAI + LangChain)               │   │  │
-│  │  │  4. Tool Execution (Appointments)                │   │  │
-│  │  │  5. Text-to-Speech (ElevenLabs)                  │   │  │
-│  │  │  6. Audio Output (Stream)                        │   │  │
-│  │  └──────────────────────────────────────────────────┘   │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │              Business Modules                            │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │  │
-│  │  │Appointments│ │Providers │  │Analytics │              │  │
-│  │  └──────────┘  └──────────┘  └──────────┘              │  │
-│  └─────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐  │
-│  │            Integration Modules                           │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐              │  │
-│  │  │  Storage │  │   EHR    │  │Notifications│            │  │
-│  │  │  (GCS)   │  │(Epic/Athena)│ (Twilio)  │            │  │
-│  │  └──────────┘  └──────────┘  └──────────┘              │  │
-│  └─────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-          │                    │                    │
-          │                    │                    │
-┌─────────▼────────┐  ┌────────▼────────┐  ┌───────▼──────────┐
-│  PostgreSQL      │  │     Redis       │  │  External APIs   │
-│  (Prisma ORM)    │  │  - Cache        │  │  - OpenAI        │
-│  - Users         │  │  - Sessions     │  │  - Deepgram      │
-│  - Appointments  │  │  - Rate Limit   │  │  - ElevenLabs    │
-│  - Conversations │  │  - Pub/Sub      │  │  - Twilio        │
-│  - Messages      │  └─────────────────┘  │  - Epic/Athena   │
-│  - Voice Chunks  │                       └──────────────────┘
-└──────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        CLIENTS                               │
+│  (Web App, Mobile App, Third-party Integrations)            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     │ HTTPS/WSS
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    API GATEWAY :3000                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
+│  │   HTTP   │  │WebSocket │  │  Auth    │                  │
+│  │  Router  │  │ Gateway  │  │Middleware│                  │
+│  └──────────┘  └──────────┘  └──────────┘                  │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+         ┌───────────┴───────────┬──────────┬──────────┐
+         │ TCP                   │ TCP      │ TCP      │ TCP
+         ▼                       ▼          ▼          ▼
+┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐
+│  AUTH SERVICE  │  │ VOICE AGENT    │  │ APPOINTMENTS   │  │ NOTIFICATIONS  │
+│     :3001      │  │    :3002       │  │     :3003      │  │     :3004      │
+├────────────────┤  ├────────────────┤  ├────────────────┤  ├────────────────┤
+│ • User Auth    │  │ • STT (Deepgram│  │ • CRUD Appts   │  │ • Email (SMTP) │
+│ • JWT Tokens   │  │ • LLM (OpenAI) │  │ • Scheduling   │  │ • SMS (Twilio) │
+│ • Rate Limit   │  │ • TTS (11Labs) │  │ • Providers    │  │ • Templates    │
+│ • User Mgmt    │  │ • Agent Logic  │  │ • Practices    │  │ • Queue        │
+└────────┬───────┘  └────────┬───────┘  └────────┬───────┘  └────────┬───────┘
+         │                   │                   │                   │
+         └───────────────────┴───────────────────┴───────────────────┘
+                                      │
+                     ┌────────────────┴────────────────┐
+                     │                                  │
+              ┌──────▼──────┐                   ┌──────▼──────┐
+              │ PostgreSQL  │                   │    Redis    │
+              │   :5432     │                   │    :6379    │
+              └─────────────┘                   └─────────────┘
 ```
 
-## Component Architecture
+## Services
 
-### 1. Voice Agent Pipeline
+### 1. API Gateway (Port 3000)
+
+**Purpose**: Single entry point for all client requests
+
+**Responsibilities**:
+- HTTP request routing to microservices
+- WebSocket gateway for real-time communication
+- JWT authentication middleware
+- Rate limiting
+- Request/response logging
+- CORS handling
+- API documentation (Swagger)
+
+**Technology**:
+- NestJS Gateway
+- Socket.io for WebSocket
+- Passport JWT
+- Swagger/OpenAPI
+
+**Key Files**:
+- `apps/gateway/src/app.module.ts` - Main module with ClientsModule registration
+- `apps/gateway/src/main.ts` - Bootstrap with middleware
+- `apps/gateway/src/auth/` - Gateway-level authentication
+
+### 2. Auth Service (Port 3001)
+
+**Purpose**: User authentication and authorization
+
+**Responsibilities**:
+- User registration (signup)
+- User login with password hashing (bcrypt)
+- JWT token generation (access + refresh)
+- Token refresh mechanism
+- User logout
+- Rate limiting for login attempts
+- User management (CRUD)
+- Role-based access control (RBAC)
+
+**Technology**:
+- NestJS + Passport
+- JWT (access & refresh tokens)
+- bcrypt for password hashing
+- Redis for rate limiting
+
+**Database Tables**:
+- `User` - User accounts
+- `RefreshToken` - Active refresh tokens
+
+**Key Files**:
+- `apps/auth/src/auth/auth.service.ts` - Core auth logic
+- `apps/auth/src/auth/strategies/jwt.strategy.ts` - JWT validation
+- `apps/auth/src/users/users.service.ts` - User management
+
+### 3. Voice Agent Service (Port 3002)
+
+**Purpose**: Voice intelligence and AI agent orchestration
+
+**Responsibilities**:
+- Speech-to-Text (Deepgram SDK)
+- Text-to-Speech (ElevenLabs)
+- LLM-based agent (OpenAI + LangChain)
+- Conversation management
+- Voice session handling
+- Tool execution (appointment booking, info retrieval)
+- Audio streaming
+
+**Technology**:
+- Deepgram for STT
+- ElevenLabs for TTS
+- OpenAI GPT-4
+- LangChain for agent orchestration
+- LangGraph for workflow
+
+**Database Tables**:
+- `Conversation` - Conversation sessions
+- `Message` - Conversation messages
+
+**Key Files**:
+- `apps/voice-agent/src/voice-agent/services/voice-agent.service.ts` - Voice orchestration
+- `apps/voice-agent/src/agent-core/services/agent.service.ts` - LangChain agent
+- `apps/voice-agent/src/agent-core/tools/` - Agent tools
+
+### 4. Appointments Service (Port 3003)
+
+**Purpose**: Appointment scheduling and management
+
+**Responsibilities**:
+- Create/Read/Update/Delete appointments
+- Appointment status management
+- Provider management
+- Practice management
+- Appointment type configuration
+- Availability checking
+- Conflict detection
+
+**Technology**:
+- NestJS CRUD
+- Prisma ORM
+- Date-fns for date handling
+
+**Database Tables**:
+- `Appointment` - Appointment records
+- `Provider` - Healthcare providers
+- `Practice` - Medical practices
+- `AppointmentType` - Appointment categories
+
+**Key Files**:
+- `apps/appointments/src/appointments/appointments.service.ts` - Business logic
+- `apps/appointments/src/appointments/appointments.controller.ts` - REST API
+
+### 5. Notifications Service (Port 3004)
+
+**Purpose**: Multi-channel notifications
+
+**Responsibilities**:
+- Email notifications (SMTP)
+- SMS notifications (Twilio)
+- Notification templates
+- Notification queue management
+- Delivery tracking
+- Retry logic
+
+**Technology**:
+- Nodemailer for email
+- Twilio for SMS
+- Bull for job queue
+- Redis for queue storage
+
+**Database Tables**:
+- `Notification` - Notification records
+- `NotificationTemplate` - Reusable templates
+
+**Key Files**:
+- `apps/notifications/src/notifications/notifications.service.ts` - Notification logic
+- `apps/notifications/src/notifications/email.service.ts` - Email sender
+- `apps/notifications/src/notifications/sms.service.ts` - SMS sender
+
+## Shared Libraries
+
+### `libs/common`
+
+**Purpose**: Shared utilities and infrastructure
+
+**Exports**:
+- `RedisModule` & `RedisService` - Caching, rate limiting, pub/sub
+- `StorageModule` & `StorageService` - GCP Cloud Storage
+- `HealthController` - Health check endpoint
+- **Decorators**:
+  - `@Public()` - Mark routes as public
+  - `@CurrentUser()` - Extract user from request
+  - `@Roles()` - Role-based access control
+- **Constants**:
+  - `SERVICE_NAMES` - Microservice identifiers
+  - `SERVICE_PORTS` - Port mappings
+  - `SERVICE_HOSTS` - Host configurations
+- `createLogger()` - Winston logger
+
+### `libs/database`
+
+**Purpose**: Database access layer
+
+**Exports**:
+- `PrismaModule` & `PrismaService` - Database client
+- Prisma schema: `libs/database/prisma/schema.prisma`
+
+## Communication Patterns
+
+### 1. Client → Gateway (HTTP/WebSocket)
+
+- **HTTP**: REST API calls
+- **WebSocket**: Real-time voice streaming
+
+### 2. Gateway → Services (TCP)
+
+- **Transport**: NestJS TCP Microservices
+- **Pattern**: Request-Response
+- **Format**: JSON messages
+
+Example:
+```typescript
+// Gateway sends to Auth Service
+this.authClient.send('validate_token', { token })
+```
+
+### 3. Service → Service (TCP)
+
+Services can communicate directly via TCP:
 
 ```typescript
-// Flow: Audio → STT → Agent → TTS → Audio
-┌─────────────────────────────────────────────────────────────┐
-│                   VoiceAgentService                          │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  processAudioInput(audioBuffer)                       │  │
-│  │    ↓                                                  │  │
-│  │  1. SpeechToTextService.transcribe()                 │  │
-│  │    ↓                                                  │  │
-│  │  2. AgentService.processMessage()                    │  │
-│  │    ├─→ LangChain Agent                               │  │
-│  │    ├─→ Tool Execution (check_availability, book)     │  │
-│  │    └─→ Memory Management                             │  │
-│  │    ↓                                                  │  │
-│  │  3. TextToSpeechService.generateSpeech()             │  │
-│  │    ↓                                                  │  │
-│  │  4. Return audio stream                              │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+// Voice Agent → Appointments
+this.appointmentsClient.send('create_appointment', appointmentDto)
 ```
 
-### 2. LangChain Agent Architecture
+### 4. Service → Database (SQL)
 
-```typescript
-┌─────────────────────────────────────────────────────────────┐
-│                    AgentService                              │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  Agent Executor                                       │  │
-│  │  ├─ ChatOpenAI (GPT-4)                                │  │
-│  │  ├─ System Prompt (Medical Receptionist)             │  │
-│  │  ├─ Memory (BufferMemory)                             │  │
-│  │  └─ Tools:                                            │  │
-│  │     ├─ check_availability                             │  │
-│  │     ├─ book_appointment                               │  │
-│  │     ├─ reschedule_appointment                         │  │
-│  │     └─ cancel_appointment                             │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
+- **ORM**: Prisma
+- **Connection**: PostgreSQL connection pool
+- **Shared Database**: All services use the same database (for now)
 
-### 3. Authentication Flow
+### 5. Service → Redis (Cache/Pub-Sub)
+
+- **Caching**: Store frequently accessed data
+- **Rate Limiting**: Track request counts
+- **Pub/Sub**: Event broadcasting (future)
+
+## Data Flow Examples
+
+### User Signup Flow
 
 ```
-1. User → POST /auth/signup
-   ↓
-2. Hash password (bcrypt, 12 rounds)
-   ↓
-3. Create user in PostgreSQL
-   ↓
-4. Generate JWT access token (15min)
-   ↓
-5. Generate refresh token (7 days)
-   ↓
-6. Store refresh token in DB
-   ↓
-7. Return tokens to user
-
-Refresh Flow:
-1. User → POST /auth/refresh {refreshToken}
-   ↓
-2. Verify refresh token
-   ↓
-3. Check if token exists and not revoked
-   ↓
-4. Revoke old refresh token
-   ↓
-5. Generate new access + refresh tokens
-   ↓
-6. Return new tokens
+1. Client → Gateway: POST /api/v1/auth/signup
+2. Gateway → Auth Service (TCP): { cmd: 'signup', data: {...} }
+3. Auth Service → PostgreSQL: INSERT INTO users
+4. Auth Service → Redis: SET rate_limit_key
+5. Auth Service → Gateway: { accessToken, refreshToken, user }
+6. Gateway → Client: 201 Created
 ```
 
-### 4. WebSocket Communication
+### Voice Session Flow
 
 ```
-Client                          Server
-  │                               │
-  ├──── connect ──────────────────▶│
-  │◀──── connected ────────────────┤
-  │                               │
-  ├──── start_session ────────────▶│
-  │                               ├─ Create conversation
-  │                               ├─ Initialize agent
-  │◀──── session_started ──────────┤
-  │                               │
-  ├──── audio_stream ─────────────▶│
-  │                               ├─ STT
-  │                               ├─ Agent processing
-  │                               ├─ TTS
-  │◀──── agent_response ───────────┤
-  │◀──── audio_response ───────────┤
-  │                               │
-  ├──── end_session ──────────────▶│
-  │                               ├─ Update conversation
-  │                               ├─ Clear memory
-  │◀──── session_ended ────────────┤
-  │                               │
+1. Client → Gateway: WebSocket connect /voice
+2. Client → Gateway: emit('start_session')
+3. Gateway → Voice Agent (TCP): { cmd: 'start_session' }
+4. Voice Agent → PostgreSQL: INSERT INTO conversations
+5. Voice Agent → Gateway: { conversationId }
+6. Gateway → Client: emit('session_started', { conversationId })
+7. Client → Gateway: emit('audio_chunk', audioData)
+8. Gateway → Voice Agent: { cmd: 'process_audio', data }
+9. Voice Agent → Deepgram API: STT
+10. Voice Agent → OpenAI API: LLM
+11. Voice Agent → Appointments (TCP): { cmd: 'create_appointment' }
+12. Appointments → PostgreSQL: INSERT INTO appointments
+13. Voice Agent → ElevenLabs API: TTS
+14. Voice Agent → Gateway: { audioResponse }
+15. Gateway → Client: emit('audio_response', audioData)
 ```
 
-## Data Models
+## Database Schema
 
-### Core Entities
+### Shared Database Strategy
 
-1. **User**
-   - Authentication & authorization
-   - Role-based access control
-   - Practice association
+Currently using a **shared database** with logical ownership:
 
-2. **Practice**
-   - Multi-tenant support
-   - Business hours configuration
-   - EHR integration settings
+| Table | Owner Service | Purpose |
+|-------|---------------|---------|
+| `User` | Auth | User accounts |
+| `RefreshToken` | Auth | JWT refresh tokens |
+| `Conversation` | Voice Agent | Voice sessions |
+| `Message` | Voice Agent | Chat messages |
+| `Appointment` | Appointments | Appointments |
+| `Provider` | Appointments | Healthcare providers |
+| `Practice` | Appointments | Medical practices |
+| `Notification` | Notifications | Notification records |
 
-3. **Provider**
-   - Healthcare providers
-   - Specialty information
-   - Appointment associations
+**Future**: Each service can have its own database for true isolation.
 
-4. **Appointment**
-   - Scheduling data
-   - Patient information
-   - Status tracking
-   - AI booking flag
+## Security
 
-5. **Conversation**
-   - Voice/chat sessions
-   - Channel tracking
-   - Outcome recording
+### Authentication Flow
 
-6. **Message**
-   - Conversation history
-   - Role-based messages
-   - Tool call tracking
+1. User logs in via Gateway
+2. Gateway forwards to Auth Service
+3. Auth Service validates credentials
+4. Auth Service generates JWT tokens
+5. Client stores tokens
+6. Client sends JWT in `Authorization` header
+7. Gateway validates JWT via JwtStrategy
+8. Gateway forwards authenticated requests to services
 
-7. **VoiceChunk**
-   - Audio data storage
-   - Transcripts
-   - Metadata
+### Authorization
 
-## Security Architecture
-
-### Authentication & Authorization
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  Request Flow                                            │
-│                                                          │
-│  1. Client sends request with JWT Bearer token          │
-│  2. JwtAuthGuard intercepts request                     │
-│  3. Extract token from Authorization header             │
-│  4. Verify token signature                              │
-│  5. Validate expiration                                 │
-│  6. Load user from database                             │
-│  7. Check user status (ACTIVE)                          │
-│  8. RolesGuard checks required roles                    │
-│  9. Allow/Deny request                                  │
-└─────────────────────────────────────────────────────────┘
-```
+- **JWT**: Access tokens (15 min expiry)
+- **Refresh Tokens**: Long-lived (7 days)
+- **RBAC**: Role-based access control
+  - `ADMIN` - Full access
+  - `STAFF` - Standard access
+  - `PATIENT` - Limited access
 
 ### Rate Limiting
 
-- Global: 100 requests/minute per IP
-- Login: 5 attempts per 15 minutes
-- API endpoints: Configurable via decorators
-- Redis-backed for distributed systems
-
-### Data Protection
-
-- Passwords: bcrypt with 12 rounds
-- JWT secrets: Environment variables
-- Database: SSL connections
-- API keys: Secret management (GCP/AWS)
-- CORS: Configured origins only
+- **Redis-based**: Track request counts per IP/user
+- **Configurable**: Different limits per endpoint
+- **Throttling**: Automatic backoff
 
 ## Scalability
 
 ### Horizontal Scaling
 
+Each service can be scaled independently:
+
+```bash
+# Scale Voice Agent to 3 instances
+docker-compose up -d --scale voice-agent=3
+
+# Scale Appointments to 2 instances
+docker-compose up -d --scale appointments=2
 ```
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│  Instance 1  │  │  Instance 2  │  │  Instance N  │
-└──────┬───────┘  └──────┬───────┘  └──────┬───────┘
-       │                 │                 │
-       └─────────────────┼─────────────────┘
-                         │
-                ┌────────▼────────┐
-                │  Load Balancer  │
-                └─────────────────┘
-```
+
+### Load Balancing
+
+- **Gateway**: Use Nginx/HAProxy for load balancing
+- **Services**: Round-robin TCP connections
 
 ### Caching Strategy
 
-1. **Redis Cache**
-   - Session data
-   - Rate limit counters
-   - Frequently accessed data
-   - Real-time state
+- **Redis**: Cache frequently accessed data
+- **TTL**: Configurable per data type
+- **Invalidation**: On data updates
 
-2. **Application Cache**
-   - AI script configurations
-   - Provider schedules
-   - Appointment types
-
-### Database Optimization
-
-- Indexed queries (user email, appointment times)
-- Connection pooling
-- Read replicas for analytics
-- Partitioning for large tables
-
-## Monitoring & Observability
+## Monitoring & Logging
 
 ### Logging
 
-```typescript
-Winston Logger
-├─ Console (Development)
-├─ File (error.log)
-├─ File (combined.log)
-└─ External (Sentry, DataDog)
-```
-
-### Metrics
-
-- Active voice sessions
-- API response times (p50, p95, p99)
-- Database query performance
-- Error rates
-- Cache hit rates
+- **Winston**: Structured logging
+- **Levels**: error, warn, info, debug
+- **Format**: JSON for production
+- **Storage**: File rotation + cloud storage
 
 ### Health Checks
 
-- `/api/v1/health` - Application health
-- Database connectivity
-- Redis connectivity
-- External API availability
+Each service exposes `/health`:
 
-## Event System
-
-```typescript
-EventEmitter2 Events:
-├─ voice.session.started
-├─ voice.session.ended
-├─ voice.message.processed
-├─ stt.transcript
-├─ appointment.booked
-├─ appointment.cancelled
-└─ notification.sent
+```bash
+curl http://localhost:3000/api/v1/health  # Gateway
+curl http://localhost:3001/health         # Auth
+curl http://localhost:3002/health         # Voice Agent
 ```
 
-## Technology Stack Summary
+### Metrics (Future)
 
-| Layer | Technology |
-|-------|-----------|
-| Runtime | Node.js 20+ |
-| Framework | NestJS |
-| Language | TypeScript |
-| Database | PostgreSQL 14+ |
-| ORM | Prisma |
-| Cache | Redis 7+ |
-| Auth | JWT + Passport |
-| WebSocket | Socket.io |
-| AI/LLM | OpenAI GPT-4 |
-| Agent Framework | LangChain |
-| STT | Deepgram Nova-2 |
-| TTS | ElevenLabs |
-| Voice | Twilio |
-| Storage | GCP Cloud Storage |
-| Deployment | GCP Cloud Run / AWS ECS |
-| Monitoring | Winston + Sentry |
+- Prometheus for metrics collection
+- Grafana for visualization
+- Distributed tracing with Jaeger
 
-## Performance Targets
+## Deployment
 
-| Metric | Target |
-|--------|--------|
-| API Response Time (p95) | < 500ms |
-| Voice Pipeline Latency | < 2s |
-| Concurrent Sessions | 50+ |
-| Database Queries | < 100ms |
-| Uptime | 99.9% |
+### Docker Compose (Development)
+
+```bash
+docker-compose up -d
+```
+
+### Kubernetes (Production)
+
+Each service gets:
+- Deployment
+- Service
+- ConfigMap
+- Secret
+- HorizontalPodAutoscaler
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for details.
 
 ## Future Enhancements
 
-1. **Multi-language Support**
-   - Spanish, French, etc.
-   - Language detection
+### Planned Features
 
-2. **Advanced Analytics**
-   - Sentiment analysis
-   - Call quality metrics
-   - Conversion tracking
+1. **Event-Driven Architecture**
+   - RabbitMQ/Kafka for async messaging
+   - Event sourcing for audit trails
 
-3. **Outbound Calling**
-   - Appointment reminders
-   - Follow-up calls
+2. **Service Mesh**
+   - Istio for traffic management
+   - mTLS for service-to-service encryption
 
-4. **EHR Integration**
-   - Epic FHIR
-   - Athena Health
-   - Real-time sync
+3. **Database per Service**
+   - Separate PostgreSQL instances
+   - Data synchronization strategies
 
-5. **Advanced AI Features**
-   - Voice cloning
-   - Emotion detection
-   - Context-aware responses
+4. **API Gateway Enhancements**
+   - GraphQL federation
+   - gRPC support
+   - Circuit breakers
+
+5. **Observability**
+   - Distributed tracing
+   - Real-time metrics
+   - Alerting
+
+## Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | NestJS |
+| **Language** | TypeScript |
+| **Database** | PostgreSQL 16 |
+| **ORM** | Prisma |
+| **Cache** | Redis 7 |
+| **Communication** | TCP (NestJS Microservices) |
+| **AI/ML** | OpenAI, LangChain, Deepgram, ElevenLabs |
+| **Container** | Docker |
+| **Orchestration** | Docker Compose / Kubernetes |
+| **Logging** | Winston |
+| **Testing** | Jest |
 
 ---
 
-This architecture is designed for production use with scalability, security, and maintainability as core principles.
+**Last Updated**: 2024-01-01  
+**Version**: 2.0 (Microservices)

@@ -62,7 +62,7 @@ export function AudioDemoSection() {
                             )}
                         >
                             {demo.isPremium && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-primary to-purple-600 text-white text-xs font-bold uppercase tracking-widest rounded-full shadow-lg shadow-primary/30 flex items-center gap-2">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-[#2B7BE4] to-[#1ABC9C] text-white text-xs font-bold uppercase tracking-widest rounded-full shadow-lg shadow-primary/30 flex items-center gap-2">
                                     <Sparkles size={12} /> Recommended
                                 </div>
                             )}

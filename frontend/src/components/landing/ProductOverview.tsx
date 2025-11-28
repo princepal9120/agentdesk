@@ -36,7 +36,7 @@ export function ProductOverview() {
                             {/* Mock Dashboard Header */}
                             <div className="h-16 border-b border-slate-100 flex items-center justify-between px-8 bg-white/50 backdrop-blur-md sticky top-0 z-20">
                                 <div className="flex items-center gap-6">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">M</div>
+                                    <div className="w-10 h-10 bg-gradient-to-br from-[#2B7BE4] to-[#1ABC9C] rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-primary/20">M</div>
                                     <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-slate-100/50 rounded-full border border-slate-200/50 w-64 text-slate-400 text-sm">
                                         <Search size={16} />
                                         <span>Search patients...</span>
@@ -148,7 +148,7 @@ export function ProductOverview() {
                                         {/* Right Column */}
                                         <div className="col-span-12 lg:col-span-4 space-y-6">
                                             {/* Stats Card */}
-                                            <div className="bg-gradient-to-br from-primary to-purple-700 rounded-2xl p-6 text-white shadow-lg shadow-primary/20">
+                                            <div className="bg-gradient-to-br from-[#2B7BE4] to-[#1ABC9C] rounded-2xl p-6 text-white shadow-lg shadow-primary/20">
                                                 <div className="flex items-center justify-between mb-6">
                                                     <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
                                                         <BarChart3 size={20} />

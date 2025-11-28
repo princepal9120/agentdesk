@@ -55,92 +55,121 @@
 :root {
   --radius: 0.75rem;
 
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.13 0.02 260);
+  /* Healthcare Light Mode - Clean Clinical */
+  --background: #F7FAFC;
+  /* Very light grey/off-white */
+  --foreground: #0F172A;
+  /* Deep slate for text */
+  --card: #FFFFFF;
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.13 0.02 260);
+  /* Primary: Soft Medical Blue (Trust) */
+  --primary: #2B7BE4;
+  --primary-foreground: #FFFFFF;
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.13 0.02 260);
+  /* Secondary: Teal/Green (Care & Health) */
+  --secondary: #1ABC9C;
+  --secondary-foreground: #FFFFFF;
 
-  --primary: oklch(0.45 0.24 270);
-  --primary-foreground: oklch(0.99 0 0);
+  /* Muted: Subtle greys */
+  --muted: #F1F5F9;
+  --muted-foreground: #6B7280;
 
-  --secondary: oklch(0.96 0.01 270);
-  --secondary-foreground: oklch(0.45 0.24 270);
+  /* Accent: Soft teal for highlights */
+  --accent: #14B8A6;
+  --accent-foreground: #FFFFFF;
 
-  --muted: oklch(0.96 0.01 260);
-  --muted-foreground: oklch(0.55 0.04 260);
+  /* Destructive: Muted red (alerts only) */
+  --destructive: #E05353;
+  --destructive-foreground: #FFFFFF;
 
-  --accent: oklch(0.94 0.03 270);
-  --accent-foreground: oklch(0.45 0.24 270);
+  --border: #E2E8F0;
+  --input: #E2E8F0;
+  --ring: #2B7BE4;
 
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.01 260);
-  --input: oklch(0.92 0.01 260);
-  --ring: oklch(0.45 0.24 270);
+  /* Chart colors - healthcare friendly */
+  --chart-1: #2B7BE4;
+  /* Medical blue */
+  --chart-2: #1ABC9C;
+  /* Teal */
+  --chart-3: #22C55E;
+  /* Soft green */
+  --chart-4: #06B6D4;
+  /* Cyan */
+  --chart-5: #8B5CF6;
+  /* Soft purple */
 
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0F172A;
+  --sidebar-primary: #2B7BE4;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F1F5F9;
+  --sidebar-accent-foreground: #0F172A;
+  --sidebar-border: #E2E8F0;
+  --sidebar-ring: #2B7BE4;
 }
 
 /* ---------------------------
    DARK MODE VARIABLES
 ---------------------------- */
 .dark {
-  --background: oklch(0.10 0.02 260);
-  --foreground: oklch(0.98 0.01 260);
+  /* Healthcare Dark Mode - Modern Health-Tech */
+  --background: #020617;
+  /* Dark navy/slate */
+  --foreground: #E5E7EB;
+  /* Light grey text */
+  --card: #111827;
+  /* Dark surface cards */
+  --card-foreground: #E5E7EB;
+  --popover: #111827;
+  --popover-foreground: #E5E7EB;
 
-  --card: oklch(0.14 0.02 260);
-  --card-foreground: oklch(0.98 0.01 260);
+  /* Primary: Bright Medical Cyan */
+  --primary: #06B6D4;
+  --primary-foreground: #020617;
 
-  --popover: oklch(0.14 0.02 260);
-  --popover-foreground: oklch(0.98 0.01 260);
+  /* Secondary: Soft Green */
+  --secondary: #22C55E;
+  --secondary-foreground: #020617;
 
-  --primary: oklch(0.65 0.22 270);
-  --primary-foreground: oklch(0.10 0.02 260);
+  /* Muted: Dark greys */
+  --muted: #1E293B;
+  --muted-foreground: #9CA3AF;
 
-  --secondary: oklch(0.20 0.03 260);
-  --secondary-foreground: oklch(0.98 0.01 260);
+  /* Accent: Soft amber for highlights */
+  --accent: #FACC15;
+  --accent-foreground: #020617;
 
-  --muted: oklch(0.20 0.03 260);
-  --muted-foreground: oklch(0.70 0.04 260);
+  /* Destructive: Softer red for dark mode */
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
 
-  --accent: oklch(0.20 0.03 260);
-  --accent-foreground: oklch(0.98 0.01 260);
+  --border: #1E293B;
+  --input: #1E293B;
+  --ring: #06B6D4;
 
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(0.25 0.02 260);
-  --input: oklch(0.25 0.02 260);
-  --ring: oklch(0.65 0.22 270);
+  /* Chart colors - dark mode optimized */
+  --chart-1: #06B6D4;
+  /* Cyan */
+  --chart-2: #22C55E;
+  /* Green */
+  --chart-3: #8B5CF6;
+  /* Purple */
+  --chart-4: #F59E0B;
+  /* Amber */
+  --chart-5: #EC4899;
+  /* Pink */
 
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #0B1220;
+  --sidebar-foreground: #E5E7EB;
+  --sidebar-primary: #06B6D4;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: #1E293B;
+  --sidebar-accent-foreground: #E5E7EB;
+  --sidebar-border: #1E293B;
+  --sidebar-ring: #06B6D4;
 }
 
 /* ---------------------------
@@ -172,23 +201,24 @@
   }
 
   .text-gradient-premium {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-blue-400;
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(to right, #2B7BE4, #1ABC9C, #06B6D4);
   }
 
   .mesh-bg {
     background-color: var(--background);
     background-image:
-      radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 0.1) 0, transparent 50%),
-      radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 0.1) 0, transparent 50%),
-      radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 0.1) 0, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(43, 123, 228, 0.08) 0, transparent 50%),
+      radial-gradient(at 50% 0%, rgba(26, 188, 156, 0.08) 0, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0, transparent 50%);
   }
 
   .mesh-bg-light {
     background-color: var(--background);
     background-image:
-      radial-gradient(at 40% 20%, oklch(0.96 0.02 260 / 0.5) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, oklch(0.94 0.03 270 / 0.5) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, oklch(0.95 0.02 300 / 0.5) 0px, transparent 50%);
+      radial-gradient(at 40% 20%, rgba(43, 123, 228, 0.06) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, rgba(26, 188, 156, 0.06) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, rgba(6, 182, 212, 0.06) 0px, transparent 50%);
   }
 
   .mask-linear-fade {
