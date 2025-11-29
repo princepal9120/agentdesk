@@ -7,8 +7,17 @@ import { PrismaModule } from '@app/database';
 import { RedisModule } from '@app/common';
 import { HealthController } from '@app/common/health.controller';
 import { GatewayAuthModule } from './auth/gateway-auth.module';
+import { GatewayAppointmentsModule } from './modules/appointments/gateway-appointments.module';
+import { GatewayVoiceAgentModule } from './modules/voice-agent/gateway-voice-agent.module';
+import { GatewayNotificationsModule } from './modules/notifications/gateway-notifications.module';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { SERVICE_NAMES, SERVICE_PORTS, SERVICE_HOSTS } from '@app/common';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+
+import { AuthResolver } from './graphql/resolvers/auth.resolver';
+import { AppointmentsResolver } from './graphql/resolvers/appointments.resolver';
 
 @Module({
     imports: [
@@ -31,6 +40,16 @@ import { SERVICE_NAMES, SERVICE_PORTS, SERVICE_HOSTS } from '@app/common';
         PrismaModule,
         RedisModule,
         GatewayAuthModule,
+        GatewayAppointmentsModule,
+        GatewayVoiceAgentModule,
+        GatewayNotificationsModule,
+        GraphQLModule.forRoot<ApolloDriverConfig>({
+            driver: ApolloDriver,
+            autoSchemaFile: join(process.cwd(), 'apps/gateway/src/schema.gql'),
+            sortSchema: true,
+            playground: true,
+            introspection: true,
+        }),
         ClientsModule.register([
             {
                 name: SERVICE_NAMES.AUTH,
@@ -67,5 +86,6 @@ import { SERVICE_NAMES, SERVICE_PORTS, SERVICE_HOSTS } from '@app/common';
         ]),
     ],
     controllers: [HealthController],
+    providers: [AuthResolver, AppointmentsResolver],
 })
 export class AppModule { }
