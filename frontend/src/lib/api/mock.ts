@@ -1,4 +1,5 @@
 import { InternalAxiosRequestConfig, AxiosResponse, AxiosAdapter } from 'axios';
+import axios from 'axios';
 import { User } from '@/types/models';
 
 // Mock Data
@@ -35,7 +36,6 @@ export const mockAdapter: AxiosAdapter = async (config) => {
         return success({
             user: MOCK_USER,
             token: MOCK_TOKEN,
-            refreshToken: 'mock-refresh-token',
         });
     }
 
@@ -43,7 +43,6 @@ export const mockAdapter: AxiosAdapter = async (config) => {
         return success({
             user: { ...MOCK_USER, name: parsedData.name, email: parsedData.email },
             token: MOCK_TOKEN,
-            refreshToken: 'mock-refresh-token',
         });
     }
 
@@ -81,6 +80,8 @@ export const mockAdapter: AxiosAdapter = async (config) => {
     }
 
     // Fallback to default adapter for unhandled requests (if any)
+    // Since we are in a browser, we can't easily get the default adapter if we replaced it.
+    // But for this demo, we can just return 404 for anything else.
     const error: any = new Error('Request failed with status code 404');
     error.response = {
         data: { message: 'Not Found' },

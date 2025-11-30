@@ -1,5 +1,6 @@
 import axios, { InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL, TOKEN_KEY, REFRESH_TOKEN_KEY } from '../utils/constants';
+import { useAuthStore } from '@/stores/authStore';
 import { mockAdapter } from './mock';
 import { getStorageItem, setStorageItem, removeStorageItem } from '../utils/helpers';
 
@@ -38,8 +39,8 @@ export const apiClient = axios.create({
 // Request Interceptor
 apiClient.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-        // Get token from storage
-        const token = getAuthToken();
+        // Get token from store
+        const token = useAuthStore.getState().token;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

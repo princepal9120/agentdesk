@@ -1,3 +1,5 @@
+// Zod validation schemas for authentication
+
 import { z } from 'zod';
 import { PASSWORD_MIN_LENGTH } from '../utils/constants';
 

@@ -43,7 +43,7 @@ export default function LoginPage() {
     const onSubmit = async (data: LoginFormData) => {
         try {
             await login(data);
-            toast.success('Logged in successfully!');
+            toast.success('Welcome back!');
             router.push('/calendar');
         } catch (error) {
             toast.error(
@@ -59,7 +59,7 @@ export default function LoginPage() {
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                         <LogIn className="h-6 w-6 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
+                    <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
                     <CardDescription>
                         Sign in to your MedVoice Scheduler account
                     </CardDescription>
@@ -74,7 +74,13 @@ export default function LoginPage() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="you@example.com" type="email" {...field} />
+                                            <Input
+                                                placeholder="you@example.com"
+                                                type="email"
+                                                autoComplete="email"
+                                                disabled={isLoggingIn}
+                                                {...field}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -91,6 +97,8 @@ export default function LoginPage() {
                                             <Input
                                                 placeholder="••••••••"
                                                 type={showPassword ? 'text' : 'password'}
+                                                autoComplete="current-password"
+                                                disabled={isLoggingIn}
                                                 {...field}
                                             />
                                         </FormControl>

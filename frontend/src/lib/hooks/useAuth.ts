@@ -1,7 +1,10 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+// Custom React hook for authentication
+
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/lib/api/auth';
 import type { LoginCredentials, SignupCredentials } from '@/types/models';
+import { queryKeys } from '../utils/query-keys';
 
 export function useAuth() {
     const {
@@ -22,7 +25,7 @@ export function useAuth() {
     const loginMutation = useMutation({
         mutationFn: (credentials: LoginCredentials) => loginAction(credentials),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
         },
     });
 
@@ -30,7 +33,7 @@ export function useAuth() {
     const signupMutation = useMutation({
         mutationFn: (credentials: SignupCredentials) => signupAction(credentials),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['user'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
         },
     });
 
@@ -47,7 +50,7 @@ export function useAuth() {
         mutationFn: authApi.updateProfile,
         onSuccess: (updatedUser) => {
             updateUser(updatedUser);
-            queryClient.setQueryData(['user'], updatedUser);
+            queryClient.setQueryData(queryKeys.auth.user, updatedUser);
         },
     });
 

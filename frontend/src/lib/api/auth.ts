@@ -1,3 +1,5 @@
+// Authentication API methods
+
 import type {
     AuthResponse,
     LoginCredentials,
@@ -44,6 +46,16 @@ export const authApi = {
     },
 
     /**
+     * Reset password with token
+     */
+    resetPassword: async (token: string, newPassword: string): Promise<void> => {
+        await apiClient.post('/auth/reset-password/confirm', {
+            token,
+            password: newPassword,
+        });
+    },
+
+    /**
      * Get current user profile
      */
     getCurrentUser: async (): Promise<User> => {
@@ -73,5 +85,18 @@ export const authApi = {
             currentPassword,
             newPassword,
         });
+    },
+
+    /**
+     * Refresh access token
+     */
+    refreshToken: async (refreshToken: string): Promise<{ token: string }> => {
+        const response = await apiClient.post<{ token: string }>(
+            '/auth/refresh',
+            {
+                refreshToken,
+            }
+        );
+        return response.data;
     },
 };

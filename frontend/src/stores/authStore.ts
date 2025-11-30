@@ -1,3 +1,5 @@
+// Authentication store using Zustand
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, LoginCredentials, SignupCredentials } from '@/types/models';
@@ -162,7 +164,6 @@ export const useAuthStore = create<AuthState>()(
             partialize: (state) => ({
                 user: state.user,
                 isAuthenticated: state.isAuthenticated,
-                token: state.token, // Persist token for demo mode
             }),
         }
     )

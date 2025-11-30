@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import Lenis from 'lenis';
+import Lenis from '@studio-freight/lenis';
 import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { VideoDemoSection } from '@/components/landing/VideoDemoSection';

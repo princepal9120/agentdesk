@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
@@ -26,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
 export default function ResetPasswordPage() {
+    const router = useRouter();
     const { requestPasswordReset, isResettingPassword } = useAuth();
 
     const form = useForm<ResetPasswordRequestFormData>({
@@ -39,7 +41,7 @@ export default function ResetPasswordPage() {
         try {
             await requestPasswordReset(data.email);
             toast.success('Password reset link sent to your email!');
-            form.reset();
+            router.push('/login');
         } catch (error) {
             toast.error(
                 error instanceof Error ? error.message : 'Failed to send reset link.'
@@ -69,7 +71,13 @@ export default function ResetPasswordPage() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="you@example.com" type="email" {...field} />
+                                            <Input
+                                                placeholder="you@example.com"
+                                                type="email"
+                                                autoComplete="email"
+                                                disabled={isResettingPassword}
+                                                {...field}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -99,7 +107,7 @@ export default function ResetPasswordPage() {
                             className="flex items-center justify-center text-muted-foreground hover:text-foreground"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Login
+                            Back to Sign In
                         </Link>
                     </div>
                 </CardContent>
