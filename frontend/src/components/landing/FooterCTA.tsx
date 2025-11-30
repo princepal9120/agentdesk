@@ -33,9 +33,11 @@ export function FooterCTA() {
                 <div className="grid md:grid-cols-4 gap-12 border-t border-slate-800 pt-12">
                     <div className="col-span-1 md:col-span-1">
                         <Link href="/" className="flex items-center gap-2 mb-6">
-                            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg">
-                                M
-                            </div>
+                            <img
+                                src="/darklogo.png"
+                                alt="MedVoice Logo"
+                                className="h-8 w-auto"
+                            />
                             <span className="text-xl font-bold">MedVoice</span>
                         </Link>
                         <p className="text-slate-400 text-sm leading-relaxed">

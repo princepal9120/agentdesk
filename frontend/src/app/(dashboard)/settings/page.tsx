@@ -11,8 +11,8 @@ export default function SettingsPage() {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-                <p className="text-gray-500 mt-1">
+                <h1 className="text-3xl font-bold text-foreground">Settings</h1>
+                <p className="text-muted-foreground mt-1">
                     Manage your practice configuration and preferences
                 </p>
             </div>
@@ -59,9 +59,9 @@ export default function SettingsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Users className="h-12 w-12 text-gray-300 mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900">No Providers Configured</h3>
-                                <p className="text-gray-500 max-w-sm mt-2 mb-6">
+                                <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <h3 className="text-lg font-medium text-foreground">No Providers Configured</h3>
+                                <p className="text-muted-foreground max-w-sm mt-2 mb-6">
                                     Add providers to start scheduling appointments. You can configure their availability and specialties.
                                 </p>
                                 <Button>Add Provider</Button>
@@ -80,9 +80,9 @@ export default function SettingsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Calendar className="h-12 w-12 text-gray-300 mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900">Default Types Only</h3>
-                                <p className="text-gray-500 max-w-sm mt-2 mb-6">
+                                <Calendar className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <h3 className="text-lg font-medium text-foreground">Default Types Only</h3>
+                                <p className="text-muted-foreground max-w-sm mt-2 mb-6">
                                     You are currently using default appointment types. Customize them to match your practice needs.
                                 </p>
                                 <Button>Configure Types</Button>
@@ -101,9 +101,9 @@ export default function SettingsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Mic className="h-12 w-12 text-gray-300 mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900">Standard Script Active</h3>
-                                <p className="text-gray-500 max-w-sm mt-2 mb-6">
+                                <Mic className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <h3 className="text-lg font-medium text-foreground">Standard Script Active</h3>
+                                <p className="text-muted-foreground max-w-sm mt-2 mb-6">
                                     The AI is using the standard healthcare script. You can customize greetings, questions, and responses.
                                 </p>
                                 <Button>Edit Script</Button>
@@ -122,9 +122,9 @@ export default function SettingsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Bell className="h-12 w-12 text-gray-300 mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900">Notifications Enabled</h3>
-                                <p className="text-gray-500 max-w-sm mt-2 mb-6">
+                                <Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <h3 className="text-lg font-medium text-foreground">Notifications Enabled</h3>
+                                <p className="text-muted-foreground max-w-sm mt-2 mb-6">
                                     Standard appointment reminders are active. Configure timing and templates here.
                                 </p>
                                 <Button>Configure Notifications</Button>
@@ -143,9 +143,9 @@ export default function SettingsPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="flex flex-col items-center justify-center py-8 text-center">
-                                <Shield className="h-12 w-12 text-gray-300 mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900">Team Access</h3>
-                                <p className="text-gray-500 max-w-sm mt-2 mb-6">
+                                <Shield className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                                <h3 className="text-lg font-medium text-foreground">Team Access</h3>
+                                <p className="text-muted-foreground max-w-sm mt-2 mb-6">
                                     Manage who has access to the dashboard and what actions they can perform.
                                 </p>
                                 <Button>Invite Member</Button>

@@ -29,10 +29,12 @@ export function Navbar() {
         >
             <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2B7BE4] to-[#1ABC9C] flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform duration-300">
-                        M
-                    </div>
+                <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+                    <img
+                        src="/darklogo.png"
+                        alt="MedVoice Logo"
+                        className="h-10 w-auto group-hover:scale-105 transition-transform duration-300"
+                    />
                     <span className={cn("text-xl font-bold tracking-tight transition-colors", isScrolled ? "text-foreground" : "text-foreground")}>
                         MedVoice
                     </span>

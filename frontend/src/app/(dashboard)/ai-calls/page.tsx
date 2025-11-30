@@ -87,8 +87,8 @@ export default function AICallsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">AI Voice Calls</h1>
-                    <p className="text-gray-500 mt-1">
+                    <h1 className="text-3xl font-bold text-foreground">AI Voice Calls</h1>
+                    <p className="text-muted-foreground mt-1">
                         Monitor and review AI-handled phone calls
                     </p>
                 </div>

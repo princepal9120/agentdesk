@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-import Lenis from '@studio-freight/lenis';
 import { Navbar } from '@/components/landing/Navbar';
 import { HeroSection } from '@/components/landing/HeroSection';
 import { VideoDemoSection } from '@/components/landing/VideoDemoSection';
@@ -16,17 +14,6 @@ import { FAQSection } from '@/components/landing/FAQSection';
 import { FooterCTA } from '@/components/landing/FooterCTA';
 
 export default function LandingPage() {
-  useEffect(() => {
-    const lenis = new Lenis();
-
-    function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-  }, []);
-
   return (
     <main className="bg-white min-h-screen">
       <Navbar />

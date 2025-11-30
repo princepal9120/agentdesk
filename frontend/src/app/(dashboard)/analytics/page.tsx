@@ -39,8 +39,8 @@ export default function AnalyticsPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-                    <p className="text-gray-500 mt-1">
+                    <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
+                    <p className="text-muted-foreground mt-1">
                         Track practice performance and insights
                     </p>
                 </div>
@@ -150,24 +150,24 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="flex items-start gap-4 rounded-lg border p-4">
-                                <div className="rounded-full bg-blue-100 p-2">
-                                    <TrendingUp className="h-4 w-4 text-blue-600" />
+                            <div className="flex items-start gap-4 rounded-lg border border-border bg-card p-4">
+                                <div className="rounded-full bg-blue-100 dark:bg-blue-950 p-2">
+                                    <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold">Peak Call Hours</h4>
-                                    <p className="text-sm text-gray-500">
+                                    <h4 className="font-semibold text-foreground">Peak Call Hours</h4>
+                                    <p className="text-sm text-muted-foreground">
                                         Highest call volume observed between 9:00 AM and 11:00 AM on Mondays.
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-4 rounded-lg border p-4">
-                                <div className="rounded-full bg-green-100 p-2">
-                                    <Users className="h-4 w-4 text-green-600" />
+                            <div className="flex items-start gap-4 rounded-lg border border-border bg-card p-4">
+                                <div className="rounded-full bg-green-100 dark:bg-green-950 p-2">
+                                    <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold">New Patient Growth</h4>
-                                    <p className="text-sm text-gray-500">
+                                    <h4 className="font-semibold text-foreground">New Patient Growth</h4>
+                                    <p className="text-sm text-muted-foreground">
                                         15% increase in new patient bookings via AI voice agent this week.
                                     </p>
                                 </div>

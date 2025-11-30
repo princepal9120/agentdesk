@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { useRef } from 'react';
 import { Calendar, MessageSquare, BarChart3, Users, Bell, Search, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';

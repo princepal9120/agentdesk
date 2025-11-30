@@ -37,8 +37,8 @@ export default function CalendarPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Calendar</h1>
-                    <p className="text-gray-500 mt-1">
+                    <h1 className="text-3xl font-bold text-foreground">Calendar</h1>
+                    <p className="text-muted-foreground mt-1">
                         Manage your appointments and schedule
                     </p>
                 </div>

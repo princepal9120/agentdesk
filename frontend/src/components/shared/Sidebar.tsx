@@ -29,7 +29,7 @@ export function Sidebar() {
             {/* Mobile overlay */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+                    className="fixed inset-0 z-40 bg-black/50 dark:bg-black/70 lg:hidden backdrop-blur-sm"
                     onClick={toggleSidebar}
                 />
             )}
@@ -37,26 +37,28 @@ export function Sidebar() {
             {/* Sidebar */}
             <div
                 className={cn(
-                    'fixed inset-y-0 left-0 z-50 w-64 transform bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static',
+                    'fixed inset-y-0 left-0 z-50 w-64 transform bg-card border-r border-border transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static',
                     isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
                 )}
             >
                 <div className="flex h-full flex-col">
                     {/* Logo */}
-                    <div className="flex h-16 items-center justify-between px-6 border-b">
+                    <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+                    <div className="flex h-16 items-center justify-between px-6 border-b border-border">
                         <div className="flex items-center space-x-2">
-                            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                                <span className="text-white font-bold text-lg">M</span>
+                            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+                                <span className="text-primary-foreground font-bold text-lg">M</span>
                             </div>
-                            <span className="text-xl font-bold text-gray-900">MedVoice</span>
+                            <span className="text-xl font-bold text-foreground">MedVoice</span>
                         </div>
                         <button
                             onClick={toggleSidebar}
-                            className="lg:hidden text-gray-500 hover:text-gray-700"
+                            className="lg:hidden text-muted-foreground hover:text-foreground transition-colors"
                         >
                             <X className="h-6 w-6" />
                         </button>
                     </div>
+                    </Link>
 
                     {/* Navigation */}
                     <nav className="flex-1 space-y-1 px-3 py-4">
@@ -67,11 +69,16 @@ export function Sidebar() {
                                     key={item.name}
                                     href={item.href}
                                     className={cn(
-                                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                                        'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200',
                                         isActive
-                                            ? 'bg-primary/10 text-primary'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-primary/10 text-primary shadow-sm dark:bg-primary/20'
+                                            : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                                     )}
+                                    onClick={() => {
+                                        if (window.innerWidth < 1024) {
+                                            toggleSidebar();
+                                        }
+                                    }}
                                 >
                                     <item.icon className="h-5 w-5" />
                                     {item.name}
@@ -81,8 +88,8 @@ export function Sidebar() {
                     </nav>
 
                     {/* Footer */}
-                    <div className="border-t p-4">
-                        <p className="text-xs text-gray-500 text-center">
+                    <div className="border-t border-border p-4 bg-muted/30">
+                        <p className="text-xs text-muted-foreground text-center">
                             © 2025 MedVoice. All rights reserved.
                         </p>
                     </div>
