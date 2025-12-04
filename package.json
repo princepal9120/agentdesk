@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@tanstack/start": "^1.120.20",
-    "vinxi": "^0.5.8"
-  }
-}

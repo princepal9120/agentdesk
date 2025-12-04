@@ -56,6 +56,57 @@ celery -A app.core.celery_app worker --loglevel=info
 celery -A app.core.celery_app beat --loglevel=info
 ```
 
+## Running Voice Agent Worker
+
+The voice agent connects to LiveKit and handles inbound/outbound calls using:
+- **Deepgram** for Speech-to-Text
+- **OpenAI GPT-4** for conversation
+- **Cartesia** for Text-to-Speech
+- **Silero** for Voice Activity Detection
+
+### Prerequisites
+
+1. Get API keys from:
+   - [OpenAI](https://platform.openai.com/api-keys) - for LLM
+   - [Deepgram](https://console.deepgram.com/) - for STT
+   - [Cartesia](https://cartesia.ai/) - for TTS
+
+2. Set up LiveKit:
+   - Local: `docker run -d -p 7880:7880 livekit/livekit-server --dev`
+   - Cloud: Use [LiveKit Cloud](https://cloud.livekit.io/)
+
+### Start the Agent
+
+```bash
+cd backend
+
+# 1. Set environment variables (or create .env)
+export OPENAI_API_KEY=sk-xxx
+export DEEPGRAM_API_KEY=xxx
+export CARTESIA_API_KEY=xxx
+
+# Optional: Configure LiveKit (defaults to local)
+export LIVEKIT_URL=ws://localhost:7880
+export LIVEKIT_API_KEY=devkey
+export LIVEKIT_API_SECRET=secret
+
+# 2. Install dependencies (includes LiveKit agent packages)
+pip install -e ".[dev]"
+
+# 3. Run the agent
+python run_agent.py dev   # Development mode with auto-reload
+# OR
+python run_agent.py start # Production mode
+```
+
+### Testing the Agent
+
+1. Start the backend API: `uvicorn app.main:app --reload`
+2. Start the agent: `python run_agent.py dev`
+3. Use the LiveKit CLI or web client to join a room
+4. Speak to test the voice interaction
+
+
 ## API Documentation
 
 - Swagger UI: http://localhost:8000/docs

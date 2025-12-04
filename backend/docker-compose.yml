@@ -33,6 +33,23 @@ services:
       timeout: 5s
       retries: 5
 
+  # LiveKit Server (for voice agent)
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: healthcare_livekit
+    command: --dev --bind 0.0.0.0
+    ports:
+      - "7880:7880"   # WebSocket/HTTP
+      - "7881:7881"   # RTC (UDP)
+      - "7882:7882"   # TURN/TLS
+    environment:
+      - LIVEKIT_KEYS=devkey: secret
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7880"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   # Backend API (optional - for containerized development)
   api:
     build:
