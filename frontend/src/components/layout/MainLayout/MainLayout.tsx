@@ -5,6 +5,8 @@ import { logout } from '../../../store/slices/authSlice';
 import { Button } from '@/components/ui/button';
 import { LogOut, User, Calendar, Home } from 'lucide-react';
 
+import VoiceWidget from '@/components/features/voice/VoiceWidget';
+
 export const MainLayout: React.FC = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -15,7 +17,7 @@ export const MainLayout: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-background flex flex-col">
+        <div className="min-h-screen bg-background flex flex-col relative">
             {/* Header */}
             <header className="border-b bg-white sticky top-0 z-50">
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -57,6 +59,9 @@ export const MainLayout: React.FC = () => {
                 <Outlet />
             </main>
 
+            {/* Voice Widget */}
+            <VoiceWidget className="fixed bottom-20 right-4 md:bottom-8 md:right-8" />
+
             {/* Mobile Bottom Nav */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around p-3 z-50">
                 <Link to="/dashboard" className="flex flex-col items-center text-xs text-muted-foreground">
@@ -67,7 +72,7 @@ export const MainLayout: React.FC = () => {
                     <Calendar className="w-5 h-5 mb-1" />
                     Book
                 </Link>
-                <Link to="/profile" className="flex flex-col items-center text-xs text-muted-foreground">
+                <Link to="/dashboard" className="flex flex-col items-center text-xs text-muted-foreground">
                     <User className="w-5 h-5 mb-1" />
                     Profile
                 </Link>

@@ -6,6 +6,7 @@ import { fetchMyAppointments } from '@/store/slices/appointmentSlice';
 import { AppointmentList } from '@/components/features/appointments/AppointmentList/AppointmentList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import DoctorDashboard from './DoctorDashboard';
 
 const Dashboard: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -15,6 +16,11 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         dispatch(fetchMyAppointments());
     }, [dispatch]);
+
+    // If user is a doctor, render the Doctor Dashboard
+    if (user?.role === 'doctor') {
+        return <DoctorDashboard />;
+    }
 
     const upcomingAppointments = appointments
         .filter(a => ['scheduled', 'confirmed'].includes(a.status))

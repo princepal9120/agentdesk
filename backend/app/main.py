@@ -53,6 +53,8 @@ app.include_router(notifications.router, prefix=settings.API_V1_PREFIX)
 app.include_router(doctors.router, prefix=settings.API_V1_PREFIX)
 app.include_router(patients.router, prefix=settings.API_V1_PREFIX)
 app.include_router(webhooks.router, prefix=settings.API_V1_PREFIX)
+from app.routers import livekit
+app.include_router(livekit.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/health")

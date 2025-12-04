@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
-import { MainLayout } from '@/components/layout/MainLayout/MainLayout'
 
 // This is a pathless layout route (prefixed with _)
 // All routes in _authenticated/ folder will be wrapped with this layout

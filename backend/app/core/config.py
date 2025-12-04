@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # Application
     APP_NAME: str = "Healthcare Voice Agent API"
     APP_VERSION: str = "1.0.0"
-    DEBUG: bool = False
+    DEBUG: bool = True
     ENVIRONMENT: str = Field(default="development", pattern="^(development|staging|production)$")
     
     # API Configuration
@@ -84,7 +84,7 @@ class Settings(BaseSettings):
     )
     
     # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "http://localhost:3001"]
     
     # Logging
     LOG_LEVEL: str = "INFO"
