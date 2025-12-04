@@ -27,8 +27,12 @@ dependencies = [
     # HTTP Client
     "httpx>=0.25.0",
     
-    # Task Queue (optional)
-    # "celery>=5.3.0",
+    # Task Queue
+    "celery>=5.3.0",
+    
+    # Notifications (optional - install if needed)
+    # "twilio>=8.10.0",
+    # "sendgrid>=6.10.0",
 ]
 
 [project.optional-dependencies]

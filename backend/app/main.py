@@ -41,6 +41,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Rate limiting middleware (TRS 2.5)
+from app.core.rate_limit import RateLimitMiddleware
+app.add_middleware(RateLimitMiddleware, redis_url=settings.REDIS_URL)
+
 # Include routers
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(appointments.router, prefix=settings.API_V1_PREFIX)
