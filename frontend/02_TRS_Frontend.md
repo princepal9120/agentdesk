@@ -28,8 +28,8 @@
 | **Linting** | ESLint | Latest | Code quality | TypeScript-aware, accessibility checks |
 | **Formatting** | Prettier | Latest | Code formatting | Consistent style across project |
 | **Icons** | Lucide React | Latest | Icon library | Tree-shakeable, consistent design |
-| **UI Components** | Radix UI / Headless UI | Latest | Accessible components | WCAG 2.1 AA compliant, unstyled |
-| **Animation** | Framer Motion | Latest | Motion library | Performant, declarative animations |
+| **UI Components** | Shadcn UI / accernity UI(for animation) | Latest | Accessible components | WCAG 2.1 AA compliant, unstyled |
+| **Animation** | Framer Motion/Gsap | Latest | Motion library | Performant, declarative animations |
 | **Auth** | JWT + React Context | Custom | Authentication | Secure token management, context persistence |
 | **API Documentation** | Swagger/OpenAPI | Latest | API reference | Interactive API docs |
 | **Error Tracking** | Sentry | Latest | Error monitoring | Real-time error alerts |

@@ -13,5 +13,8 @@
     "aliases": {
         "components": "@/components",
         "utils": "@/utils"
+    },
+    "registries": {
+        "@aceternity": "https://ui.aceternity.com/registry/{name}.json"
     }
 }
