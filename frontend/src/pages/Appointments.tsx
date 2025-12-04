@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { fetchMyAppointments } from '../store/slices/appointmentSlice';
-import { AppointmentList } from '../components/features/appointments/AppointmentList/AppointmentList';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { fetchMyAppointments } from '@/store/slices/appointmentSlice';
+import { AppointmentList } from '@/components/features/appointments/AppointmentList/AppointmentList';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Filter } from 'lucide-react';

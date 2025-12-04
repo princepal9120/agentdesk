@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { setBookingStep, resetBooking } from '../../store/slices/appointmentSlice';
-import { DoctorSelection } from '../../components/features/appointments/BookingFlow/DoctorSelection';
-import { TimeSlotSelection } from '../../components/features/appointments/BookingFlow/TimeSlotSelection';
-import { BookingConfirmation } from '../../components/features/appointments/BookingFlow/BookingConfirmation';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { setBookingStep, resetBooking } from '@/store/slices/appointmentSlice';
+import { DoctorSelection } from '@/components/features/appointments/BookingFlow/DoctorSelection';
+import { TimeSlotSelection } from '@/components/features/appointments/BookingFlow/TimeSlotSelection';
+import { BookingConfirmation } from '@/components/features/appointments/BookingFlow/BookingConfirmation';
 import { cn } from '@/utils/cn';
 
 const BookAppointment: React.FC = () => {

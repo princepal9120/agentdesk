@@ -17,19 +17,19 @@ function DashboardLayout() {
             {/* Header */}
             <header className="bg-white shadow-sm border-b">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                    <Link to="/_authenticated/dashboard" className="text-xl font-bold">
+                    <Link to="/dashboard" className="text-xl font-bold">
                         Healthcare Voice Agent
                     </Link>
                     <nav className="flex items-center gap-6">
                         <Link
-                            to="/_authenticated/dashboard"
+                            to="/dashboard"
                             className="text-gray-600 hover:text-gray-900"
                             activeProps={{ className: 'text-blue-600 font-medium' }}
                         >
                             Dashboard
                         </Link>
                         <Link
-                            to="/_authenticated/appointments"
+                            to="/appointments"
                             className="text-gray-600 hover:text-gray-900"
                             activeProps={{ className: 'text-blue-600 font-medium' }}
                         >

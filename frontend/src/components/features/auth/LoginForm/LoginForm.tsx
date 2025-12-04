@@ -1,14 +1,14 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { loginUser } from '../../../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { loginUser } from '@/store/slices/authSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { loginSchema, LoginFormData } from '../../../utils/validation';
+import { loginSchema, LoginFormData } from '@/utils/validation';
 
 export const LoginForm: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -27,7 +27,7 @@ export const LoginForm: React.FC = () => {
     const onSubmit = async (data: LoginFormData) => {
         const resultAction = await dispatch(loginUser(data));
         if (loginUser.fulfilled.match(resultAction)) {
-            navigate('/dashboard');
+            navigate({ to: '/dashboard' });
         }
     };
 

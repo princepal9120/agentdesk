@@ -3,12 +3,6 @@
  * 
  * This file provides drop-in replacements for react-router-dom hooks
  * to ease migration to TanStack Router.
- * 
- * MIGRATION GUIDE:
- * 1. Replace imports from 'react-router-dom' with '@/utils/router-compat'
- * 2. The API is designed to be as similar as possible
- * 
- * After migration is complete, you can switch to native TanStack Router hooks.
  */
 
 import {
@@ -16,9 +10,8 @@ import {
   useRouter,
   useNavigate as useTanStackNavigate,
   useParams as useTanStackParams,
-  type LinkProps as TanStackLinkProps,
 } from '@tanstack/react-router'
-import { forwardRef } from 'react'
+import React, { forwardRef } from 'react'
 
 /**
  * Type-safe Link component compatible with react-router patterns
@@ -29,11 +22,10 @@ type LinkProps = {
   className?: string
   replace?: boolean
   state?: unknown
-  onClick?: (e: React.MouseEvent) => void
 } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>
 
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ to, children, className, replace, state, ...rest }, ref) => {
+  function LinkComponent({ to, children, className, replace, state, ...rest }, ref) {
     return (
       <TanStackLink
         ref={ref}
@@ -48,8 +40,6 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
     )
   }
 )
-
-Link.displayName = 'Link'
 
 /**
  * useNavigate hook with react-router compatible API
@@ -98,10 +88,9 @@ export function Navigate({
 }) {
   const navigate = useTanStackNavigate()
 
-  // Perform navigation on mount
-  if (typeof window !== 'undefined') {
+  React.useEffect(() => {
     navigate({ to, replace })
-  }
+  }, [navigate, to, replace])
 
   return null
 }

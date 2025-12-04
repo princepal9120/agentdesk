@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { Plus, Calendar, Activity, Clock } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { fetchMyAppointments } from '../store/slices/appointmentSlice';
-import { AppointmentList } from '../components/features/appointments/AppointmentList/AppointmentList';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { fetchMyAppointments } from '@/store/slices/appointmentSlice';
+import { AppointmentList } from '@/components/features/appointments/AppointmentList/AppointmentList';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 

@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { LoginForm } from '../components/features/auth/LoginForm/LoginForm';
+import { useRouter } from '@tanstack/react-router';
+import { LoginForm } from '@/components/features/auth/LoginForm/LoginForm';
 import { Card } from '@/components/ui/card';
 import { CheckCircle2 } from 'lucide-react';
 
 const Login: React.FC = () => {
-    const location = useLocation();
-    const message = location.state?.message;
+    const router = useRouter();
+    const message = (router.state.location.state as { message?: string } | undefined)?.message;
 
     useEffect(() => {
         // Clear history state to prevent showing message on refresh

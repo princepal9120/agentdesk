@@ -1,14 +1,14 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { User, Mail, Lock, Phone, AlertCircle, Loader2 } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { registerUser } from '../../../store/slices/authSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { registerUser } from '@/store/slices/authSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { registerSchema, RegisterFormData } from '../../../utils/validation';
+import { registerSchema, RegisterFormData } from '@/utils/validation';
 
 export const RegisterForm: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -29,7 +29,7 @@ export const RegisterForm: React.FC = () => {
         const { confirm_password, ...apiData } = data;
         const resultAction = await dispatch(registerUser(apiData));
         if (registerUser.fulfilled.match(resultAction)) {
-            navigate('/login', { state: { message: 'Registration successful! Please login.' } });
+            navigate({ to: '/login', state: { message: 'Registration successful! Please login.' } });
         }
     };
 

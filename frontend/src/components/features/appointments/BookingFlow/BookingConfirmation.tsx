@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Calendar, Clock, MapPin, User, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useAppDispatch, useAppSelector } from '../../../../store/hooks';
-import { bookAppointment, setBookingStep, resetBooking } from '../../../../store/slices/appointmentSlice';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { bookAppointment, setBookingStep, resetBooking } from '@/store/slices/appointmentSlice';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 
 export const BookingConfirmation: React.FC = () => {
     const dispatch = useAppDispatch();
@@ -31,7 +31,7 @@ export const BookingConfirmation: React.FC = () => {
 
         if (bookAppointment.fulfilled.match(resultAction)) {
             // Navigate to success page or dashboard
-            navigate('/dashboard', { state: { message: 'Appointment booked successfully!' } });
+            navigate({ to: '/dashboard' });
         }
     };
 

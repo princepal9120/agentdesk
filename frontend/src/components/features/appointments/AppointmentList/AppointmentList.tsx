@@ -1,9 +1,9 @@
 import React from 'react';
-import { Appointment } from '../../../../types';
+import { Appointment } from '@/types';
 import { AppointmentCard } from '../AppointmentCard/AppointmentCard';
 import { CalendarX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 
 interface AppointmentListProps {
     appointments: Appointment[];
