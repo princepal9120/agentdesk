@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from '@tanstack/react-router';
 import { useAppDispatch } from '../../../store/hooks';
 import { logout } from '../../../store/slices/authSlice';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ export const MainLayout: React.FC = () => {
 
     const handleLogout = () => {
         dispatch(logout());
-        navigate('/login');
+        navigate({ to: '/login' });
     };
 
     return (
