@@ -3,47 +3,83 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply font-sans text-neutral-dark bg-neutral-light antialiased;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
+  :root {
+    /* Background Light: #F9FAFB */
+    --background: 210 20% 98%;
+    /* Neutral Dark: #374151 */
+    --foreground: 217 19% 27%;
+
+    /* White */
+    --card: 0 0% 100%;
+    --card-foreground: 217 19% 27%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 19% 27%;
+
+    /* Healthcare Trust Blue: #1B5E7A -> HSL 200 64% 29% */
+    --primary: 200 64% 29%;
+    --primary-foreground: 210 40% 98%;
+
+    /* Secondary Green: #22C55E -> HSL 142 71% 45% */
+    --secondary: 142 71% 45%;
+    --secondary-foreground: 210 40% 98%;
+
+    /* Neutral Gray: #F3F4F6 */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    /* Alert Red: #EF4444 -> HSL 0 84% 60% */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Gray-200 */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 200 64% 29%;
+
+    --radius: 0.5rem;
   }
 
-  h1 {
-    @apply text-3xl font-bold leading-tight;
-  }
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-  h2 {
-    @apply text-2xl font-semibold leading-snug;
-  }
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-  h3 {
-    @apply text-xl font-semibold leading-snug;
-  }
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-  h4 {
-    @apply text-lg font-medium leading-snug;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 
-@layer components {
-  .btn-primary {
-    @apply bg-primary text-white hover:bg-primary-hover active:bg-primary-active disabled:bg-neutral disabled:opacity-60 transition-colors duration-200 rounded-standard px-4 py-3 font-medium shadow-level-2 hover:shadow-level-3 active:shadow-inset;
+@layer base {
+  * {
+    @apply border-border;
   }
 
-  .btn-secondary {
-    @apply bg-white text-primary border border-primary hover:bg-primary-light active:bg-blue-100 disabled:border-neutral disabled:text-neutral transition-colors duration-200 rounded-standard px-4 py-3 font-medium;
-  }
-
-  .btn-danger {
-    @apply bg-alert text-white hover:bg-alert-hover active:bg-red-700 disabled:bg-neutral disabled:opacity-60 transition-colors duration-200 rounded-standard px-4 py-3 font-medium;
-  }
-
-  .input-field {
-    @apply w-full h-10 md:h-11 px-3 py-2 border border-gray-300 rounded-standard focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-gray-100 disabled:text-gray-500 transition-shadow duration-200;
-  }
-
-  .card {
-    @apply bg-white rounded-rounded shadow-level-2 p-4 border border-gray-200 hover:shadow-level-3 transition-shadow duration-200;
+  body {
+    @apply bg-background text-foreground;
   }
 }

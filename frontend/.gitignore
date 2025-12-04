@@ -1,0 +1,77 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+bower_components/
+
+# Build output
+build/
+dist/
+out/
+.next/
+.vercel/
+
+# Production files
+*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Misc env
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders/files
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Optional npm cache dir
+.npm
+
+# Yarn Integrity file
+.yarn-integrity
+
+# ESLint cache
+.eslintcache
+
+# Stylelint cache
+.stylelintcache
+
+# Testing
+coverage/
+
+# Storybook
+.storybook-out/
+storybook-static/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs & pid
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# JetBrains
+*.iml

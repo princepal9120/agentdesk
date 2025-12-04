@@ -1,28 +1,66 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
+    darkMode: ["class"],
     content: [
-        "./index.html",
-        "./src/**/*.{js,ts,jsx,tsx}",
+        './pages/**/*.{ts,tsx}',
+        './components/**/*.{ts,tsx}',
+        './app/**/*.{ts,tsx}',
+        './src/**/*.{ts,tsx}',
     ],
     theme: {
+        container: {
+            center: true,
+            padding: "2rem",
+            screens: {
+                "2xl": "1400px",
+            },
+        },
         extend: {
             colors: {
+                border: "hsl(var(--border))",
+                input: "hsl(var(--input))",
+                ring: "hsl(var(--ring))",
+                background: "hsl(var(--background))",
+                foreground: "hsl(var(--foreground))",
                 primary: {
-                    DEFAULT: '#1B5E7A', // Healthcare Trust Blue
-                    hover: '#154D68',
-                    active: '#113847',
-                    light: '#F0F9FF',
+                    DEFAULT: "hsl(var(--primary))",
+                    foreground: "hsl(var(--primary-foreground))",
+                    hover: '#154D68', // Custom
+                    active: '#113847', // Custom
+                    light: '#F0F9FF', // Custom
                 },
                 secondary: {
-                    DEFAULT: '#22C55E', // Secondary Green
-                    hover: '#16A34A',
+                    DEFAULT: "hsl(var(--secondary))",
+                    foreground: "hsl(var(--secondary-foreground))",
+                    hover: '#16A34A', // Custom
                 },
+                destructive: {
+                    DEFAULT: "hsl(var(--destructive))",
+                    foreground: "hsl(var(--destructive-foreground))",
+                },
+                muted: {
+                    DEFAULT: "hsl(var(--muted))",
+                    foreground: "hsl(var(--muted-foreground))",
+                },
+                accent: {
+                    DEFAULT: "hsl(var(--accent))",
+                    foreground: "hsl(var(--accent-foreground))",
+                },
+                popover: {
+                    DEFAULT: "hsl(var(--popover))",
+                    foreground: "hsl(var(--popover-foreground))",
+                },
+                card: {
+                    DEFAULT: "hsl(var(--card))",
+                    foreground: "hsl(var(--card-foreground))",
+                },
+                // Custom Design System Colors
                 alert: {
-                    DEFAULT: '#EF4444', // Alert Red
+                    DEFAULT: '#EF4444',
                     hover: '#DC2626',
                 },
                 neutral: {
-                    DEFAULT: '#6B7280', // Neutral Gray
+                    DEFAULT: '#6B7280',
                     light: '#F9FAFB',
                     dark: '#374151',
                 },
@@ -33,17 +71,29 @@ export default {
                     noshow: '#F59E0B',
                     completed: '#10B981',
                 },
-                specialty: {
-                    cardiology: '#DC2626',
-                    neurology: '#7C3AED',
-                    pediatrics: '#F97316',
-                    dermatology: '#EC4899',
-                    orthopedics: '#8B5CF6',
-                    general: '#6366F1',
-                }
             },
-            fontFamily: {
-                sans: ['Inter', 'sans-serif'],
+            borderRadius: {
+                lg: "var(--radius)",
+                md: "calc(var(--radius) - 2px)",
+                sm: "calc(var(--radius) - 4px)",
+                // Custom
+                standard: '8px',
+                rounded: '12px',
+                pill: '999px',
+            },
+            keyframes: {
+                "accordion-down": {
+                    from: { height: "0" },
+                    to: { height: "var(--radix-accordion-content-height)" },
+                },
+                "accordion-up": {
+                    from: { height: "var(--radix-accordion-content-height)" },
+                    to: { height: "0" },
+                },
+            },
+            animation: {
+                "accordion-down": "accordion-down 0.2s ease-out",
+                "accordion-up": "accordion-up 0.2s ease-out",
             },
             boxShadow: {
                 'level-1': '0 1px 2px rgba(0, 0, 0, 0.05)',
@@ -52,13 +102,7 @@ export default {
                 'level-4': '0 20px 25px rgba(0, 0, 0, 0.15)',
                 'inset': 'inset 0 1px 3px rgba(0, 0, 0, 0.1)',
             },
-            borderRadius: {
-                'subtle': '4px',
-                'standard': '8px',
-                'rounded': '12px',
-                'pill': '999px',
-            }
         },
     },
-    plugins: [],
+    plugins: [require("tailwindcss-animate")],
 }
