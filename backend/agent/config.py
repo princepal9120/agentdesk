@@ -58,6 +58,19 @@ class ConversationConfig:
 
 
 @dataclass
+class SIPConfig:
+    """Twilio SIP configuration for PSTN calls"""
+    enabled: bool = False
+    twilio_account_sid: str = field(default_factory=lambda: os.getenv("TWILIO_ACCOUNT_SID", ""))
+    twilio_auth_token: str = field(default_factory=lambda: os.getenv("TWILIO_AUTH_TOKEN", ""))
+    twilio_phone_number: str = field(default_factory=lambda: os.getenv("TWILIO_PHONE_NUMBER", ""))
+    sip_domain: str = field(default_factory=lambda: os.getenv("LIVEKIT_SIP_DOMAIN", ""))
+    # SIP trunk settings
+    trunk_username: str = field(default_factory=lambda: os.getenv("SIP_TRUNK_USERNAME", ""))
+    trunk_password: str = field(default_factory=lambda: os.getenv("SIP_TRUNK_PASSWORD", ""))
+
+
+@dataclass
 class AgentConfig:
     """
     Complete Voice Agent Configuration
@@ -69,6 +82,7 @@ class AgentConfig:
     tts: TTSConfig = field(default_factory=TTSConfig)
     vad: VADConfig = field(default_factory=VADConfig)
     conversation: ConversationConfig = field(default_factory=ConversationConfig)
+    sip: SIPConfig = field(default_factory=SIPConfig)
     
     # LiveKit connection
     livekit_url: str = field(default_factory=lambda: os.getenv("LIVEKIT_URL", "ws://localhost:7880"))
@@ -124,4 +138,8 @@ Remember: You are speaking on the phone, so be conversational and natural. Avoid
             tts=TTSConfig(
                 voice=os.getenv("CARTESIA_VOICE_ID", "248be419-c632-4f23-adf1-5324ed7dbf1d"),
             ),
+            sip=SIPConfig(
+                enabled=os.getenv("SIP_ENABLED", "false").lower() == "true",
+            ),
         )
+
