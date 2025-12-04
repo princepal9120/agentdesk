@@ -1,85 +1,587 @@
+/**
+ * Clinical Minimalism Global Styles
+ * Apple-inspired medical aesthetic for HIPAA-focused healthcare environments.
+ */
+
+/* Import fonts FIRST before @tailwind directives */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   CSS CUSTOM PROPERTIES - CLINICAL THEME
+   ============================================ */
 @layer base {
   :root {
-    /* Background Light: #F9FAFB */
-    --background: 210 20% 98%;
-    /* Neutral Dark: #374151 */
-    --foreground: 217 19% 27%;
+    /* Core Colors */
+    --color-white: #FFFFFF;
+    --color-soft-blue: #D7EAFB;
+    --color-soft-blue-dark: #B8D9F8;
+    --color-teal: #2BB59B;
+    --color-teal-dark: #249A84;
+    --color-teal-light: #ECFDF5;
 
-    /* White */
+    /* Neutral Greys */
+    --color-grey-50: #F8FAFC;
+    --color-grey-100: #F1F5F9;
+    --color-grey-200: #E5E7EB;
+    --color-grey-300: #C7C9CC;
+    --color-grey-400: #9CA3AF;
+    --color-grey-500: #6B7280;
+    --color-grey-600: #4B5563;
+    --color-grey-700: #374151;
+    --color-grey-800: #1F2937;
+    --color-grey-900: #111827;
+
+    /* Semantic Colors */
+    --color-success-light: #ECFDF5;
+    --color-success: #059669;
+    --color-success-dark: #047857;
+    --color-warning-light: #FFFBEB;
+    --color-warning: #D97706;
+    --color-warning-dark: #B45309;
+    --color-error-light: #FEF2F2;
+    --color-error: #DC2626;
+    --color-error-dark: #B91C1C;
+    --color-info-light: #EFF6FF;
+    --color-info: #3B82F6;
+    --color-info-dark: #2563EB;
+
+    /* Chart Colors */
+    --chart-teal: #2BB59B;
+    --chart-soft-blue: #93C5FD;
+    --chart-lavender: #C4B5FD;
+    --chart-peach: #FED7AA;
+    --chart-mint: #A7F3D0;
+    --chart-rose: #FECACA;
+
+    /* Shadcn/ui CSS Variables - Light Theme */
+    --background: 210 20% 99%;
+    --foreground: 220 14% 10%;
+
     --card: 0 0% 100%;
-    --card-foreground: 217 19% 27%;
+    --card-foreground: 220 14% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 217 19% 27%;
+    --popover-foreground: 220 14% 10%;
 
-    /* Healthcare Trust Blue: #1B5E7A -> HSL 200 64% 29% */
-    --primary: 200 64% 29%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Teal */
+    --primary: 166 57% 44%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary Green: #22C55E -> HSL 142 71% 45% */
-    --secondary: 142 71% 45%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary: Soft Blue */
+    --secondary: 209 85% 91%;
+    --secondary-foreground: 210 50% 30%;
 
-    /* Neutral Gray: #F3F4F6 */
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 20% 96%;
+    --accent-foreground: 220 14% 10%;
 
-    /* Alert Red: #EF4444 -> HSL 0 84% 60% */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* Gray-200 */
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 200 64% 29%;
+    --border: 214 20% 91%;
+    --input: 214 20% 91%;
+    --ring: 166 57% 44%;
 
-    --radius: 0.5rem;
+    /* Border Radius */
+    --radius: 1rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
+    --radius-3xl: 2rem;
+    --radius-full: 9999px;
+
+    /* Shadows */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.02);
+    --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.06), 0 6px 12px rgba(0, 0, 0, 0.03);
+    --shadow-2xl: 0 20px 40px rgba(0, 0, 0, 0.08), 0 10px 20px rgba(0, 0, 0, 0.04);
+    --shadow-teal: 0 4px 14px rgba(43, 181, 155, 0.15);
+    --shadow-blue: 0 4px 14px rgba(215, 234, 251, 0.4);
+
+    /* Transitions */
+    --transition-fast: 150ms;
+    --transition-normal: 300ms;
+    --transition-slow: 500ms;
+    --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --ease-gentle: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 220 14% 10%;
+    --foreground: 210 20% 98%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 14% 12%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 14% 12%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 166 57% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 30% 20%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 20% 18%;
+    --muted-foreground: 215 16% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 215 20% 18%;
+    --accent-foreground: 210 20% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 215 20% 20%;
+    --input: 215 20% 20%;
+    --ring: 166 57% 50%;
   }
 }
 
+/* ============================================
+   BASE STYLES
+   ============================================ */
 @layer base {
   * {
     @apply border-border;
   }
 
+  html {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    line-height: 1.6;
   }
+
+  /* Typography */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+    line-height: 1.2;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  p {
+    @apply text-muted-foreground leading-relaxed;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: var(--color-soft-blue);
+    color: var(--color-grey-800);
+  }
+
+  /* Focus Ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-[#2BB59B] ring-offset-2 ring-offset-background;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-grey-100);
+    border-radius: var(--radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-grey-300);
+    border-radius: var(--radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-grey-400);
+  }
+}
+
+/* ============================================
+   COMPONENT UTILITIES
+   ============================================ */
+@layer components {
+
+  /* Clinical Card */
+  .clinical-card {
+    @apply bg-white rounded-3xl border border-[#E5E7EB] p-6;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-normal) var(--ease-smooth),
+      transform var(--transition-normal) var(--ease-smooth);
+  }
+
+  .clinical-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  /* Clinical Button Primary */
+  .clinical-btn-primary {
+    @apply inline-flex items-center justify-center font-medium text-white;
+    background-color: var(--color-teal);
+    border-radius: var(--radius-full);
+    padding: 0.75rem 1.5rem;
+    box-shadow: var(--shadow-teal);
+    transition: all var(--transition-normal) var(--ease-smooth);
+  }
+
+  .clinical-btn-primary:hover {
+    background-color: var(--color-teal-dark);
+    transform: scale(1.02);
+  }
+
+  .clinical-btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  /* Clinical Button Secondary */
+  .clinical-btn-secondary {
+    @apply inline-flex items-center justify-center font-medium;
+    background-color: var(--color-soft-blue);
+    color: var(--color-grey-700);
+    border-radius: var(--radius-full);
+    padding: 0.75rem 1.5rem;
+    transition: all var(--transition-normal) var(--ease-smooth);
+  }
+
+  .clinical-btn-secondary:hover {
+    background-color: var(--color-soft-blue-dark);
+  }
+
+  /* Clinical Input */
+  .clinical-input {
+    @apply w-full bg-white text-sm;
+    border: 1px solid var(--color-grey-200);
+    border-radius: var(--radius-xl);
+    padding: 0.75rem 1rem;
+    transition: border-color var(--transition-fast) var(--ease-smooth),
+      box-shadow var(--transition-fast) var(--ease-smooth);
+  }
+
+  .clinical-input::placeholder {
+    color: var(--color-grey-400);
+  }
+
+  .clinical-input:focus {
+    @apply outline-none;
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(43, 181, 155, 0.1);
+  }
+
+  /* Clinical Badge */
+  .clinical-badge {
+    @apply inline-flex items-center font-medium text-xs;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+  }
+
+  .clinical-badge-default {
+    background-color: var(--color-grey-100);
+    color: var(--color-grey-600);
+  }
+
+  .clinical-badge-success {
+    background-color: var(--color-success-light);
+    color: var(--color-success);
+  }
+
+  .clinical-badge-warning {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning);
+  }
+
+  .clinical-badge-error {
+    background-color: var(--color-error-light);
+    color: var(--color-error);
+  }
+
+  .clinical-badge-info {
+    background-color: var(--color-info-light);
+    color: var(--color-info);
+  }
+
+  /* Clinical Toggle */
+  .clinical-toggle {
+    @apply relative inline-flex items-center cursor-pointer;
+    width: 56px;
+    height: 32px;
+  }
+
+  .clinical-toggle-track {
+    @apply absolute inset-0 rounded-full transition-colors;
+    background-color: var(--color-grey-200);
+  }
+
+  .clinical-toggle-track.active {
+    background-color: var(--color-teal);
+  }
+
+  .clinical-toggle-thumb {
+    @apply absolute bg-white rounded-full shadow-sm transition-transform;
+    width: 24px;
+    height: 24px;
+    top: 4px;
+    left: 4px;
+  }
+
+  .clinical-toggle-thumb.active {
+    transform: translateX(24px);
+  }
+
+  /* Clinical Section */
+  .clinical-section {
+    @apply py-16 md:py-24;
+  }
+
+  /* Clinical Container */
+  .clinical-container {
+    @apply container mx-auto px-4 md:px-6 max-w-7xl;
+  }
+
+  /* Clinical Divider */
+  .clinical-divider {
+    @apply w-full h-px;
+    background-color: var(--color-grey-200);
+  }
+
+  /* Sidebar Navigation Item */
+  .clinical-nav-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-medium transition-colors;
+    color: var(--color-grey-500);
+  }
+
+  .clinical-nav-item:hover {
+    background-color: var(--color-grey-50);
+    color: var(--color-grey-900);
+  }
+
+  .clinical-nav-item.active {
+    background-color: rgba(215, 234, 251, 0.5);
+    color: #1B5E7A;
+  }
+
+  /* Bento Grid */
+  .clinical-bento-grid {
+    @apply grid gap-6;
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(180px, auto);
+  }
+
+  @media (max-width: 1024px) {
+    .clinical-bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .clinical-bento-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Glass Effect */
+  .clinical-glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Soft Gradient Background */
+  .clinical-gradient-bg {
+    background: linear-gradient(180deg, var(--color-grey-50) 0%, var(--color-white) 100%);
+  }
+
+  /* Teal Gradient */
+  .clinical-gradient-teal {
+    background: linear-gradient(135deg, var(--color-teal) 0%, #249A84 100%);
+  }
+
+  /* Skeleton Loading */
+  .clinical-skeleton {
+    @apply animate-pulse rounded-2xl;
+    background: linear-gradient(90deg, var(--color-grey-100) 0%, var(--color-grey-200) 50%, var(--color-grey-100) 100%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+@layer utilities {
+
+  /* Soft shadows */
+  .shadow-clinical-sm {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .shadow-clinical-md {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-clinical-lg {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-clinical-teal {
+    box-shadow: var(--shadow-teal);
+  }
+
+  /* Border radius shortcuts */
+  .rounded-clinical {
+    border-radius: var(--radius-3xl);
+  }
+
+  .rounded-clinical-xl {
+    border-radius: var(--radius-xl);
+  }
+
+  .rounded-clinical-2xl {
+    border-radius: var(--radius-2xl);
+  }
+
+  /* Text colors */
+  .text-clinical-teal {
+    color: var(--color-teal);
+  }
+
+  .text-clinical-muted {
+    color: var(--color-grey-500);
+  }
+
+  /* Background colors */
+  .bg-clinical-soft {
+    background-color: var(--color-grey-50);
+  }
+
+  .bg-clinical-teal {
+    background-color: var(--color-teal);
+  }
+
+  .bg-clinical-soft-blue {
+    background-color: var(--color-soft-blue);
+  }
+
+  /* Borders */
+  .border-clinical {
+    border: 1px solid var(--color-grey-200);
+  }
+
+  .border-clinical-teal {
+    border: 1px solid var(--color-teal);
+  }
+
+  /* Animation utilities */
+  .animate-gentle-pulse {
+    animation: gentle-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes gentle-pulse {
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .animate-soft-bounce {
+    animation: soft-bounce 2s ease-in-out infinite;
+  }
+
+  @keyframes soft-bounce {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    transition: transform var(--transition-normal) var(--ease-smooth),
+      box-shadow var(--transition-normal) var(--ease-smooth);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  /* Gradient text */
+  .text-gradient-teal {
+    background: linear-gradient(135deg, var(--color-teal) 0%, #249A84 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+/* ============================================
+   ANIMATION KEYFRAMES FOR GSAP
+   ============================================ */
+.gsap-page-enter {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.gsap-section-reveal {
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.gsap-stagger-item {
+  opacity: 0;
+  transform: translateY(20px);
 }

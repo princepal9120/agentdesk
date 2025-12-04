@@ -1,8 +1,14 @@
+/**
+ * Clinical Minimalism Login Form
+ * Clean form layout with calm inputs and soft styling.
+ */
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { loginUser } from '@/store/slices/authSlice';
 import { Button } from '@/components/ui/button';
@@ -33,76 +39,98 @@ export const LoginForm: React.FC = () => {
 
     return (
         <div className="w-full">
+            {/* Header */}
             <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-foreground">Welcome Back</h2>
-                <p className="text-muted-foreground mt-2">Sign in to manage your appointments</p>
+                <h2 className="text-2xl font-semibold text-grey-900 mb-2">Welcome Back</h2>
+                <p className="text-grey-500 text-sm">Sign in to manage your appointments</p>
             </div>
 
+            {/* Error Message */}
             {error && (
-                <div className="bg-destructive/10 text-destructive p-3 rounded-md mb-6 flex items-start text-sm">
-                    <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
-                    <span>{error}</span>
-                </div>
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-error-light text-error p-4 rounded-2xl mb-6 flex items-start gap-3 border border-error/10"
+                >
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">{error}</span>
+                </motion.div>
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                {/* Email Field */}
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email" className="text-grey-700 font-medium">Email Address</Label>
                     <div className="relative">
-                        <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-grey-400" />
                         <Input
                             id="email"
                             type="email"
                             placeholder="you@example.com"
-                            className="pl-10"
+                            className="pl-12 h-12 rounded-xl"
                             {...register('email')}
                         />
                     </div>
                     {errors.email && (
-                        <p className="text-sm text-destructive">{errors.email.message}</p>
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-sm text-error mt-1"
+                        >
+                            {errors.email.message}
+                        </motion.p>
                     )}
                 </div>
 
+                {/* Password Field */}
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" className="text-grey-700 font-medium">Password</Label>
                         <Link
                             to="/forgot-password"
-                            className="text-sm text-primary hover:underline font-medium"
+                            className="text-sm text-[#2BB59B] hover:text-[#249A84] font-medium transition-colors"
                         >
                             Forgot password?
                         </Link>
                     </div>
                     <div className="relative">
-                        <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-grey-400" />
                         <Input
                             id="password"
                             type="password"
                             placeholder="••••••••"
-                            className="pl-10"
+                            className="pl-12 h-12 rounded-xl"
                             {...register('password')}
                         />
                     </div>
                     {errors.password && (
-                        <p className="text-sm text-destructive">{errors.password.message}</p>
+                        <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-sm text-error mt-1"
+                        >
+                            {errors.password.message}
+                        </motion.p>
                     )}
                 </div>
 
+                {/* Submit Button */}
                 <Button
                     type="submit"
-                    className="w-full"
+                    className="w-full h-12 text-base font-medium"
                     size="lg"
                     disabled={loading}
                 >
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                     Sign In
                 </Button>
 
-                <div className="text-center text-sm text-muted-foreground mt-6">
+                {/* Sign Up Link */}
+                <div className="text-center text-sm text-grey-500 pt-4 border-t border-grey-100 mt-6">
                     Don't have an account?{' '}
                     <Link
                         to="/register"
-                        className="text-primary hover:underline font-semibold"
+                        className="text-[#2BB59B] hover:text-[#249A84] font-semibold transition-colors"
                     >
                         Create account
                     </Link>

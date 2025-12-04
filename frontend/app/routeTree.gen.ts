@@ -10,18 +10,30 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedLayoutRouteImport } from './routes/_authenticated/_layout'
+import { Route as AuthenticatedLayoutSettingsRouteImport } from './routes/_authenticated/_layout/settings'
+import { Route as AuthenticatedLayoutHelpRouteImport } from './routes/_authenticated/_layout/help'
 import { Route as AuthenticatedLayoutDashboardRouteImport } from './routes/_authenticated/_layout/dashboard'
+import { Route as AuthenticatedLayoutComplianceRouteImport } from './routes/_authenticated/_layout/compliance'
+import { Route as AuthenticatedLayoutCallsRouteImport } from './routes/_authenticated/_layout/calls'
+import { Route as AuthenticatedLayoutBillingRouteImport } from './routes/_authenticated/_layout/billing'
 import { Route as AuthenticatedLayoutAppointmentsRouteImport } from './routes/_authenticated/_layout/appointments'
+import { Route as AuthenticatedLayoutAnalyticsRouteImport } from './routes/_authenticated/_layout/analytics'
 import { Route as AuthenticatedLayoutAppointmentsBookRouteImport } from './routes/_authenticated/_layout/appointments/book'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
   path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -47,16 +59,51 @@ const AuthenticatedLayoutRoute = AuthenticatedLayoutRouteImport.update({
   id: '/_layout',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedLayoutSettingsRoute =
+  AuthenticatedLayoutSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
+const AuthenticatedLayoutHelpRoute = AuthenticatedLayoutHelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => AuthenticatedLayoutRoute,
+} as any)
 const AuthenticatedLayoutDashboardRoute =
   AuthenticatedLayoutDashboardRouteImport.update({
     id: '/dashboard',
     path: '/dashboard',
     getParentRoute: () => AuthenticatedLayoutRoute,
   } as any)
+const AuthenticatedLayoutComplianceRoute =
+  AuthenticatedLayoutComplianceRouteImport.update({
+    id: '/compliance',
+    path: '/compliance',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
+const AuthenticatedLayoutCallsRoute =
+  AuthenticatedLayoutCallsRouteImport.update({
+    id: '/calls',
+    path: '/calls',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
+const AuthenticatedLayoutBillingRoute =
+  AuthenticatedLayoutBillingRouteImport.update({
+    id: '/billing',
+    path: '/billing',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
 const AuthenticatedLayoutAppointmentsRoute =
   AuthenticatedLayoutAppointmentsRouteImport.update({
     id: '/appointments',
     path: '/appointments',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
+const AuthenticatedLayoutAnalyticsRoute =
+  AuthenticatedLayoutAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
     getParentRoute: () => AuthenticatedLayoutRoute,
   } as any)
 const AuthenticatedLayoutAppointmentsBookRoute =
@@ -70,18 +117,32 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
+  '/analytics': typeof AuthenticatedLayoutAnalyticsRoute
   '/appointments': typeof AuthenticatedLayoutAppointmentsRouteWithChildren
+  '/billing': typeof AuthenticatedLayoutBillingRoute
+  '/calls': typeof AuthenticatedLayoutCallsRoute
+  '/compliance': typeof AuthenticatedLayoutComplianceRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/help': typeof AuthenticatedLayoutHelpRoute
+  '/settings': typeof AuthenticatedLayoutSettingsRoute
   '/appointments/book': typeof AuthenticatedLayoutAppointmentsBookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
+  '/analytics': typeof AuthenticatedLayoutAnalyticsRoute
   '/appointments': typeof AuthenticatedLayoutAppointmentsRouteWithChildren
+  '/billing': typeof AuthenticatedLayoutBillingRoute
+  '/calls': typeof AuthenticatedLayoutCallsRoute
+  '/compliance': typeof AuthenticatedLayoutComplianceRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/help': typeof AuthenticatedLayoutHelpRoute
+  '/settings': typeof AuthenticatedLayoutSettingsRoute
   '/appointments/book': typeof AuthenticatedLayoutAppointmentsBookRoute
 }
 export interface FileRoutesById {
@@ -90,10 +151,17 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/register': typeof RegisterRoute
   '/_authenticated/_layout': typeof AuthenticatedLayoutRouteWithChildren
+  '/_authenticated/_layout/analytics': typeof AuthenticatedLayoutAnalyticsRoute
   '/_authenticated/_layout/appointments': typeof AuthenticatedLayoutAppointmentsRouteWithChildren
+  '/_authenticated/_layout/billing': typeof AuthenticatedLayoutBillingRoute
+  '/_authenticated/_layout/calls': typeof AuthenticatedLayoutCallsRoute
+  '/_authenticated/_layout/compliance': typeof AuthenticatedLayoutComplianceRoute
   '/_authenticated/_layout/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/_authenticated/_layout/help': typeof AuthenticatedLayoutHelpRoute
+  '/_authenticated/_layout/settings': typeof AuthenticatedLayoutSettingsRoute
   '/_authenticated/_layout/appointments/book': typeof AuthenticatedLayoutAppointmentsBookRoute
 }
 export interface FileRouteTypes {
@@ -102,18 +170,32 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/login'
+    | '/onboarding'
     | '/register'
+    | '/analytics'
     | '/appointments'
+    | '/billing'
+    | '/calls'
+    | '/compliance'
     | '/dashboard'
+    | '/help'
+    | '/settings'
     | '/appointments/book'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/$'
     | '/login'
+    | '/onboarding'
     | '/register'
+    | '/analytics'
     | '/appointments'
+    | '/billing'
+    | '/calls'
+    | '/compliance'
     | '/dashboard'
+    | '/help'
+    | '/settings'
     | '/appointments/book'
   id:
     | '__root__'
@@ -121,10 +203,17 @@ export interface FileRouteTypes {
     | '/$'
     | '/_authenticated'
     | '/login'
+    | '/onboarding'
     | '/register'
     | '/_authenticated/_layout'
+    | '/_authenticated/_layout/analytics'
     | '/_authenticated/_layout/appointments'
+    | '/_authenticated/_layout/billing'
+    | '/_authenticated/_layout/calls'
+    | '/_authenticated/_layout/compliance'
     | '/_authenticated/_layout/dashboard'
+    | '/_authenticated/_layout/help'
+    | '/_authenticated/_layout/settings'
     | '/_authenticated/_layout/appointments/book'
   fileRoutesById: FileRoutesById
 }
@@ -133,6 +222,7 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
   RegisterRoute: typeof RegisterRoute
 }
 
@@ -143,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register'
       preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -180,6 +277,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLayoutRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/_layout/settings': {
+      id: '/_authenticated/_layout/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedLayoutSettingsRouteImport
+      parentRoute: typeof AuthenticatedLayoutRoute
+    }
+    '/_authenticated/_layout/help': {
+      id: '/_authenticated/_layout/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof AuthenticatedLayoutHelpRouteImport
+      parentRoute: typeof AuthenticatedLayoutRoute
+    }
     '/_authenticated/_layout/dashboard': {
       id: '/_authenticated/_layout/dashboard'
       path: '/dashboard'
@@ -187,11 +298,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLayoutDashboardRouteImport
       parentRoute: typeof AuthenticatedLayoutRoute
     }
+    '/_authenticated/_layout/compliance': {
+      id: '/_authenticated/_layout/compliance'
+      path: '/compliance'
+      fullPath: '/compliance'
+      preLoaderRoute: typeof AuthenticatedLayoutComplianceRouteImport
+      parentRoute: typeof AuthenticatedLayoutRoute
+    }
+    '/_authenticated/_layout/calls': {
+      id: '/_authenticated/_layout/calls'
+      path: '/calls'
+      fullPath: '/calls'
+      preLoaderRoute: typeof AuthenticatedLayoutCallsRouteImport
+      parentRoute: typeof AuthenticatedLayoutRoute
+    }
+    '/_authenticated/_layout/billing': {
+      id: '/_authenticated/_layout/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AuthenticatedLayoutBillingRouteImport
+      parentRoute: typeof AuthenticatedLayoutRoute
+    }
     '/_authenticated/_layout/appointments': {
       id: '/_authenticated/_layout/appointments'
       path: '/appointments'
       fullPath: '/appointments'
       preLoaderRoute: typeof AuthenticatedLayoutAppointmentsRouteImport
+      parentRoute: typeof AuthenticatedLayoutRoute
+    }
+    '/_authenticated/_layout/analytics': {
+      id: '/_authenticated/_layout/analytics'
+      path: '/analytics'
+      fullPath: '/analytics'
+      preLoaderRoute: typeof AuthenticatedLayoutAnalyticsRouteImport
       parentRoute: typeof AuthenticatedLayoutRoute
     }
     '/_authenticated/_layout/appointments/book': {
@@ -220,14 +359,26 @@ const AuthenticatedLayoutAppointmentsRouteWithChildren =
   )
 
 interface AuthenticatedLayoutRouteChildren {
+  AuthenticatedLayoutAnalyticsRoute: typeof AuthenticatedLayoutAnalyticsRoute
   AuthenticatedLayoutAppointmentsRoute: typeof AuthenticatedLayoutAppointmentsRouteWithChildren
+  AuthenticatedLayoutBillingRoute: typeof AuthenticatedLayoutBillingRoute
+  AuthenticatedLayoutCallsRoute: typeof AuthenticatedLayoutCallsRoute
+  AuthenticatedLayoutComplianceRoute: typeof AuthenticatedLayoutComplianceRoute
   AuthenticatedLayoutDashboardRoute: typeof AuthenticatedLayoutDashboardRoute
+  AuthenticatedLayoutHelpRoute: typeof AuthenticatedLayoutHelpRoute
+  AuthenticatedLayoutSettingsRoute: typeof AuthenticatedLayoutSettingsRoute
 }
 
 const AuthenticatedLayoutRouteChildren: AuthenticatedLayoutRouteChildren = {
+  AuthenticatedLayoutAnalyticsRoute: AuthenticatedLayoutAnalyticsRoute,
   AuthenticatedLayoutAppointmentsRoute:
     AuthenticatedLayoutAppointmentsRouteWithChildren,
+  AuthenticatedLayoutBillingRoute: AuthenticatedLayoutBillingRoute,
+  AuthenticatedLayoutCallsRoute: AuthenticatedLayoutCallsRoute,
+  AuthenticatedLayoutComplianceRoute: AuthenticatedLayoutComplianceRoute,
   AuthenticatedLayoutDashboardRoute: AuthenticatedLayoutDashboardRoute,
+  AuthenticatedLayoutHelpRoute: AuthenticatedLayoutHelpRoute,
+  AuthenticatedLayoutSettingsRoute: AuthenticatedLayoutSettingsRoute,
 }
 
 const AuthenticatedLayoutRouteWithChildren =
@@ -250,6 +401,7 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
   RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
