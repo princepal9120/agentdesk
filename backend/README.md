@@ -1,300 +1,95 @@
-# MedVoice Backend - Microservices Architecture
+# Healthcare Voice Agent Backend
 
-> **Voice Intelligence Agent Backend** - Production-ready NestJS microservices for healthcare appointment scheduling
+HIPAA-compliant AI voice agent for doctor appointment management.
 
-## 🏗️ Architecture
+## Tech Stack
 
-This is a **microservices architecture** built with NestJS monorepo:
+- **Framework**: FastAPI (Python 3.11+)
+- **Database**: PostgreSQL with SQLAlchemy async
+- **Cache**: Redis
+- **Authentication**: JWT with MFA support
 
-```
-┌─────────────┐
-│   Clients   │
-└──────┬──────┘
-       │
-┌──────▼──────────┐
-│  API Gateway    │ :3000
-│  (HTTP/WS)      │
-└────────┬────────┘
-         │
-    ┌────┴────┬────────┬──────────┬──────────┐
-    │         │        │          │          │
-┌───▼───┐ ┌──▼──┐ ┌───▼────┐ ┌───▼────┐ ┌──▼────┐
-│ Auth  │ │Voice│ │Appoint.│ │Notif.  │ │ ...   │
-│ :3001 │ │:3002│ │ :3003  │ │ :3004  │ │       │
-└───┬───┘ └──┬──┘ └───┬────┘ └───┬────┘ └───────┘
-    │        │        │          │
-    └────────┴────────┴──────────┘
-                  │
-         ┌────────┴────────┐
-         │                 │
-    ┌────▼────┐      ┌────▼────┐
-    │PostgreSQL│      │  Redis  │
-    └─────────┘      └─────────┘
-```
+## Quick Start
 
-### Services
-
-| Service | Port | Purpose |
-|---------|------|---------|
-| **Gateway** | 3000 | API Gateway, WebSocket, Routing |
-| **Auth** | 3001 | Authentication & Authorization |
-| **Voice Agent** | 3002 | Speech-to-Text, LLM, Text-to-Speech |
-| **Appointments** | 3003 | Appointment Management |
-| **Notifications** | 3004 | Email & SMS Notifications |
-
-### Shared Infrastructure
-
-- **PostgreSQL** (5432) - Shared database
-- **Redis** (6379) - Caching & Pub/Sub
-- **TCP** - Inter-service communication
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Node.js 20+**
-- **Docker & Docker Compose**
-- **API Keys**: OpenAI, Deepgram, ElevenLabs
-
-### 1. Clone & Setup
-
+1. **Install dependencies**:
 ```bash
 cd backend
+pip install -e ".[dev]"
+```
+
+2. **Set up environment**:
+```bash
 cp .env.example .env
-# Edit .env with your API keys
+# Edit .env with your configuration
 ```
 
-### 2. Start All Services
-
+3. **Start services** (PostgreSQL, Redis):
 ```bash
-# Start infrastructure + all microservices
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Check status
-docker-compose ps
+docker-compose up -d postgres redis
 ```
 
-### 3. Run Migrations
-
+4. **Run migrations**:
 ```bash
-npm install --legacy-peer-deps
-npm run prisma:generate
-npm run prisma:migrate
+alembic upgrade head
 ```
 
-### 4. Test
-
+5. **Start server**:
 ```bash
-# Health check
-curl http://localhost:3000/api/v1/health
-
-# API Docs
-open http://localhost:3000/api/docs
+uvicorn app.main:app --reload
 ```
 
-## 📁 Project Structure
+## API Documentation
+
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
+
+## Project Structure
 
 ```
 backend/
-├── apps/                    # Microservices
-│   ├── gateway/            # API Gateway (Port 3000)
-│   ├── auth/               # Auth Service (Port 3001)
-│   ├── voice-agent/        # Voice Agent (Port 3002)
-│   ├── appointments/       # Appointments (Port 3003)
-│   └── notifications/      # Notifications (Port 3004)
-├── libs/                    # Shared Libraries
-│   ├── common/             # Redis, Storage, Decorators
-│   └── database/           # Prisma Client & Schema
-├── docker-compose.yml       # All services orchestration
-├── Dockerfile.*            # Per-service Dockerfiles
-└── package.json            # Monorepo dependencies
+├── app/
+│   ├── core/           # Config, security, database
+│   ├── models/         # SQLAlchemy models
+│   ├── schemas/        # Pydantic schemas
+│   ├── services/       # Business logic
+│   ├── routers/        # API endpoints
+│   └── main.py         # FastAPI app
+├── tests/              # Test suite
+├── alembic/            # Database migrations
+└── pyproject.toml      # Project config
 ```
 
-## 🛠️ Development
+## API Endpoints
 
-### Start Individual Services
+### Authentication (TRS 2.2.1)
+- `POST /api/v1/auth/register` - Register new user
+- `POST /api/v1/auth/login` - Login
+- `POST /api/v1/auth/otp/request` - Request OTP
+- `POST /api/v1/auth/otp/verify` - Verify OTP
+- `POST /api/v1/auth/logout` - Logout
+
+### Appointments (TRS 2.2.2)
+- `GET /api/v1/appointments` - List appointments
+- `POST /api/v1/appointments` - Create appointment
+- `GET /api/v1/appointments/{id}` - Get appointment
+- `PUT /api/v1/appointments/{id}` - Update appointment
+- `DELETE /api/v1/appointments/{id}` - Cancel appointment
+- `GET /api/v1/doctors/{id}/availability` - Get availability
+
+### Webhooks (TRS 2.2.4)
+- `POST /api/v1/webhooks/twilio/call-status`
+- `POST /api/v1/webhooks/twilio/sms-status`
+- `POST /api/v1/webhooks/assemblyai/transcript`
+
+## Testing
 
 ```bash
-# Terminal 1 - Gateway
-npm run start:dev gateway
-
-# Terminal 2 - Auth
-npm run start:dev auth
-
-# Terminal 3 - Voice Agent
-npm run start:dev voice-agent
-
-# Terminal 4 - Appointments
-npm run start:dev appointments
-
-# Terminal 5 - Notifications
-npm run start:dev notifications
+pytest tests/ -v --cov=app
 ```
 
-### Build Services
+## HIPAA Compliance
 
-```bash
-# Build all
-npm run build
-
-# Build specific service
-npx @nestjs/cli build gateway
-npx @nestjs/cli build auth
-```
-
-### Database
-
-```bash
-npm run prisma:studio      # Open database GUI
-npm run prisma:migrate     # Run migrations
-npm run db:reset           # Reset database
-```
-
-## 🧪 Testing
-
-```bash
-# Unit tests
-npm run test
-
-# E2E tests
-npm run test:e2e
-
-# Coverage
-npm run test:cov
-```
-
-## 📚 Documentation
-
-- **[QUICKSTART.md](./QUICKSTART.md)** - Get started in 5 minutes
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Detailed architecture
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Production deployment
-- **[API Docs](http://localhost:3000/api/docs)** - Swagger UI (when running)
-
-## 🔑 Environment Variables
-
-Key variables in `.env`:
-
-```bash
-# Database
-DATABASE_URL=postgresql://medvoice:password@localhost:5432/medvoice
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# JWT
-JWT_SECRET=your-secret-key
-JWT_REFRESH_SECRET=your-refresh-secret
-
-# AI Services
-OPENAI_API_KEY=sk-...
-DEEPGRAM_API_KEY=...
-ELEVENLABS_API_KEY=...
-
-# Cloud Storage (Optional)
-GCP_PROJECT_ID=...
-GCP_BUCKET_NAME=...
-```
-
-## 🐳 Docker Commands
-
-```bash
-# Start all services
-docker-compose up -d
-
-# Stop all services
-docker-compose down
-
-# View logs
-docker-compose logs -f gateway
-docker-compose logs -f auth
-
-# Rebuild specific service
-docker-compose up -d --build gateway
-
-# Remove volumes (clean slate)
-docker-compose down -v
-```
-
-## 🌐 API Endpoints
-
-### Gateway (Port 3000)
-
-- `GET /api/v1/health` - Health check
-- `GET /api/docs` - Swagger documentation
-- `POST /api/v1/auth/*` - Proxied to Auth service
-- `POST /api/v1/agent/*` - Proxied to Voice Agent
-- `WS /voice` - WebSocket for real-time voice
-
-### Auth Service (Port 3001)
-
-- `POST /auth/signup` - User registration
-- `POST /auth/login` - User login
-- `POST /auth/refresh` - Refresh token
-
-### Voice Agent (Port 3002)
-
-- `POST /agent/start-session` - Start voice session
-- `POST /agent/text-query` - Text-based query
-- `POST /agent/process-audio` - Process audio
-
-### Appointments (Port 3003)
-
-- `GET /appointments` - List appointments
-- `POST /appointments` - Create appointment
-- `PATCH /appointments/:id` - Update appointment
-
-### Notifications (Port 3004)
-
-- `POST /notifications/email` - Send email
-- `POST /notifications/sms` - Send SMS
-
-## 🔧 Tech Stack
-
-- **Framework**: NestJS (Microservices)
-- **Language**: TypeScript
-- **Database**: PostgreSQL + Prisma ORM
-- **Cache**: Redis
-- **Communication**: TCP (NestJS Microservices)
-- **AI**: OpenAI, LangChain, Deepgram, ElevenLabs
-- **Container**: Docker + Docker Compose
-
-## 📊 Monitoring
-
-```bash
-# View service logs
-docker-compose logs -f
-
-# Check service health
-curl http://localhost:3000/api/v1/health
-curl http://localhost:3001/health
-curl http://localhost:3002/health
-
-# Database GUI
-npm run prisma:studio
-```
-
-## 🤝 Contributing
-
-1. Create feature branch
-2. Make changes
-3. Run tests: `npm run test`
-4. Build: `npm run build`
-5. Submit PR
-
-## 📝 License
-
-MIT
-
-## 🆘 Support
-
-- **Documentation**: See `/docs` folder
-- **Issues**: GitHub Issues
-- **Email**: support@medvoice.com
-
----
-
-Built with ❤️ using NestJS Microservices
+- All PHI is encrypted at rest (AES-256)
+- All PHI access is logged to audit_logs table
+- JWT tokens with short expiry
+- Rate limiting on all endpoints
