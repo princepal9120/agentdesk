@@ -5,6 +5,7 @@ import { MainLayout } from './components/layout/MainLayout/MainLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import BookAppointment from './pages/BookAppointment';
+import Appointments from './pages/Appointments';
 
 // Placeholder components
 const Home = () => <Navigate to="/login" replace />;
@@ -26,6 +27,7 @@ const App: React.FC = () => {
                 {/* Protected Routes */}
                 <Route element={<MainLayout />}>
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/appointments" element={<Appointments />} />
                     <Route path="/appointments/book" element={<BookAppointment />} />
                     {/* Add more protected routes here */}
                 </Route>
