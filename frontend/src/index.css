@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-sans text-neutral-dark bg-neutral-light antialiased;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+    @apply text-3xl font-bold leading-tight;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold leading-snug;
+  }
+
+  h3 {
+    @apply text-xl font-semibold leading-snug;
+  }
+
+  h4 {
+    @apply text-lg font-medium leading-snug;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-hover active:bg-primary-active disabled:bg-neutral disabled:opacity-60 transition-colors duration-200 rounded-standard px-4 py-3 font-medium shadow-level-2 hover:shadow-level-3 active:shadow-inset;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-primary border border-primary hover:bg-primary-light active:bg-blue-100 disabled:border-neutral disabled:text-neutral transition-colors duration-200 rounded-standard px-4 py-3 font-medium;
+  }
+
+  .btn-danger {
+    @apply bg-alert text-white hover:bg-alert-hover active:bg-red-700 disabled:bg-neutral disabled:opacity-60 transition-colors duration-200 rounded-standard px-4 py-3 font-medium;
+  }
+
+  .input-field {
+    @apply w-full h-10 md:h-11 px-3 py-2 border border-gray-300 rounded-standard focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-gray-100 disabled:text-gray-500 transition-shadow duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-rounded shadow-level-2 p-4 border border-gray-200 hover:shadow-level-3 transition-shadow duration-200;
+  }
+}
