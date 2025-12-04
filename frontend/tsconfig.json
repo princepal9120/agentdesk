@@ -26,11 +26,15 @@
         "paths": {
             "@/*": [
                 "src/*"
+            ],
+            "~/*": [
+                "app/*"
             ]
         }
     },
     "include": [
-        "src"
+        "src",
+        "app"
     ],
     "references": [
         {
