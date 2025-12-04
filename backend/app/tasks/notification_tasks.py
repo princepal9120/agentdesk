@@ -49,29 +49,28 @@ def send_email(
     notification_id: Optional[str] = None
 ):
     """
-    Send email via SendGrid.
+    Send email via Resend.
     PRD FR-4: Email reminders 48h before appointment
     """
     try:
-        if not settings.SENDGRID_API_KEY:
+        if not settings.RESEND_API_KEY:
             print(f"[DEV] Email to {to_email}: {subject}")
             return {"status": "sent", "message_id": "dev_mode"}
         
-        import sendgrid
-        from sendgrid.helpers.mail import Mail
+        import resend
         
-        sg = sendgrid.SendGridAPIClient(api_key=settings.SENDGRID_API_KEY)
+        resend.api_key = settings.RESEND_API_KEY
         
-        message = Mail(
-            from_email=settings.SENDGRID_FROM_EMAIL,
-            to_emails=to_email,
-            subject=subject,
-            plain_text_content=body
-        )
+        params = {
+            "from": settings.RESEND_FROM_EMAIL or "HealthVoice <noreply@healthvoice.com>",
+            "to": [to_email],
+            "subject": subject,
+            "text": body,
+        }
         
-        response = sg.send(message)
+        response = resend.Emails.send(params)
         
-        return {"status": "sent", "status_code": response.status_code}
+        return {"status": "sent", "message_id": response.get("id")}
     
     except Exception as e:
         raise self.retry(exc=e, countdown=60 * (2 ** self.request.retries))

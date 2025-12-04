@@ -223,5 +223,5 @@ Key variables:
 - `REDIS_URL` - Redis connection string
 - `JWT_SECRET_KEY` - JWT signing key
 - `ENCRYPTION_KEY` - PHI encryption key
-- `TWILIO_*` - Twilio credentials (optional)
-- `SENDGRID_*` - SendGrid credentials (optional)
+- `TWILIO_*` - Twilio credentials (optional, for SMS)
+- `RESEND_*` - Resend credentials (optional, for email)

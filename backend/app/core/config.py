@@ -69,9 +69,9 @@ class Settings(BaseSettings):
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_PHONE_NUMBER: Optional[str] = None
     
-    # SendGrid Email (TRS 1.1)
-    SENDGRID_API_KEY: Optional[str] = None
-    SENDGRID_FROM_EMAIL: Optional[str] = None
+    # Resend Email (replaces SendGrid)
+    RESEND_API_KEY: Optional[str] = None
+    RESEND_FROM_EMAIL: Optional[str] = "HealthVoice <noreply@healthvoice.com>"
     
     # External AI Services (TRS 1.1)
     OPENAI_API_KEY: Optional[str] = None
