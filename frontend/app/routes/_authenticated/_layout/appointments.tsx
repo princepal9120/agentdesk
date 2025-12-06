@@ -4,6 +4,7 @@ import api from '@/services/api'
 import { getStoredUser } from '@/utils/auth-utils'
 import { isRole } from '@/utils/rbac'
 import { format } from 'date-fns'
+import { Calendar, Plus } from 'lucide-react'
 
 export const Route = createFileRoute('/_authenticated/_layout/appointments')({
     component: AppointmentsPage,
@@ -46,8 +47,25 @@ function AppointmentsPage() {
             </div>
 
             {appointments.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-3xl border border-grey-100">
-                    <p className="text-grey-500">No appointments found.</p>
+                <div className="text-center py-16 bg-white rounded-3xl border border-grey-100 flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 bg-grey-50 rounded-full flex items-center justify-center mb-4">
+                        <Calendar className="w-8 h-8 text-grey-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-grey-900 mb-2">No appointments yet</h3>
+                    <p className="text-grey-500 max-w-sm mb-6">
+                        {user?.role === 'patient'
+                            ? "You haven't booked any appointments yet. Schedule a visit with one of our doctors."
+                            : "You don't have any upcoming appointments scheduled."}
+                    </p>
+                    {canBook && (
+                        <Link
+                            to="/appointments/book"
+                            className="bg-[#2BB59B] text-white px-6 py-3 rounded-xl hover:bg-[#249A84] transition-colors font-medium shadow-sm inline-flex items-center gap-2"
+                        >
+                            <Plus className="w-5 h-5" />
+                            Book Your First Appointment
+                        </Link>
+                    )}
                 </div>
             ) : (
                 <div className="grid gap-4">
@@ -65,10 +83,10 @@ function AppointmentsPage() {
                                 </div>
                                 <span
                                     className={`px-3 py-1 rounded-full text-xs font-medium ${appointment.status === 'confirmed'
-                                            ? 'bg-green-100 text-green-800'
-                                            : appointment.status === 'pending'
-                                                ? 'bg-yellow-100 text-yellow-800'
-                                                : 'bg-red-100 text-red-800'
+                                        ? 'bg-green-100 text-green-800'
+                                        : appointment.status === 'pending'
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : 'bg-red-100 text-red-800'
                                         }`}
                                 >
                                     {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}

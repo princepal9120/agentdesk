@@ -56,6 +56,37 @@ async def register(
     db.add(user)
     await db.flush()
     
+    # Auto-create Patient or Doctor profile based on role
+    if user.role == UserRole.PATIENT:
+        from app.models.patient import Patient
+        from datetime import date
+        patient = Patient(
+            user_id=user.id,
+            date_of_birth=date(1990, 1, 1),  # Placeholder - user should update in profile
+            sms_consent=True,
+            email_consent=True,
+            call_consent=True
+        )
+        db.add(patient)
+    elif user.role == UserRole.DOCTOR:
+        from app.models.doctor import Doctor, DEFAULT_WORKING_HOURS
+        # Extract first/last name from full_name
+        name_parts = data.full_name.split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        doctor = Doctor(
+            user_id=user.id,
+            first_name=first_name,
+            last_name=last_name,
+            specialization='General Practice',  # Default - user should update
+            license_number=f'LIC-{user.id.hex[:8].upper()}',  # Placeholder
+            working_hours=DEFAULT_WORKING_HOURS,
+            is_active=True
+        )
+        db.add(doctor)
+    
+    await db.flush()
+    
     # Generate tokens
     access_token = create_access_token(user.id)
     refresh_token = create_refresh_token(user.id)

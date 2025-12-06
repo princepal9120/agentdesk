@@ -134,7 +134,7 @@ backend/
 ### Authentication (TRS 2.2.1)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/auth/register` | Register new user |
+| POST | `/api/v1/auth/register` | Register new user (accepts `role`: patient, doctor, receptionist, admin) |
 | POST | `/api/v1/auth/login` | Login |
 | POST | `/api/v1/auth/otp/request` | Request OTP |
 | POST | `/api/v1/auth/otp/verify` | Verify OTP |

@@ -158,7 +158,7 @@ Uses TanStack Router with file-based routing.
 |------|-----------|---------------|
 | `/` | Landing Page | No |
 | `/login` | Login Page | No |
-| `/register` | Registration Page | No |
+| `/register` | Registration Page (Role Selection: Patient/Doctor) | No |
 | `/dashboard` | Dashboard (Patient/Doctor) | Yes |
 | `/appointments` | Appointments List | Yes |
 | `/appointments/book` | Book Appointment | Yes |

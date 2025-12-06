@@ -1,10 +1,10 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, Users, Clock, Activity, MoreHorizontal } from 'lucide-react';
+import { Calendar, Users, Clock, Activity, MoreHorizontal, Phone, Video } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import api from '@/services/api';
-import { format, isToday } from 'date-fns';
+import { format, isToday, isFuture } from 'date-fns';
 
 async function fetchDoctorAppointments() {
     const response = await api.get('/appointments');
@@ -14,15 +14,39 @@ async function fetchDoctorAppointments() {
         .sort((a: any, b: any) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
 }
 
+async function fetchPatientCount() {
+    try {
+        // In a real app, you'd have a /patients/count endpoint
+        const response = await api.get('/appointments?limit=100');
+        // Get unique patient count from appointments
+        const patientIds = new Set(response.data.appointments.map((a: any) => a.patient_id));
+        return patientIds.size;
+    } catch {
+        return 0;
+    }
+}
+
 export const DoctorDashboard = () => {
     const { data: appointments = [], isLoading } = useQuery({
         queryKey: ['doctor-appointments-today'],
         queryFn: fetchDoctorAppointments,
     });
 
+    const { data: patientCount = 0 } = useQuery({
+        queryKey: ['patient-count'],
+        queryFn: fetchPatientCount,
+    });
+
+    // Get upcoming appointments (not started yet)
+    const now = new Date();
+    const upcomingAppointments = appointments.filter((appt: any) =>
+        new Date(appt.start_time) > now
+    );
+    const nextPatient = upcomingAppointments[0];
+
     const stats = [
         { label: 'Appointments Today', value: appointments.length.toString(), icon: Calendar, color: 'text-blue-600 bg-blue-50' },
-        { label: 'Total Patients', value: '1,248', icon: Users, color: 'text-green-600 bg-green-50' },
+        { label: 'Total Patients', value: patientCount > 0 ? patientCount.toString() : '--', icon: Users, color: 'text-green-600 bg-green-50' },
         { label: 'Avg. Consult Time', value: '18m', icon: Clock, color: 'text-orange-600 bg-orange-50' },
     ];
 
@@ -84,7 +108,7 @@ export const DoctorDashboard = () => {
                                             <p className="text-xs text-grey-500">{appt.reason_for_visit || 'Consultation'}</p>
                                         </div>
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${appt.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                appt.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-grey-100 text-grey-700'
+                                            appt.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-grey-100 text-grey-700'
                                             }`}>
                                             {appt.status}
                                         </span>
@@ -95,6 +119,7 @@ export const DoctorDashboard = () => {
                             <div className="text-center py-12">
                                 <Activity className="w-12 h-12 text-grey-200 mx-auto mb-3" />
                                 <p className="text-grey-500">No appointments scheduled for today.</p>
+                                <p className="text-sm text-grey-400 mt-2">Your calendar is clear!</p>
                             </div>
                         )}
                     </CardContent>
@@ -107,21 +132,47 @@ export const DoctorDashboard = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-4">
-                            <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className="bg-blue-200 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Next</span>
-                                    <span className="text-xs text-blue-600 font-mono">10:00 AM</span>
+                            {nextPatient ? (
+                                <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <span className="bg-blue-200 text-blue-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Next</span>
+                                        <span className="text-xs text-blue-600 font-mono">
+                                            {format(new Date(nextPatient.start_time), 'h:mm a')}
+                                        </span>
+                                    </div>
+                                    <h4 className="font-bold text-blue-900">{nextPatient.patient_name || 'Patient'}</h4>
+                                    <p className="text-xs text-blue-700 mt-1">{nextPatient.reason_for_visit || 'Consultation'}</p>
+                                    <div className="mt-3 flex gap-2">
+                                        <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs rounded-lg">
+                                            <Phone className="w-3 h-3 mr-1" />
+                                            Call
+                                        </Button>
+                                        <Button size="sm" variant="outline" className="flex-1 h-8 text-xs rounded-lg border-blue-200 text-blue-700">
+                                            <Video className="w-3 h-3 mr-1" />
+                                            Video
+                                        </Button>
+                                    </div>
                                 </div>
-                                <h4 className="font-bold text-blue-900">Sarah Johnson</h4>
-                                <p className="text-xs text-blue-700 mt-1">Follow-up: Hypertension</p>
-                                <div className="mt-3 flex gap-2">
-                                    <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white h-8 text-xs rounded-lg">Call Patient</Button>
+                            ) : (
+                                <div className="p-4 bg-grey-50 rounded-2xl text-center">
+                                    <Activity className="w-8 h-8 text-grey-300 mx-auto mb-2" />
+                                    <p className="text-sm text-grey-500">No patients in queue</p>
                                 </div>
-                            </div>
+                            )}
 
-                            <div className="text-center pt-4">
-                                <p className="text-xs text-grey-400">Queue is empty after this.</p>
-                            </div>
+                            {upcomingAppointments.length > 1 && (
+                                <div className="text-center pt-2">
+                                    <p className="text-xs text-grey-400">
+                                        +{upcomingAppointments.length - 1} more patients today
+                                    </p>
+                                </div>
+                            )}
+
+                            {upcomingAppointments.length <= 1 && (
+                                <div className="text-center pt-4">
+                                    <p className="text-xs text-grey-400">Queue is empty after this.</p>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -129,3 +180,4 @@ export const DoctorDashboard = () => {
         </div>
     );
 };
+

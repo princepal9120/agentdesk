@@ -23,7 +23,7 @@ def upgrade() -> None:
         sa.Column('phone_number', sa.String(20), nullable=False),
         sa.Column('password_hash', sa.String(255), nullable=False),
         sa.Column('full_name', sa.String(255), nullable=False),
-        sa.Column('role', sa.String(20), nullable=False, server_default='patient'),
+        sa.Column('role', sa.Enum('PATIENT', 'DOCTOR', 'RECEPTIONIST', 'ADMIN', name='userrole'), nullable=False, server_default='PATIENT'),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
         sa.Column('is_verified', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('last_login', sa.DateTime(timezone=True), nullable=True),

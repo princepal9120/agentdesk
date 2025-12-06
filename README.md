@@ -238,7 +238,7 @@ voice-agent/
 ### Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/auth/register` | Register new user |
+| POST | `/api/v1/auth/register` | Register new user (supports `role`: patient, doctor) |
 | POST | `/api/v1/auth/login` | Login with email/phone |
 | POST | `/api/v1/auth/otp/request` | Request OTP |
 | POST | `/api/v1/auth/otp/verify` | Verify OTP |

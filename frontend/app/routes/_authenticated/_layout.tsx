@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react'
 import { getStoredUser } from '@/utils/auth-utils'
 import { getNavigationForRole, getRoleDisplayName } from '@/utils/rbac'
 import type { User } from '@/types'
+import VoiceWidget from '@/components/features/voice/VoiceWidget'
 
 export const Route = createFileRoute('/_authenticated/_layout')({
     component: DashboardLayout,
@@ -206,13 +207,20 @@ function DashboardLayout() {
                     <Outlet />
                 </main>
 
-                {/* Footer */}
+            {/* Footer */}
                 <footer className="py-6 px-6 border-t border-grey-100 bg-white">
                     <div className="text-center text-sm text-grey-400">
                         © 2024 HealthVoice AI — HIPAA Compliant
                     </div>
                 </footer>
             </div>
+
+            {/* Voice Agent Widget - Only for patients */}
+            {user.role === 'patient' && (
+                <div className="fixed bottom-6 right-6 z-50">
+                    <VoiceWidget className="bg-[#2BB59B] hover:bg-[#249A84] text-white" />
+                </div>
+            )}
         </div>
     )
 }
