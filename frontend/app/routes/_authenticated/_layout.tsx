@@ -6,38 +6,56 @@
 import { createFileRoute, Outlet, Link, useNavigate, useLocation } from '@tanstack/react-router'
 import { motion } from 'motion/react'
 import {
-    LayoutDashboard, Calendar, Phone, Users, BarChart2,
-    Shield, Settings, Bell, LogOut, Menu, X, Search
+    LayoutDashboard, Calendar, Phone, Users, BarChart2 as BarChart3,
+    Shield, Settings, Bell, LogOut, Menu, X, Search, HelpCircle, CreditCard
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { getStoredUser } from '@/utils/auth-utils'
+import { getNavigationForRole, getRoleDisplayName } from '@/utils/rbac'
+import type { User } from '@/types'
 
 export const Route = createFileRoute('/_authenticated/_layout')({
     component: DashboardLayout,
 })
 
+const ICON_MAP: Record<string, any> = {
+    LayoutDashboard,
+    Calendar,
+    Phone,
+    Users,
+    BarChart3,
+    Shield,
+    Settings,
+    HelpCircle,
+    CreditCard
+}
+
 function DashboardLayout() {
     const navigate = useNavigate()
     const location = useLocation()
     const [sidebarOpen, setSidebarOpen] = useState(false)
+    const [user, setUser] = useState<User | null>(null)
+
+    useEffect(() => {
+        const storedUser = getStoredUser()
+        if (storedUser) {
+            setUser(storedUser)
+        }
+    }, [])
 
     const handleLogout = () => {
         localStorage.removeItem('auth_token')
+        localStorage.removeItem('user')
         navigate({ to: '/login' })
     }
 
-    const navItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-        { icon: Calendar, label: 'Appointments', path: '/appointments' },
-        { icon: Phone, label: 'Calls', path: '/calls' },
-        { icon: Users, label: 'Patients', path: '/patients' },
-        { icon: BarChart2, label: 'Analytics', path: '/analytics' },
-        { icon: Shield, label: 'Compliance', path: '/compliance' },
-        { icon: Settings, label: 'Settings', path: '/settings' },
-    ]
+    const navItems = user ? getNavigationForRole(user.role) : []
 
     const isActive = (path: string) => location.pathname === path ||
         (path === '/dashboard' && location.pathname === '/')
+
+    if (!user) return null // Or loading spinner
 
     return (
         <div className="min-h-screen flex bg-grey-50">
@@ -56,7 +74,7 @@ function DashboardLayout() {
                 {/* Navigation */}
                 <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
                     {navItems.map((item) => {
-                        const Icon = item.icon
+                        const Icon = ICON_MAP[item.icon] || LayoutDashboard
                         const active = isActive(item.path)
                         return (
                             <Link
@@ -70,7 +88,7 @@ function DashboardLayout() {
                                 )}
                             >
                                 <Icon className="w-5 h-5" />
-                                {item.label}
+                                {item.name}
                             </Link>
                         )
                     })}
@@ -83,8 +101,8 @@ function DashboardLayout() {
                             <Users className="w-5 h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-sm font-medium text-grey-900 truncate">Dr. Sarah Chen</div>
-                            <div className="text-xs text-grey-500 truncate">Medical Director</div>
+                            <div className="text-sm font-medium text-grey-900 truncate">{user.full_name}</div>
+                            <div className="text-xs text-grey-500 truncate">{getRoleDisplayName(user.role)}</div>
                         </div>
                         <button
                             onClick={handleLogout}
@@ -130,7 +148,7 @@ function DashboardLayout() {
                 </div>
                 <nav className="px-4 py-6 space-y-1">
                     {navItems.map((item) => {
-                        const Icon = item.icon
+                        const Icon = ICON_MAP[item.icon] || LayoutDashboard
                         const active = isActive(item.path)
                         return (
                             <Link
@@ -145,7 +163,7 @@ function DashboardLayout() {
                                 )}
                             >
                                 <Icon className="w-5 h-5" />
-                                {item.label}
+                                {item.name}
                             </Link>
                         )
                     })}

@@ -9,8 +9,8 @@ Contains doctor profile and availability configuration.
 import uuid
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 
-from sqlalchemy import String, Integer, Boolean, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import String, Integer, Boolean, ForeignKey, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -90,7 +90,7 @@ class Doctor(Base, UUIDMixin, TimestampMixin):
     
     # Availability Configuration (TRS 2.4)
     working_hours: Mapped[Dict[str, Any]] = mapped_column(
-        JSONB,
+        JSON,
         default=DEFAULT_WORKING_HOURS,
         nullable=False
     )

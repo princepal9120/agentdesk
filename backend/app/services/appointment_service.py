@@ -10,6 +10,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
+from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 
 from app.models.appointment import Appointment, AppointmentStatus
@@ -80,7 +81,12 @@ class AppointmentService:
     
     async def get_appointment(self, appointment_id: UUID) -> Optional[Appointment]:
         """Get appointment by ID."""
-        return await self.db.get(Appointment, appointment_id)
+        query = select(Appointment).where(Appointment.id == appointment_id).options(
+            selectinload(Appointment.doctor),
+            selectinload(Appointment.patient)
+        )
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
     
     async def get_appointments(
         self,
@@ -115,6 +121,10 @@ class AppointmentService:
         
         # Get paginated results
         query = query.order_by(Appointment.start_time.desc())
+        query = query.options(
+            selectinload(Appointment.doctor),
+            selectinload(Appointment.patient)
+        )
         query = query.limit(limit + 1).offset(offset)
         
         result = await self.db.execute(query)
@@ -137,9 +147,23 @@ class AppointmentService:
         old_values = {"status": appointment.status, "start_time": str(appointment.start_time)}
         
         if data.start_time:
+            # Ensure timezone compatibility for both start and end times
+            if data.start_time.tzinfo:
+                if appointment.end_time.tzinfo is None:
+                    appointment.end_time = appointment.end_time.replace(tzinfo=timezone.utc)
+                if appointment.start_time.tzinfo is None:
+                    appointment.start_time = appointment.start_time.replace(tzinfo=timezone.utc)
+            elif data.start_time.tzinfo is None:
+                if appointment.end_time.tzinfo:
+                    appointment.end_time = appointment.end_time.replace(tzinfo=None)
+                if appointment.start_time.tzinfo:
+                    appointment.start_time = appointment.start_time.replace(tzinfo=None)
+                
+            # Calculate duration before updating start_time
+            current_duration = appointment.end_time - appointment.start_time
+            
             appointment.start_time = data.start_time
-            duration = appointment.end_time - appointment.start_time
-            appointment.end_time = data.start_time + duration
+            appointment.end_time = data.start_time + current_duration
         if data.status:
             appointment.status = data.status
         if data.reason_for_visit:

@@ -1,19 +1,21 @@
-/**
- * Clinical Minimalism Register Form
- * Clean multi-field form with calm styling.
- */
-
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { User, Mail, Lock, Phone, AlertCircle, Loader2 } from 'lucide-react';
+import { User, Mail, Lock, Phone, AlertCircle, Loader2, Stethoscope } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { registerUser } from '@/store/slices/authSlice';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { registerSchema, RegisterFormData } from '@/utils/validation';
 
 export const RegisterForm: React.FC = () => {
@@ -24,10 +26,14 @@ export const RegisterForm: React.FC = () => {
     const {
         register,
         handleSubmit,
+        control,
         formState: { errors },
     } = useForm<RegisterFormData>({
         resolver: zodResolver(registerSchema),
         mode: 'onBlur',
+        defaultValues: {
+            role: 'patient'
+        }
     });
 
     const onSubmit = async (data: RegisterFormData) => {
@@ -59,6 +65,34 @@ export const RegisterForm: React.FC = () => {
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                {/* Role Selection */}
+                <div className="space-y-2">
+                    <Label className="text-grey-700 font-medium">I am a...</Label>
+                    <div className="relative">
+                        <Stethoscope className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-grey-400 z-10" />
+                        <Controller
+                            control={control}
+                            name="role"
+                            render={({ field }) => (
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <SelectTrigger className="pl-12 h-12 rounded-xl">
+                                        <SelectValue placeholder="Select your role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="patient">Patient</SelectItem>
+                                        <SelectItem value="doctor">Doctor</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
+                    </div>
+                    {errors.role && (
+                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm text-error mt-1">
+                            {errors.role.message}
+                        </motion.p>
+                    )}
+                </div>
+
                 {/* Full Name Field */}
                 <div className="space-y-2">
                     <Label htmlFor="full_name" className="text-grey-700 font-medium">Full Name</Label>

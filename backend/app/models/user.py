@@ -114,7 +114,8 @@ class User(Base, UUIDMixin, TimestampMixin):
     patient: Mapped[Optional["Patient"]] = relationship(
         "Patient",
         back_populates="user",
-        uselist=False
+        uselist=False,
+        foreign_keys="[Patient.user_id]"
     )
     doctor: Mapped[Optional["Doctor"]] = relationship(
         "Doctor",

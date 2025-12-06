@@ -9,84 +9,10 @@ from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 from httpx import AsyncClient
 
-from app.models.user import User, UserRole
-from app.models.patient import Patient
-from app.models.doctor import Doctor, DEFAULT_WORKING_HOURS
-from app.core.security import hash_password, create_access_token
+from app.core.security import create_access_token
 
 
-@pytest.fixture
-async def test_user(test_db):
-    """Create a test user."""
-    user = User(
-        email="patient@test.com",
-        phone_number="+15551234567",
-        password_hash=hash_password("testpass123"),
-        full_name="Test Patient",
-        role=UserRole.PATIENT,
-        is_active=True
-    )
-    test_db.add(user)
-    await test_db.flush()
-    return user
 
-
-@pytest.fixture
-async def test_patient(test_db, test_user):
-    """Create a test patient."""
-    from datetime import date
-    patient = Patient(
-        user_id=test_user.id,
-        date_of_birth=date(1990, 1, 15),
-        sms_consent=True,
-        email_consent=True
-    )
-    test_db.add(patient)
-    await test_db.flush()
-    return patient
-
-
-@pytest.fixture
-async def test_doctor_user(test_db):
-    """Create a test doctor user."""
-    user = User(
-        email="doctor@test.com",
-        phone_number="+15559876543",
-        password_hash=hash_password("testpass123"),
-        full_name="Dr. Test",
-        role=UserRole.DOCTOR,
-        is_active=True
-    )
-    test_db.add(user)
-    await test_db.flush()
-    return user
-
-
-@pytest.fixture
-async def test_doctor(test_db, test_doctor_user):
-    """Create a test doctor."""
-    doctor = Doctor(
-        user_id=test_doctor_user.id,
-        first_name="Test",
-        last_name="Doctor",
-        specialization="General",
-        license_number="LIC123456",
-        phone_number="+15559876543",
-        working_hours=DEFAULT_WORKING_HOURS,
-        buffer_time_minutes=15,
-        appointment_duration_minutes=30,
-        is_active=True
-    )
-    test_db.add(doctor)
-    await test_db.flush()
-    return doctor
-
-
-@pytest.fixture
-def auth_headers(test_user):
-    """Generate auth headers for test user."""
-    token = create_access_token(test_user.id)
-    return {"Authorization": f"Bearer {token}"}
 
 
 class TestAppointmentEndpoints:

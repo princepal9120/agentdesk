@@ -9,6 +9,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.core.database import get_db
 from app.core.security import verify_token
@@ -31,7 +32,14 @@ async def get_current_user(
             detail="Invalid or expired token"
         )
     
-    result = await db.execute(select(User).where(User.id == UUID(user_id)))
+    result = await db.execute(
+        select(User)
+        .where(User.id == UUID(user_id))
+        .options(
+            selectinload(User.patient),
+            selectinload(User.doctor)
+        )
+    )
     user = result.scalar_one_or_none()
     
     if not user or not user.is_active:

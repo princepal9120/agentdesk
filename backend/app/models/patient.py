@@ -10,8 +10,8 @@ import uuid
 from datetime import date, datetime
 from typing import Optional, List, TYPE_CHECKING
 
-from sqlalchemy import String, Text, Boolean, Date, ForeignKey, CheckConstraint
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import String, Text, Boolean, Date, ForeignKey, CheckConstraint, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin, UUIDMixin
@@ -76,7 +76,7 @@ class Patient(Base, UUIDMixin, TimestampMixin):
         comment="Encrypted PHI"
     )
     medications: Mapped[Optional[dict]] = mapped_column(
-        JSONB,
+        JSON,
         nullable=True,
         comment="Encrypted PHI - list of current medications"
     )
@@ -110,7 +110,7 @@ class Patient(Base, UUIDMixin, TimestampMixin):
     
     # Encryption metadata (TRS 5.2)
     encrypted_fields: Mapped[Optional[dict]] = mapped_column(
-        JSONB,
+        JSON,
         default=dict,
         nullable=True,
         comment="Tracks which fields are encrypted"

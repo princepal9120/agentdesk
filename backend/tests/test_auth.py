@@ -18,7 +18,7 @@ class TestAuthEndpoints:
             "/api/v1/auth/register",
             json={
                 "email": "test@example.com",
-                "phone": "+15551234567",
+                "phone_number": "+15551234567",
                 "password": "securepass123",
                 "full_name": "Test User"
             }
@@ -32,6 +32,24 @@ class TestAuthEndpoints:
         assert "expires_in" in data
     
     @pytest.mark.asyncio
+    async def test_register_with_role(self, client: AsyncClient):
+        """Test user registration with specific role."""
+        response = await client.post(
+            "/api/v1/auth/register",
+            json={
+                "email": "doctor@example.com",
+                "phone_number": "+15551234599",
+                "password": "securepass123",
+                "full_name": "Dr. Test",
+                "role": "doctor"
+            }
+        )
+        
+        assert response.status_code == 201
+        data = response.json()
+        assert data["user"]["role"] == "doctor"
+    
+    @pytest.mark.asyncio
     async def test_register_duplicate_email(self, client: AsyncClient):
         """Test registration with duplicate email returns 409."""
         # First registration
@@ -39,7 +57,7 @@ class TestAuthEndpoints:
             "/api/v1/auth/register",
             json={
                 "email": "duplicate@example.com",
-                "phone": "+15551234568",
+                "phone_number": "+15551234568",
                 "password": "securepass123",
                 "full_name": "First User"
             }
@@ -50,7 +68,7 @@ class TestAuthEndpoints:
             "/api/v1/auth/register",
             json={
                 "email": "duplicate@example.com",
-                "phone": "+15551234569",
+                "phone_number": "+15551234569",
                 "password": "securepass123",
                 "full_name": "Second User"
             }
@@ -66,7 +84,7 @@ class TestAuthEndpoints:
             "/api/v1/auth/register",
             json={
                 "email": "login@example.com",
-                "phone": "+15551234570",
+                "phone_number": "+15551234570",
                 "password": "securepass123",
                 "full_name": "Login User"
             }

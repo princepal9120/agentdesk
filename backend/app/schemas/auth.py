@@ -4,6 +4,8 @@ TRS Reference: Section 2.2.1 - Authentication Endpoints
 """
 
 from typing import Optional
+from datetime import datetime
+from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field
 
 
@@ -13,6 +15,7 @@ class UserRegister(BaseModel):
     phone_number: str = Field(..., pattern=r"^\+?[1-9]\d{1,14}$")
     password: str = Field(..., min_length=8)
     full_name: str = Field(..., min_length=2, max_length=255)
+    role: str = Field("patient", pattern="^(patient|doctor|receptionist|admin)$")
 
 
 class UserLogin(BaseModel):
@@ -23,15 +26,15 @@ class UserLogin(BaseModel):
 
 class UserResponse(BaseModel):
     """User response model."""
-    id: str
+    id: UUID
     email: EmailStr
     phone_number: str
     full_name: str
     role: str
     is_active: bool
     is_verified: bool
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

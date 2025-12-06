@@ -51,7 +51,7 @@ async def register(
         phone_number=data.phone_number,
         password_hash=hash_password(data.password),
         full_name=data.full_name,
-        role=UserRole.PATIENT
+        role=UserRole(data.role)
     )
     db.add(user)
     await db.flush()

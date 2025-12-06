@@ -4,7 +4,11 @@
  * Aesthetic: Apple-style medical UI, Bento Grid layout, soft pastels.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
+import { getStoredUser } from '@/utils/auth-utils';
+import { PatientDashboard } from '@/components/features/dashboard/PatientDashboard';
+import { DoctorDashboard } from '@/components/features/dashboard/DoctorDashboard';
+import { AdminDashboard } from '@/components/features/dashboard/AdminDashboard';
 import { motion, AnimatePresence } from 'motion/react';
 import { gsap } from 'gsap';
 import {
@@ -316,158 +320,23 @@ const Header = () => {
 // ========== MAIN DASHBOARD ==========
 
 const Dashboard = () => {
-    const containerRef = useRef<HTMLDivElement>(null);
+    const user = getStoredUser();
 
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            gsap.from(".dashboard-card", {
-                y: 20,
-                opacity: 0,
-                duration: 0.6,
-                stagger: 0.1,
-                ease: "power2.out"
-            });
-        }, containerRef);
-        return () => ctx.revert();
-    }, []);
+    if (!user) {
+        return <div className="p-8 text-center text-grey-500">Please log in to view dashboard.</div>;
+    }
 
-    return (
-        <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
-            <Sidebar />
-
-            <div className="lg:pl-64">
-                <Header />
-
-                <main ref={containerRef} className="p-6 max-w-[1600px] mx-auto">
-                    {/* BENTO GRID */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-6 auto-rows-[minmax(180px,auto)]">
-
-                        {/* 1. Overview Metrics (Top Row) */}
-                        <Card
-                            colSpan="col-span-1 md:col-span-4"
-                            className="dashboard-card"
-                            title="Practice Overview"
-                            action={
-                                <select className="bg-slate-50 border-none text-sm rounded-lg px-2 py-1">
-                                    <option>Last 7 Days</option>
-                                    <option>Last 30 Days</option>
-                                </select>
-                            }
-                        >
-                            <OverviewMetrics />
-                        </Card>
-
-                        {/* 2. Live Calls Monitor */}
-                        <Card
-                            colSpan="col-span-1 md:col-span-2"
-                            rowSpan="row-span-2"
-                            className="dashboard-card"
-                            title="Live Calls"
-                            icon={<Activity className="w-5 h-5" />}
-                            action={<Badge variant="success">3 Active</Badge>}
-                        >
-                            <LiveCalls />
-                            <div className="mt-4 pt-4 border-t border-slate-100">
-                                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Queue Status</div>
-                                <div className="flex gap-2">
-                                    {[1, 2, 3, 4, 5].map(i => (
-                                        <div key={i} className={cn("h-2 flex-1 rounded-full", i < 2 ? "bg-green-500" : "bg-slate-100")} />
-                                    ))}
-                                </div>
-                                <div className="flex justify-between mt-1 text-xs text-slate-400">
-                                    <span>Low Load</span>
-                                    <span>High Load</span>
-                                </div>
-                            </div>
-                        </Card>
-
-                        {/* 3. Analytics Chart */}
-                        <Card
-                            colSpan="col-span-1 md:col-span-2"
-                            rowSpan="row-span-1"
-                            className="dashboard-card"
-                            title="Call Volume"
-                            icon={<BarChart2 className="w-5 h-5" />}
-                        >
-                            <AnalyticsChart />
-                        </Card>
-
-                        {/* 4. Appointments Panel */}
-                        <Card
-                            colSpan="col-span-1 md:col-span-2"
-                            rowSpan="row-span-2"
-                            className="dashboard-card"
-                            title="Upcoming Appointments"
-                            icon={<Calendar className="w-5 h-5" />}
-                        >
-                            <AppointmentsList />
-                        </Card>
-
-                        {/* 5. Compliance Center */}
-                        <Card
-                            colSpan="col-span-1"
-                            className="dashboard-card"
-                            title="Compliance"
-                            icon={<Shield className="w-5 h-5" />}
-                        >
-                            <ComplianceStatus />
-                        </Card>
-
-                        {/* 6. System Status */}
-                        <Card
-                            colSpan="col-span-1"
-                            className="dashboard-card"
-                            title="System Health"
-                            icon={<Settings className="w-5 h-5" />}
-                        >
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-slate-600">Voice AI Engine</span>
-                                    <Badge variant="success">Operational</Badge>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-slate-600">EHR Sync</span>
-                                    <Badge variant="success">Connected</Badge>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium text-slate-600">SMS Gateway</span>
-                                    <Badge variant="success">Active</Badge>
-                                </div>
-                            </div>
-                        </Card>
-
-                        {/* 7. Notifications Inbox */}
-                        <Card
-                            colSpan="col-span-1 md:col-span-2"
-                            className="dashboard-card"
-                            title="Recent Alerts"
-                            icon={<Bell className="w-5 h-5" />}
-                        >
-                            <div className="space-y-3">
-                                <div className="flex gap-3 items-start p-3 bg-blue-50 rounded-xl">
-                                    <AlertCircle className="w-4 h-4 text-blue-500 mt-0.5" />
-                                    <div>
-                                        <div className="text-sm font-medium text-slate-900">New Feature Available</div>
-                                        <div className="text-xs text-slate-500">Try the new sentiment analysis dashboard.</div>
-                                    </div>
-                                    <span className="text-xs text-slate-400 ml-auto">2h ago</span>
-                                </div>
-                                <div className="flex gap-3 items-start p-3 bg-slate-50 rounded-xl">
-                                    <CheckCircle className="w-4 h-4 text-green-500 mt-0.5" />
-                                    <div>
-                                        <div className="text-sm font-medium text-slate-900">Daily Backup Completed</div>
-                                        <div className="text-xs text-slate-500">All patient data secured.</div>
-                                    </div>
-                                    <span className="text-xs text-slate-400 ml-auto">5h ago</span>
-                                </div>
-                            </div>
-                        </Card>
-
-                    </div>
-                </main>
-            </div>
-        </div>
-    );
+    switch (user.role) {
+        case 'patient':
+            return <PatientDashboard />;
+        case 'doctor':
+            return <DoctorDashboard />;
+        case 'admin':
+        case 'receptionist': // Receptionist sees Admin view for now
+            return <AdminDashboard />;
+        default:
+            return <PatientDashboard />;
+    }
 };
 
 export default Dashboard;

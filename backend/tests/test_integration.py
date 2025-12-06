@@ -31,7 +31,7 @@ class TestAppointmentBookingFlow:
             "/api/v1/auth/register",
             json={
                 "email": "newpatient@example.com",
-                "phone": "+15551112222",
+                "phone_number": "+15551112222",
                 "password": "securepass123",
                 "full_name": "New Patient"
             }
@@ -45,7 +45,8 @@ class TestAppointmentBookingFlow:
         # Step 2: Create patient profile (would be done by admin normally)
         # For testing, we create directly in DB
         from datetime import date
-        user = await test_db.get(User, user_id)
+        from uuid import UUID
+        user = await test_db.get(User, UUID(user_id))
         patient = Patient(
             user_id=user.id,
             date_of_birth=date(1990, 5, 15),
@@ -79,7 +80,11 @@ class TestAppointmentBookingFlow:
         await test_db.flush()
         
         # Step 3: Check doctor availability
-        tomorrow = (datetime.now(timezone.utc) + timedelta(days=1)).date()
+        # Ensure we pick a weekday (Mon-Fri)
+        tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
+        while tomorrow.weekday() >= 5:  # 5=Saturday, 6=Sunday
+            tomorrow += timedelta(days=1)
+        tomorrow = tomorrow.date()
         
         availability_response = await client.get(
             f"/api/v1/doctors/{doctor.id}/availability",
