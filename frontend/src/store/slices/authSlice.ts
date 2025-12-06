@@ -25,15 +25,9 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { email: string; password: string }, { rejectWithValue }) => {
     try {
-      // Note: Adjust endpoint based on actual backend route
-      // Backend uses form-data for OAuth2 usually, but let's assume JSON for now or adjust
-      // If backend uses OAuth2PasswordRequestForm, we need to send form data
-      const formData = new URLSearchParams();
-      formData.append('username', credentials.email);
-      formData.append('password', credentials.password);
-      
-      const response = await api.post('/auth/login', formData, {
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      const response = await api.post('/auth/login', {
+        email_or_phone: credentials.email,
+        password: credentials.password
       });
       return response.data;
     } catch (error: any) {
@@ -82,13 +76,10 @@ const authSlice = createSlice({
     builder.addCase(loginUser.fulfilled, (state, action) => {
       state.loading = false;
       state.isAuthenticated = true;
-      state.token = action.payload.access_token;
-      // Note: If backend doesn't return user object on login, we might need to fetch it separately
-      // Assuming backend returns user or we fetch it next
-      // For now, let's assume we might need another call or it's included
-      // If not included, we'd dispatch another thunk. 
-      // Let's assume for this slice we just set token.
-      setAuthToken(action.payload.access_token);
+      state.token = action.payload.token;
+      state.user = action.payload.user;
+      setStoredUser(action.payload.user);
+      setAuthToken(action.payload.token);
     });
     builder.addCase(loginUser.rejected, (state, action) => {
       state.loading = false;
@@ -100,9 +91,14 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     });
-    builder.addCase(registerUser.fulfilled, (state) => {
+    builder.addCase(registerUser.fulfilled, (state, action) => {
       state.loading = false;
-      // Usually registration redirects to login or auto-logins
+      // Registration returns a token, so we can auto-login
+      state.isAuthenticated = true;
+      state.token = action.payload.token;
+      state.user = action.payload.user;
+      setStoredUser(action.payload.user);
+      setAuthToken(action.payload.token);
     });
     builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false;

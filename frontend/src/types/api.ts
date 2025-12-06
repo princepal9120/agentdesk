@@ -15,8 +15,10 @@ export interface PaginatedResponse<T> {
 }
 
 export interface AuthResponse {
-  access_token: string;
-  token_type: string;
+  user_id: string;
+  token: string;
+  refresh_token: string;
+  expires_in: number;
   user: User;
 }
 

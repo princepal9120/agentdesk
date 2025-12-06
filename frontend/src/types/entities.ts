@@ -7,8 +7,9 @@ export interface User {
   phone_number: string;
   role: UserRole;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  is_verified: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Patient {
@@ -46,11 +47,11 @@ export interface Doctor {
   user?: User;
 }
 
-export type AppointmentStatus = 
-  | 'scheduled' 
-  | 'confirmed' 
-  | 'cancelled' 
-  | 'completed' 
+export type AppointmentStatus =
+  | 'scheduled'
+  | 'confirmed'
+  | 'cancelled'
+  | 'completed'
   | 'no_show';
 
 export interface Appointment {

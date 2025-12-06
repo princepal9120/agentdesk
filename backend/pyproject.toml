@@ -12,26 +12,37 @@ version = "1.0.0"
 description = "HIPAA-compliant AI voice agent for doctor appointment management"
 readme = "README.md"
 requires-python = ">=3.11"
+
 dependencies = [
     # Core Framework
     "fastapi>=0.104.0",
     "uvicorn[standard]>=0.24.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
+    "email-validator>=2.0.0",
+
+    # REQUIRED for SessionMiddleware
+    "itsdangerous>=2.1.2",
+
     # Database
     "sqlalchemy[asyncio]>=2.0.0",
     "asyncpg>=0.29.0",
     "alembic>=1.13.0",
+
     # Cache
     "redis>=5.0.0",
+
     # Security
     "python-jose[cryptography]>=3.3.0",
     "passlib[bcrypt]>=1.7.0",
     "cryptography>=41.0.0",
+
     # HTTP Client
     "httpx>=0.25.0",
+
     # Task Queue
     "celery>=5.3.0",
+
     # LiveKit Voice Agent (TRS 4.0)
     "livekit>=0.17.0",
     "livekit-agents>=0.12.0",
@@ -39,9 +50,7 @@ dependencies = [
     "livekit-plugins-deepgram>=0.7.0",
     "livekit-plugins-cartesia>=0.4.0",
     "livekit-plugins-silero>=0.7.0",
-    # Notifications (optional - install if needed)
-    # "twilio>=8.10.0",
-    # "resend>=2.0.0",
+
     "resend>=2.19.0",
 ]
 

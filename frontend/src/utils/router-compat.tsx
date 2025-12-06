@@ -10,6 +10,7 @@ import {
   useRouter,
   useNavigate as useTanStackNavigate,
   useParams as useTanStackParams,
+  type HistoryState,
 } from '@tanstack/react-router'
 import React, { forwardRef } from 'react'
 
@@ -21,7 +22,7 @@ type LinkProps = {
   children: React.ReactNode
   className?: string
   replace?: boolean
-  state?: unknown
+  state?: HistoryState
 } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>
 
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
@@ -47,7 +48,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
 export function useNavigate() {
   const navigate = useTanStackNavigate()
 
-  return (to: string, options?: { replace?: boolean; state?: unknown }) => {
+  return (to: string, options?: { replace?: boolean; state?: HistoryState }) => {
     navigate({
       to,
       replace: options?.replace,
@@ -72,8 +73,9 @@ export function useLocation() {
 /**
  * useParams hook - returns route params
  */
-export function useParams<T extends Record<string, string>>() {
-  return useTanStackParams({ strict: false }) as T
+export function useParams<T extends Record<string, string>>(): T {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return useTanStackParams({ strict: false } as any) as T
 }
 
 /**

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -43,14 +41,10 @@ services:
       - "7881:7881"   # RTC (UDP)
       - "7882:7882"   # TURN/TLS
     environment:
-      - LIVEKIT_KEYS=devkey: secret
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:7880"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      LIVEKIT_KEYS: "devkey: secret"
+    restart: unless-stopped
 
-  # Backend API (optional - for containerized development)
+  # Backend API
   api:
     build:
       context: .
@@ -59,15 +53,17 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@postgres:5432/healthcare_voice_agent
-      - REDIS_URL=redis://redis:6379/0
-      - DEBUG=true
-      - ENVIRONMENT=development
+      DATABASE_URL: "postgresql+asyncpg://postgres:postgres@postgres:5432/healthcare_voice_agent"
+      REDIS_URL: "redis://redis:6379/0"
+      DEBUG: "true"
+      ENVIRONMENT: "development"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      livekit:
+        condition: service_started
     volumes:
       - ./app:/app/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

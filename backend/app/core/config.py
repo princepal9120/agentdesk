@@ -82,6 +82,25 @@ class Settings(BaseSettings):
         default="your-encryption-key-change-in-production",
         description="AES-256 encryption key for PHI data"
     )
+
+    # LiveKit Configuration
+    LIVEKIT_URL: Optional[str] = None
+    LIVEKIT_API_KEY: Optional[str] = None
+    LIVEKIT_API_SECRET: Optional[str] = None
+
+    # Deepgram Configuration
+    DEEPGRAM_API_KEY: Optional[str] = None
+    DEEPGRAM_MODEL: Optional[str] = "nova-2"
+
+    # Cartesia Configuration
+    CARTESIA_API_KEY: Optional[str] = None
+    CARTESIA_VOICE_ID: Optional[str] = None
+
+    # Agent Configuration
+    AGENT_LANGUAGE: str = "en"
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    LLM_TEMPERATURE: float = 0.3
+    BACKEND_URL: Optional[str] = None
     
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "http://localhost:3001"]

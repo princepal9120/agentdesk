@@ -34,7 +34,7 @@ export const RegisterForm: React.FC = () => {
         const { confirm_password, ...apiData } = data;
         const resultAction = await dispatch(registerUser(apiData));
         if (registerUser.fulfilled.match(resultAction)) {
-            navigate({ to: '/login', state: { message: 'Registration successful! Please login.' } });
+            navigate({ to: '/dashboard' });
         }
     };
 

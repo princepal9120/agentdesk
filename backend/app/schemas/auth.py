@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr, Field
 class UserRegister(BaseModel):
     """POST /api/v1/auth/register request body."""
     email: EmailStr
-    phone: str = Field(..., pattern=r"^\+?[1-9]\d{1,14}$")
+    phone_number: str = Field(..., pattern=r"^\+?[1-9]\d{1,14}$")
     password: str = Field(..., min_length=8)
     full_name: str = Field(..., min_length=2, max_length=255)
 
@@ -21,12 +21,29 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserResponse(BaseModel):
+    """User response model."""
+    id: str
+    email: EmailStr
+    phone_number: str
+    full_name: str
+    role: str
+    is_active: bool
+    is_verified: bool
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
 class TokenResponse(BaseModel):
     """Authentication token response."""
     user_id: str
     token: str
     refresh_token: str
     expires_in: int
+    user: UserResponse
 
 
 class OTPRequest(BaseModel):

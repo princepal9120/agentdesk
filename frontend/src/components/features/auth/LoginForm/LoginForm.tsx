@@ -86,12 +86,13 @@ export const LoginForm: React.FC = () => {
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <Label htmlFor="password" className="text-grey-700 font-medium">Password</Label>
-                        <Link
-                            to="/forgot-password"
+                        <button
+                            type="button"
+                            onClick={() => alert('Password reset feature coming soon!')}
                             className="text-sm text-[#2BB59B] hover:text-[#249A84] font-medium transition-colors"
                         >
                             Forgot password?
-                        </Link>
+                        </button>
                     </div>
                     <div className="relative">
                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-grey-400" />

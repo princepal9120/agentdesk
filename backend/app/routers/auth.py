@@ -21,7 +21,7 @@ from app.core.dependencies import get_current_user
 from app.models.user import User, UserRole
 from app.schemas.auth import (
     UserRegister, UserLogin, TokenResponse, OTPRequest,
-    OTPRequestResponse, OTPVerify, MessageResponse
+    OTPRequestResponse, OTPVerify, MessageResponse, UserResponse
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -39,7 +39,7 @@ async def register(
     # Check if user exists
     result = await db.execute(
         select(User).where(
-            or_(User.email == data.email, User.phone_number == data.phone)
+            or_(User.email == data.email, User.phone_number == data.phone_number)
         )
     )
     if result.scalar_one_or_none():
@@ -48,7 +48,7 @@ async def register(
     # Create user
     user = User(
         email=data.email,
-        phone_number=data.phone,
+        phone_number=data.phone_number,
         password_hash=hash_password(data.password),
         full_name=data.full_name,
         role=UserRole.PATIENT
@@ -64,7 +64,8 @@ async def register(
         user_id=str(user.id),
         token=access_token,
         refresh_token=refresh_token,
-        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=user
     )
 
 
@@ -103,7 +104,8 @@ async def login(
         user_id=str(user.id),
         token=access_token,
         refresh_token=refresh_token,
-        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=user
     )
 
 
@@ -175,7 +177,8 @@ async def verify_otp(
         user_id=str(user.id),
         token=access_token,
         refresh_token=refresh_token,
-        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        user=user
     )
 
 
@@ -189,3 +192,14 @@ async def logout(
     """
     # TODO: Invalidate refresh token in Redis
     return MessageResponse(message="Logged out successfully")
+
+
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_profile(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Get current user profile.
+    TRS 2.2.1: GET /api/v1/auth/me
+    """
+    return current_user
