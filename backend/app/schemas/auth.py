@@ -33,6 +33,8 @@ class UserResponse(BaseModel):
     role: str
     is_active: bool
     is_verified: bool
+    patient_id: Optional[UUID] = None  # Set when role is patient
+    doctor_id: Optional[UUID] = None   # Set when role is doctor
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

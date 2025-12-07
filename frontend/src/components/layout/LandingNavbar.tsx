@@ -6,14 +6,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, HeartPulse } from 'lucide-react';
+import { Menu, X, HeartPulse, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { isAuthenticated } from '@/utils/auth-utils';
 
 const LandingNavbar: React.FC = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
+        // Check auth status on mount
+        setIsLoggedIn(isAuthenticated());
+
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
         };
@@ -70,16 +75,27 @@ const LandingNavbar: React.FC = () => {
 
                         {/* Desktop CTA */}
                         <div className="hidden md:flex items-center gap-4">
-                            <Link to="/login">
-                                <Button variant="ghost" className={isScrolled ? '' : 'text-slate-700'}>
-                                    Login
-                                </Button>
-                            </Link>
-                            <Link to="/register">
-                                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full px-6">
-                                    Get Started
-                                </Button>
-                            </Link>
+                            {isLoggedIn ? (
+                                <Link to="/dashboard">
+                                    <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full px-6">
+                                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                                        Go to Dashboard
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link to="/login">
+                                        <Button variant="ghost" className={isScrolled ? '' : 'text-slate-700'}>
+                                            Login
+                                        </Button>
+                                    </Link>
+                                    <Link to="/register">
+                                        <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full px-6">
+                                            Get Started
+                                        </Button>
+                                    </Link>
+                                </>
+                            )}
                         </div>
 
                         {/* Mobile Menu Button */}
@@ -120,16 +136,27 @@ const LandingNavbar: React.FC = () => {
                                     </a>
                                 ))}
                                 <hr className="my-2" />
-                                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                                    <Button variant="outline" className="w-full">
-                                        Login
-                                    </Button>
-                                </Link>
-                                <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                                    <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600">
-                                        Get Started
-                                    </Button>
-                                </Link>
+                                {isLoggedIn ? (
+                                    <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                                        <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600">
+                                            <LayoutDashboard className="w-4 h-4 mr-2" />
+                                            Go to Dashboard
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                                            <Button variant="outline" className="w-full">
+                                                Login
+                                            </Button>
+                                        </Link>
+                                        <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                                            <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600">
+                                                Get Started
+                                            </Button>
+                                        </Link>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </motion.div>

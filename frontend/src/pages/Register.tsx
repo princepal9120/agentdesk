@@ -4,14 +4,24 @@
  */
 
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { motion } from 'motion/react';
 import { gsap } from 'gsap';
 import { RegisterForm } from '@/components/features/auth/RegisterForm/RegisterForm';
 import { Card } from '@/components/ui/card';
 import { Shield, UserPlus } from 'lucide-react';
+import { isAuthenticated } from '@/utils/auth-utils';
 
 const Register: React.FC = () => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
+
+    // Redirect authenticated users to dashboard
+    useEffect(() => {
+        if (isAuthenticated()) {
+            navigate({ to: '/dashboard' });
+        }
+    }, [navigate]);
 
     // GSAP entrance animation
     useEffect(() => {

@@ -43,7 +43,7 @@ source venv/bin/activate
 Install the project dependencies, including development tools.
 
 ```bash
-pip install -e ".[dev]"
+uv pip install -e ".[dev]"
 ```
 
 ## 5. Configuration

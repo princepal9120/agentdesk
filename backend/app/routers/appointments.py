@@ -44,15 +44,27 @@ async def list_appointments(
     """
     service = AppointmentService(db)
     
-    # Authorization: patients can only see their own
+    # Authorization: patients can only see their own, doctors can only see their own
+    doctor_id_filter = None
     if current_user.role == UserRole.PATIENT:
         if current_user.patient:
             patient_id = current_user.patient.id
         else:
             return AppointmentListResponse(total=0, appointments=[], has_more=False)
+    elif current_user.role == UserRole.DOCTOR:
+        if current_user.doctor:
+            doctor_id_filter = current_user.doctor.id
+        else:
+            return AppointmentListResponse(total=0, appointments=[], has_more=False)
     
+    # Note: If admin, no forced filters apply (can verify all)
+
     appointments, total, has_more = await service.get_appointments(
-        patient_id=patient_id, status=status, limit=limit, offset=offset
+        patient_id=patient_id, 
+        doctor_id=doctor_id_filter,
+        status=status, 
+        limit=limit, 
+        offset=offset
     )
     
     return AppointmentListResponse(

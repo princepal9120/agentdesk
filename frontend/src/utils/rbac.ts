@@ -61,6 +61,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
         'manage:billing',
         'view:audit-logs',
         'send:notifications',
+        'view:developer-tools',
     ],
 };
 
@@ -89,6 +90,7 @@ export const ROUTE_ACCESS: Record<string, UserRole[]> = {
     '/analytics': ['doctor', 'admin'],
     '/compliance': ['admin'],
     '/billing': ['admin'],
+    '/developer': ['admin'],
     '/settings': ['patient', 'doctor', 'admin', 'receptionist'],
     '/calls': ['admin', 'receptionist'],
     '/help': ['patient', 'doctor', 'admin', 'receptionist'],
@@ -177,6 +179,7 @@ export function getNavigationForRole(role: UserRole): NavigationItem[] {
             ...baseNavigation,
             { name: 'Appointments', path: '/appointments', icon: 'Calendar' },
             { name: 'Call Logs', path: '/calls', icon: 'Phone' },
+            { name: 'Developer', path: '/developer', icon: 'BarChart3' },
             { name: 'Analytics', path: '/analytics', icon: 'BarChart3' },
             { name: 'Compliance', path: '/compliance', icon: 'Shield' },
             { name: 'Billing', path: '/billing', icon: 'CreditCard' },

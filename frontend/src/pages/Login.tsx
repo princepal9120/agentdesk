@@ -4,17 +4,26 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { useRouter } from '@tanstack/react-router';
+import { useRouter, useNavigate } from '@tanstack/react-router';
 import { motion } from 'motion/react';
 import { gsap } from 'gsap';
 import { LoginForm } from '@/components/features/auth/LoginForm/LoginForm';
 import { Card } from '@/components/ui/card';
 import { CheckCircle2, Shield } from 'lucide-react';
+import { isAuthenticated } from '@/utils/auth-utils';
 
 const Login: React.FC = () => {
     const router = useRouter();
+    const navigate = useNavigate();
     const containerRef = useRef<HTMLDivElement>(null);
     const message = (router.state.location.state as { message?: string } | undefined)?.message;
+
+    // Redirect authenticated users to dashboard
+    useEffect(() => {
+        if (isAuthenticated()) {
+            navigate({ to: '/dashboard' });
+        }
+    }, [navigate]);
 
     useEffect(() => {
         // Clear history state to prevent showing message on refresh

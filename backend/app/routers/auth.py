@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
+from sqlalchemy.orm import selectinload
 import redis.asyncio as redis
 
 from app.core.database import get_db
@@ -25,6 +26,31 @@ from app.schemas.auth import (
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
+def build_user_response(user: User) -> UserResponse:
+    """Build UserResponse with patient_id and doctor_id populated."""
+    patient_id = None
+    doctor_id = None
+    
+    if user.patient:
+        patient_id = user.patient.id
+    if user.doctor:
+        doctor_id = user.doctor.id
+    
+    return UserResponse(
+        id=user.id,
+        email=user.email,
+        phone_number=user.phone_number,
+        full_name=user.full_name,
+        role=user.role.value if isinstance(user.role, UserRole) else user.role,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+        patient_id=patient_id,
+        doctor_id=doctor_id,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+    )
 
 
 @router.post("/register", response_model=TokenResponse, status_code=201)
@@ -87,6 +113,9 @@ async def register(
     
     await db.flush()
     
+    # Reload user with patient/doctor relations
+    await db.refresh(user, ['patient', 'doctor'])
+    
     # Generate tokens
     access_token = create_access_token(user.id)
     refresh_token = create_refresh_token(user.id)
@@ -96,7 +125,7 @@ async def register(
         token=access_token,
         refresh_token=refresh_token,
         expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        user=user
+        user=build_user_response(user)
     )
 
 
@@ -110,7 +139,9 @@ async def login(
     TRS 2.2.1: POST /api/v1/auth/login
     """
     result = await db.execute(
-        select(User).where(
+        select(User)
+        .options(selectinload(User.patient), selectinload(User.doctor))
+        .where(
             or_(
                 User.email == data.email_or_phone,
                 User.phone_number == data.email_or_phone
@@ -136,7 +167,7 @@ async def login(
         token=access_token,
         refresh_token=refresh_token,
         expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        user=user
+        user=build_user_response(user)
     )
 
 

@@ -14,10 +14,15 @@ export const BookingConfirmation: React.FC = () => {
     const navigate = useNavigate();
     const { selectedDoctor } = useAppSelector((state) => state.doctors);
     const { currentBooking, loading, error } = useAppSelector((state) => state.appointments);
+    const { user } = useAppSelector((state) => state.auth);
     const [reason, setReason] = useState('');
 
     if (!selectedDoctor || !currentBooking.slot) {
         return <div>Missing booking details</div>;
+    }
+
+    if (!user?.patient_id) {
+        return <div className="text-center py-8 text-error">Patient profile not found. Please contact support.</div>;
     }
 
     const appointmentDate = new Date(currentBooking.slot);
@@ -25,6 +30,7 @@ export const BookingConfirmation: React.FC = () => {
     const handleConfirm = async () => {
         const resultAction = await dispatch(bookAppointment({
             doctor_id: selectedDoctor.id,
+            patient_id: user.patient_id!,
             start_time: currentBooking.slot!,
             reason: reason
         }));

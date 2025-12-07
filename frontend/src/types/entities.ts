@@ -8,6 +8,8 @@ export interface User {
   role: UserRole;
   is_active: boolean;
   is_verified: boolean;
+  patient_id?: string;  // Set when role is patient
+  doctor_id?: string;   // Set when role is doctor
   created_at?: string;
   updated_at?: string;
 }

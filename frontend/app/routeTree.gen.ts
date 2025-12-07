@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedLayoutRouteImport } from './routes/_authenticated/_layout'
 import { Route as AuthenticatedLayoutSettingsRouteImport } from './routes/_authenticated/_layout/settings'
 import { Route as AuthenticatedLayoutHelpRouteImport } from './routes/_authenticated/_layout/help'
+import { Route as AuthenticatedLayoutDeveloperRouteImport } from './routes/_authenticated/_layout/developer'
 import { Route as AuthenticatedLayoutDashboardRouteImport } from './routes/_authenticated/_layout/dashboard'
 import { Route as AuthenticatedLayoutComplianceRouteImport } from './routes/_authenticated/_layout/compliance'
 import { Route as AuthenticatedLayoutCallsRouteImport } from './routes/_authenticated/_layout/calls'
@@ -70,6 +71,12 @@ const AuthenticatedLayoutHelpRoute = AuthenticatedLayoutHelpRouteImport.update({
   path: '/help',
   getParentRoute: () => AuthenticatedLayoutRoute,
 } as any)
+const AuthenticatedLayoutDeveloperRoute =
+  AuthenticatedLayoutDeveloperRouteImport.update({
+    id: '/developer',
+    path: '/developer',
+    getParentRoute: () => AuthenticatedLayoutRoute,
+  } as any)
 const AuthenticatedLayoutDashboardRoute =
   AuthenticatedLayoutDashboardRouteImport.update({
     id: '/dashboard',
@@ -125,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/calls': typeof AuthenticatedLayoutCallsRoute
   '/compliance': typeof AuthenticatedLayoutComplianceRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/developer': typeof AuthenticatedLayoutDeveloperRoute
   '/help': typeof AuthenticatedLayoutHelpRoute
   '/settings': typeof AuthenticatedLayoutSettingsRoute
   '/appointments/book': typeof AuthenticatedLayoutAppointmentsBookRoute
@@ -141,6 +149,7 @@ export interface FileRoutesByTo {
   '/calls': typeof AuthenticatedLayoutCallsRoute
   '/compliance': typeof AuthenticatedLayoutComplianceRoute
   '/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/developer': typeof AuthenticatedLayoutDeveloperRoute
   '/help': typeof AuthenticatedLayoutHelpRoute
   '/settings': typeof AuthenticatedLayoutSettingsRoute
   '/appointments/book': typeof AuthenticatedLayoutAppointmentsBookRoute
@@ -160,6 +169,7 @@ export interface FileRoutesById {
   '/_authenticated/_layout/calls': typeof AuthenticatedLayoutCallsRoute
   '/_authenticated/_layout/compliance': typeof AuthenticatedLayoutComplianceRoute
   '/_authenticated/_layout/dashboard': typeof AuthenticatedLayoutDashboardRoute
+  '/_authenticated/_layout/developer': typeof AuthenticatedLayoutDeveloperRoute
   '/_authenticated/_layout/help': typeof AuthenticatedLayoutHelpRoute
   '/_authenticated/_layout/settings': typeof AuthenticatedLayoutSettingsRoute
   '/_authenticated/_layout/appointments/book': typeof AuthenticatedLayoutAppointmentsBookRoute
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/calls'
     | '/compliance'
     | '/dashboard'
+    | '/developer'
     | '/help'
     | '/settings'
     | '/appointments/book'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/calls'
     | '/compliance'
     | '/dashboard'
+    | '/developer'
     | '/help'
     | '/settings'
     | '/appointments/book'
@@ -212,6 +224,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_layout/calls'
     | '/_authenticated/_layout/compliance'
     | '/_authenticated/_layout/dashboard'
+    | '/_authenticated/_layout/developer'
     | '/_authenticated/_layout/help'
     | '/_authenticated/_layout/settings'
     | '/_authenticated/_layout/appointments/book'
@@ -291,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLayoutHelpRouteImport
       parentRoute: typeof AuthenticatedLayoutRoute
     }
+    '/_authenticated/_layout/developer': {
+      id: '/_authenticated/_layout/developer'
+      path: '/developer'
+      fullPath: '/developer'
+      preLoaderRoute: typeof AuthenticatedLayoutDeveloperRouteImport
+      parentRoute: typeof AuthenticatedLayoutRoute
+    }
     '/_authenticated/_layout/dashboard': {
       id: '/_authenticated/_layout/dashboard'
       path: '/dashboard'
@@ -365,6 +385,7 @@ interface AuthenticatedLayoutRouteChildren {
   AuthenticatedLayoutCallsRoute: typeof AuthenticatedLayoutCallsRoute
   AuthenticatedLayoutComplianceRoute: typeof AuthenticatedLayoutComplianceRoute
   AuthenticatedLayoutDashboardRoute: typeof AuthenticatedLayoutDashboardRoute
+  AuthenticatedLayoutDeveloperRoute: typeof AuthenticatedLayoutDeveloperRoute
   AuthenticatedLayoutHelpRoute: typeof AuthenticatedLayoutHelpRoute
   AuthenticatedLayoutSettingsRoute: typeof AuthenticatedLayoutSettingsRoute
 }
@@ -377,6 +398,7 @@ const AuthenticatedLayoutRouteChildren: AuthenticatedLayoutRouteChildren = {
   AuthenticatedLayoutCallsRoute: AuthenticatedLayoutCallsRoute,
   AuthenticatedLayoutComplianceRoute: AuthenticatedLayoutComplianceRoute,
   AuthenticatedLayoutDashboardRoute: AuthenticatedLayoutDashboardRoute,
+  AuthenticatedLayoutDeveloperRoute: AuthenticatedLayoutDeveloperRoute,
   AuthenticatedLayoutHelpRoute: AuthenticatedLayoutHelpRoute,
   AuthenticatedLayoutSettingsRoute: AuthenticatedLayoutSettingsRoute,
 }

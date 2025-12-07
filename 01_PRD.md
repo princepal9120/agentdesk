@@ -218,7 +218,14 @@ Build a **HIPAA-compliant AI voice agent system** that automates doctor appointm
 - [ ] Generate revenue reports
 - [ ] Doctor utilization metrics
 - [ ] Patient satisfaction scores
-- [ ] Voice agent performance metrics (accuracy, call duration)
+
+#### FR-6: Conversation Intelligence (Developer Admin)
+- [ ] **Turn-by-Turn Debugging**: Visual timeline of User Audio -> STT -> LLM -> TTS -> Audio Output
+- [ ] **Latency Waterfall**: Track ms delay for each step (STT, LLM, TTS) to find bottlenecks
+- [ ] **Interruption Tracking**: Log when users interrupt the AI (indicating slow response or wrong logic)
+- [ ] **Sentiment Heatmap**: Visual bar showing sentiment change per turn (Green -> Red)
+- [ ] **Failure Clustering**: Group failed calls by reason (e.g., "STT Error", "LLM Hallucination", "Hangup")
+- [ ] **Playground Mode**: Test new prompts against recorded calls to simulate "what if" scenarios
 
 ### 4.2 Non-Functional Requirements
 
@@ -282,6 +289,16 @@ Build a **HIPAA-compliant AI voice agent system** that automates doctor appointm
 - Goal: Reduce call volume, improve efficiency
 - Pain: Repetitive calling, high stress
 - Usage: Dashboard + Manual override capability
+
+**Persona 4: Alex (Developer Admin / AI Optimizer)**
+- Role: System Architect & Quality Engineer
+- Goal: Identify "why" a call failed and improve AI behavior
+- Pain: "Black box" AI failures, lack of visibility into latency/transcripts
+- Usage: Advanced Debugger Dashboard
+    *   Analyzing individual call traces (User vs AI turns)
+    *   Identifying "hallucination" moments
+    *   Tracking latency spikes causing interruptions
+    *   Monitoring sentiment shifts (e.g., Patient went from Neutral -> Angry)
 
 ### 5.2 User Story Examples
 

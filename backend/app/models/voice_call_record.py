@@ -9,7 +9,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional, TYPE_CHECKING
 
-from sqlalchemy import String, Text, Integer, Numeric, ForeignKey
+from sqlalchemy import String, Text, Integer, Numeric, ForeignKey, JSON
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -45,6 +45,11 @@ class VoiceCallRecord(Base, UUIDMixin, TimestampMixin):
     call_duration_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     livekit_session_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     ai_model_version: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+
+    # FR-6: Conversation Intelligence & Debugging
+    debug_trace: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    latency_metrics: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    sentiment_timeline: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     
     patient: Mapped["Patient"] = relationship("Patient", back_populates="voice_call_records")
     appointment: Mapped[Optional["Appointment"]] = relationship("Appointment", back_populates="voice_call_records")

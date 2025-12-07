@@ -30,12 +30,8 @@ const initialState: AppointmentState = {
 
 export const bookAppointment = createAsyncThunk(
   'appointments/book',
-  async (bookingData: { doctor_id: string; start_time: string; reason?: string }, { rejectWithValue }) => {
+  async (bookingData: { doctor_id: string; patient_id: string; start_time: string; reason?: string }, { rejectWithValue }) => {
     try {
-      // We need patient_id, but usually backend infers from token or we send it
-      // Backend schema expects: doctor_id, patient_id, start_time, duration_minutes, reason
-      // We'll assume we need to get patient_id from auth state or backend handles "me"
-      // Let's assume we pass what's needed.
       const response = await api.post('/appointments', {
         ...bookingData,
         duration_minutes: 30 // Default duration
