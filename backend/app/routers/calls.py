@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, desc
 from sqlalchemy.orm import Session, selectinload
 
-from app.db.session import get_db
+from app.core.database import get_db
 from app.models.voice_call_record import VoiceCallRecord
-from app.core.security import get_current_user, get_current_admin_user
+from app.core.dependencies import get_current_user
 
 router = APIRouter(prefix="/calls", tags=["Calls"])
 

@@ -1,6 +1,6 @@
 """
 Seed script to generate mock voice call records for Developer Dashboard testing.
-Run: python -m scripts.seed_calls
+Run from backend directory: python scripts/seed_calls.py
 """
 
 import asyncio
@@ -11,10 +11,13 @@ from decimal import Decimal
 
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Fix Python path to prioritize this project
+backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path = [backend_dir] + [p for p in sys.path if backend_dir not in p]
 
 from sqlalchemy import select
-from app.db.session import SessionLocal
+from app.core.database import engine, AsyncSessionLocal
 from app.models.voice_call_record import VoiceCallRecord
 from app.models.patient import Patient
 
@@ -71,51 +74,50 @@ def generate_sentiment_timeline():
     return sentiments
 
 
-def seed_calls():
-    db = SessionLocal()
-    try:
-        # Get a patient to associate calls with
-        patient = db.execute(select(Patient).limit(1)).scalars().first()
-        if not patient:
-            print("ERROR: No patients found. Run seed_patients.py first.")
-            return
-        
-        outcomes = ["completed", "completed", "completed", "failed", "interrupted"]
-        intents = ["schedule_appointment", "reschedule", "cancel", "inquiry", "general"]
-        
-        for i in range(10):
-            outcome = random.choice(outcomes)
-            call = VoiceCallRecord(
-                id=uuid.uuid4(),
-                patient_id=patient.id,
-                call_sid=f"CA{uuid.uuid4().hex[:24]}",
-                call_type="inbound",
-                phone_number=f"+1555{random.randint(1000000, 9999999)}",
-                transcript=f"Sample transcript for call {i + 1}. Patient requested appointment.",
-                transcription_confidence=Decimal(str(round(random.uniform(0.85, 0.99), 2))),
-                detected_intent=random.choice(intents),
-                conversation_outcome=outcome,
-                call_started_at=datetime.utcnow() - timedelta(hours=random.randint(1, 48)),
-                call_ended_at=datetime.utcnow() - timedelta(hours=random.randint(0, 1)),
-                call_duration_seconds=random.randint(60, 300),
-                livekit_session_id=f"LK_{uuid.uuid4().hex[:16]}",
-                ai_model_version="gpt-4o-realtime-preview",
-                debug_trace=generate_debug_trace(),
-                latency_metrics=generate_latency_metrics(),
-                sentiment_timeline=generate_sentiment_timeline()
-            )
-            db.add(call)
-        
-        db.commit()
-        print("Successfully seeded 10 mock voice call records!")
-        
-    except Exception as e:
-        db.rollback()
-        print(f"Error seeding calls: {e}")
-        raise
-    finally:
-        db.close()
+async def seed_calls():
+    async with AsyncSessionLocal() as db:
+        try:
+            # Get a patient to associate calls with
+            result = await db.execute(select(Patient).limit(1))
+            patient = result.scalars().first()
+            if not patient:
+                print("ERROR: No patients found. Run seed_patient.py first.")
+                return
+            
+            outcomes = ["completed", "completed", "completed", "failed", "interrupted"]
+            intents = ["schedule_appointment", "reschedule", "cancel", "inquiry", "general"]
+            
+            for i in range(10):
+                outcome = random.choice(outcomes)
+                call = VoiceCallRecord(
+                    id=uuid.uuid4(),
+                    patient_id=patient.id,
+                    call_sid=f"CA{uuid.uuid4().hex[:24]}",
+                    call_type="inbound",
+                    phone_number=f"+1555{random.randint(1000000, 9999999)}",
+                    transcript=f"Sample transcript for call {i + 1}. Patient requested appointment.",
+                    transcription_confidence=Decimal(str(round(random.uniform(0.85, 0.99), 2))),
+                    detected_intent=random.choice(intents),
+                    conversation_outcome=outcome,
+                    call_started_at=datetime.utcnow() - timedelta(hours=random.randint(1, 48)),
+                    call_ended_at=datetime.utcnow() - timedelta(hours=random.randint(0, 1)),
+                    call_duration_seconds=random.randint(60, 300),
+                    livekit_session_id=f"LK_{uuid.uuid4().hex[:16]}",
+                    ai_model_version="gpt-4o-realtime-preview",
+                    debug_trace=generate_debug_trace(),
+                    latency_metrics=generate_latency_metrics(),
+                    sentiment_timeline=generate_sentiment_timeline()
+                )
+                db.add(call)
+            
+            await db.commit()
+            print("Successfully seeded 10 mock voice call records!")
+            
+        except Exception as e:
+            await db.rollback()
+            print(f"Error seeding calls: {e}")
+            raise
 
 
 if __name__ == "__main__":
-    seed_calls()
+    asyncio.run(seed_calls())

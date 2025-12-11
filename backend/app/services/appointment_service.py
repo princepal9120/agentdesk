@@ -19,6 +19,8 @@ from app.models.doctor import Doctor
 from app.schemas.appointment import AppointmentCreate, AppointmentUpdate
 from app.core.security import generate_confirmation_code
 from app.services.audit_service import log_phi_access
+from app.services.notification_service import NotificationService
+
 
 
 class AppointmentService:
@@ -74,8 +76,28 @@ class AppointmentService:
             appointment.id, new_values={"patient_id": str(data.patient_id)}
         )
         
-        # TODO: Schedule reminders via notification service
-        reminder_scheduled = True
+       
+        
+        reminder_scheduled = False
+        try:
+            notification_service = NotificationService(self.db)
+            reminders = await notification_service.schedule_appointment_reminders(
+                appointment=appointment,
+                patient=patient
+            )
+            reminder_scheduled = len(reminders) > 0
+            
+            if reminders:
+                # Update the appointment to show when the last reminder was scheduled
+                appointment.last_reminder_sent_at = None  # Will be set when actually sent
+        except Exception as e:
+            # Don't fail the appointment creation if reminder scheduling fails
+            # Just log it and continue
+            import logging
+            logging.getLogger(__name__).warning(
+                f"Failed to schedule reminders for appointment {appointment.id}: {e}"
+            )
+            reminder_scheduled = False
         
         return appointment, reminder_scheduled
     
