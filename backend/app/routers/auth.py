@@ -264,4 +264,5 @@ async def get_current_user_profile(
     Get current user profile.
     TRS 2.2.1: GET /api/v1/auth/me
     """
-    return current_user
+    return build_user_response(current_user)
+

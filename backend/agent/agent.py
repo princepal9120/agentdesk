@@ -204,36 +204,49 @@ class VoiceAgent:
         participant = await ctx.wait_for_participant()
         logger.info(f"Participant connected: {participant.identity}")
         
-        # Create the agent
-        agent = await self.create_agent()
+        # Initialize plugins
+        stt_plugin = deepgram.STT(
+            model=self.config.stt.model,
+            language=self.config.stt.language,
+        )
         
-        # Start the agent session
+        tts_plugin = cartesia.TTS(
+            model=self.config.tts.model,
+            voice=self.config.tts.voice,
+        )
+        
+        vad_plugin = silero.VAD.load(
+            min_speech_duration=self.config.vad.min_speech_duration,
+            min_silence_duration=self.config.vad.min_silence_duration,
+        )
+        
+        # Create the LLM
+        llm_plugin = openai.LLM(
+            model=self.config.llm.model,
+            temperature=self.config.llm.temperature,
+        )
+        
+        # Create tools
+        tools = self._create_tools()
+        
+        # Create the AgentSession with plugins directly (LiveKit v1.3+ API)
         session = AgentSession(
-            agent=agent,
+            stt=stt_plugin,
+            llm=llm_plugin,
+            tts=tts_plugin,
+            vad=vad_plugin,
+            tools=tools,
+            allow_interruptions=self.config.conversation.allow_interruptions,
+        )
+        
+        # Start the session with the room and participant
+        await session.start(
             room=ctx.room,
             participant=participant,
         )
         
-        # Set up event handlers
-        @session.on("agent_state_changed")
-        def on_state_changed(event):
-            logger.info(f"Agent state changed: {event.state}")
-        
-        @session.on("user_input_transcribed")
-        def on_user_speech(event):
-            logger.info(f"User said: {event.transcript}")
-        
-        @session.on("speech_created")
-        def on_agent_speech(event):
-            logger.info(f"Agent speaking: {event.content[:100]}...")
-        
-        # Start the session
-        await session.start()
-        
         # Send initial greeting
-        await session.generate_reply(
-            instructions=f"Greet the caller warmly: {self.config.conversation.initial_greeting}"
-        )
+        await session.say(self.config.conversation.initial_greeting)
         
         logger.info("Voice agent ready and greeting sent")
         

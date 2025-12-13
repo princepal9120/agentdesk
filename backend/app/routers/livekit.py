@@ -6,7 +6,6 @@ PRD Reference: Section 3.1 - Voice Interaction Features
 Handles LiveKit token generation for frontend client.
 """
 
-import os
 from typing import Optional
 from uuid import UUID
 
@@ -35,11 +34,10 @@ async def get_token(
     """
     Generate a LiveKit token for the current user.
     """
-    # Use environment variables directly or from settings if added there
-    # For now, we'll use os.getenv as they might not be in Settings class yet
-    api_key = os.getenv("LIVEKIT_API_KEY")
-    api_secret = os.getenv("LIVEKIT_API_SECRET")
-    livekit_url = os.getenv("LIVEKIT_URL")
+    # Use settings which loads from .env file
+    api_key = settings.LIVEKIT_API_KEY
+    api_secret = settings.LIVEKIT_API_SECRET
+    livekit_url = settings.LIVEKIT_URL
     
     if not api_key or not api_secret or not livekit_url:
         raise HTTPException(
