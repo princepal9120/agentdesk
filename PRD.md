@@ -1,241 +1,184 @@
-# VoiceDesk — AI Receptionist for US Small Businesses
-## Product Requirements Document v1.0
-*Created: 2026-03-15 | Author: Prince Pal*
+# AgentDesk — White-Label AI Voice Agent Platform
+## Product Requirements Document v2.0
+*Created: 2026-03-15 | Updated: 2026-03-15 | Author: Prince Pal*
+*Inspired by: BookedIn.ai ($56K MRR) — simpler, faster to build*
 
 ---
 
 ## 1. Executive Summary
 
-VoiceDesk is an AI-powered phone receptionist that answers calls, books appointments, and handles FAQs for small US businesses 24/7. Targeting the 33 million small businesses in the USA that cannot afford human receptionists ($35K-60K/yr salary) but lose an estimated $300+ per missed call.
+AgentDesk is a B2B2C platform where AI freelancers and small agencies deploy white-labeled voice agents for their clients (salons, restaurants, repair shops, etc.) without building the infra themselves.
 
-**One-liner:** Never miss a customer call again — VoiceDesk answers 24/7 for $49/mo.
+**Competitor:** BookedIn.ai ($56K MRR) — they have a full no-code visual builder.
+**Our edge:** Simpler (template-based), cheaper, faster to start. Target the solo dev/freelancer who just wants something that works.
+
+**One-liner:** Launch an AI receptionist for your client in 5 minutes. Charge them $150/mo. Keep the margin.
 
 ---
 
-## 2. The Problem
+## 2. Who Buys This (ICP)
 
-- 62% of small business calls go to voicemail (Hiya, 2024)
-- 85% of callers who hit voicemail don't call back
-- A receptionist costs $35K-60K/yr in the USA
-- Missed calls = missed bookings = lost revenue
+**Primary:** AI freelancers and micro-agencies (1-5 person shops)
+- They promise clients "AI automation" but hate stitching Vapi + n8n + Zapier
+- They want a white-label platform they can resell
+- They're active on Twitter, Reddit r/agency, YouTube
 
-**Primary targets (USA):**
-- Medical/dental clinics (without HIPAA scope — appointment only)
+**Secondary:** Solo entrepreneurs who want a done-for-them solution
+- Local business consultant
+- Marketing agency adding AI as a service
+
+**End clients (who don't touch the platform):**
 - Hair salons, spas, barbershops
-- Auto repair shops
-- Plumbers, electricians, contractors
 - Restaurants (reservations)
-- Law firm intake (tier 2)
-
-**India secondary market:**
-- Same verticals but 10x lower willingness to pay ($5-10/mo)
-- Best angle: reseller/white-label for Indian agencies
-- Focus USA first, India expansion after $10K MRR
+- Auto repair shops
+- Plumbers, electricians (lead capture)
+- Gyms and fitness studios
 
 ---
 
-## 3. Solution
+## 3. How It Works
 
-A web app where a business owner:
-1. Signs up in 5 minutes
-2. Configures their agent (name, business info, services, hours)
-3. Gets a dedicated US phone number (via Twilio)
-4. Agent handles all inbound calls with human-like voice
-5. Owner sees call logs, transcripts, bookings in dashboard
+```
+Agency signs up on AgentDesk
+  → Creates a workspace (white-labeled)
+  → Adds a client (business name, vertical, hours)
+  → Picks a template (Salon / Restaurant / General)
+  → Agent auto-configured from template
+  → Gets a dedicated US phone number (Twilio)
+  → Shares client dashboard link with their client
+  → Client sees calls, transcripts, bookings
+  → Agency charges client $100-300/mo, pays us $49-99/mo
+```
 
 ---
 
-## 4. Tech Stack (2026 Best Practices)
+## 4. Tech Stack
 
 ### Backend
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Framework | **FastAPI** (Python 3.12) | Async, fast, standard for AI agents |
-| Voice Infra | **LiveKit Cloud** | Best WebRTC + agent framework, managed |
-| STT | **Deepgram Nova-3** | Lowest latency (~300ms), best accuracy |
-| LLM | **GPT-4o-mini** (primary) / Claude Haiku (fallback) | Fast, cheap, good tool use |
-| TTS | **Cartesia Sonic** | Ultra-low latency (~90ms), most natural |
-| Phone | **Twilio Voice** | Industry standard, SIP trunking |
-| DB | **PostgreSQL 16** (Supabase) | Managed, row-level security, free tier |
-| Cache | **Redis** (Upstash) | Session state, rate limiting, serverless |
-| Queue | **BullMQ** via Upstash | Job queue for async tasks |
-| Auth | **Clerk** | Best DX, pre-built UI, free tier |
-| Payments | **Stripe** | Subscriptions + usage billing |
+| Layer | Choice | Reason |
+|-------|--------|--------|
+| Framework | **FastAPI** (Python 3.12) | Async, production-grade |
+| Voice Infra | **LiveKit Cloud** | Best WebRTC agent framework |
+| STT | **Deepgram Nova-3** | Best accuracy + streaming |
+| LLM | **GPT-4o-mini** | Fast, cheap, great tool use |
+| TTS | **Cartesia Sonic** | Lowest latency (~90ms) |
+| Phone | **Twilio Voice** (SIP) | Industry standard |
+| Database | **PostgreSQL 16** (Supabase) | Multi-tenant, row-level security |
+| Cache | **Redis** (Upstash serverless) | Session state, rate limiting |
+| Auth | **Clerk** (multi-tenant orgs) | Built-in agency + client roles |
+| Payments | **Stripe** | Subscriptions + per-seat billing |
+
+### Why Not One Provider?
+
+> **Prince's question: "Why not just use one service for everything?"**
+
+Short answer: No single provider does all three well yet.
+
+| Provider | STT | LLM | TTS | Verdict |
+|----------|-----|-----|-----|---------|
+| OpenAI Realtime API | ✅ Whisper | ✅ GPT-4o | ✅ Built-in | **Best single option** — but $0.06/min, no streaming control |
+| Vapi.ai | ✅ (wraps others) | ✅ | ✅ | Does everything but $0.05/min + 10% margin fee |
+| ElevenLabs | ❌ | ❌ | ✅ only | Voice only |
+| Deepgram | ✅ only | ❌ | ✅ Aura | STT is best, TTS mediocre |
+| Google Gemini Live | ✅ | ✅ Gemini | ✅ | New, good quality, less production proven |
+
+**Why we separate them:**
+- Deepgram STT = 2x more accurate than OpenAI Whisper in real conditions
+- Cartesia = 2x lower latency than OpenAI TTS
+- GPT-4o-mini = cheapest capable LLM for tool calls
+- Total COGS: ~$0.054/call vs OpenAI Realtime ~$0.18/call (3x cheaper)
+
+**Alternative (simpler, higher cost):**
+If you want zero complexity in MVP, use **OpenAI Realtime API** for everything.
+- Pro: 1 API key, 1 SDK, simpler code
+- Con: 3x higher cost, less control over voice quality
+
+We'll abstract providers behind interfaces so you can swap later.
 
 ### Frontend
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Framework | **Next.js 15** (App Router) | Latest, server components |
-| Styling | **Tailwind CSS v4** | Latest, faster builds |
-| Components | **shadcn/ui** | Best OSS component library |
-| Animations | **Framer Motion** | Smooth UX |
-| State | **Zustand** | Lightweight, no boilerplate |
-| Forms | **React Hook Form + Zod** | Type-safe validation |
-| Charts | **Recharts** | Call analytics dashboard |
+| Layer | Choice |
+|-------|--------|
+| Framework | Next.js 15 (App Router) |
+| Styling | Tailwind CSS v4 |
+| Components | shadcn/ui |
+| Animations | Framer Motion |
+| State | Zustand |
+| Forms | React Hook Form + Zod |
+| Charts | Recharts |
 
 ### Infrastructure
-| Layer | Choice | Why |
-|-------|--------|-----|
-| Backend deploy | **Railway** | Git push deploy, free tier starts |
-| Frontend deploy | **Vercel** | Best Next.js hosting |
-| DB | **Supabase** | Postgres + realtime + storage |
-| Monitoring | **Sentry** | Error tracking |
-| Logs | **Axiom** | Structured logging |
-| CI/CD | **GitHub Actions** | Standard |
-
-### Voice Pipeline Architecture
-```
-Inbound Call (Twilio) 
-    → SIP Trunk 
-    → LiveKit Room 
-    → Agent (Python)
-        → Deepgram Nova-3 (STT, streaming)
-        → GPT-4o-mini (LLM + tool calls)
-            → book_appointment()
-            → check_availability()
-            → get_business_hours()
-            → send_sms_confirmation()
-        → Cartesia Sonic (TTS, streaming)
-    → Caller hears response
-    → Postgres (call log + transcript)
-    → Webhook → Dashboard
-```
+| Layer | Choice |
+|-------|--------|
+| Backend | Railway |
+| Frontend | Vercel |
+| DB | Supabase (Postgres) |
+| Monitoring | Sentry |
+| Logs | Axiom |
 
 ---
 
-## 5. Core Features
-
-### MVP (Phase 1 — 3 weeks)
-- [ ] Inbound call handling via Twilio + LiveKit
-- [ ] Configurable agent (name, personality, business info)
-- [ ] 3 agent tools: book, cancel, check_availability
-- [ ] Call transcripts stored in Postgres
-- [ ] Basic dashboard: calls list + transcript view
-- [ ] Phone number provisioning (Twilio)
-- [ ] SMS confirmation to caller after booking
-- [ ] Auth (Clerk)
-- [ ] Stripe subscription ($29/mo Starter, $49/mo Pro)
-
-### Post-MVP (Phase 2 — weeks 4-6)
-- [ ] Calendar integrations (Google Calendar, Calendly)
-- [ ] Business hours enforcement
-- [ ] Custom knowledge base (upload FAQ PDF)
-- [ ] Call recording toggle
-- [ ] Voicemail fallback
-- [ ] Multi-language support (Spanish for USA market)
-- [ ] Analytics: call volume, booking rate, peak hours
-
-### Growth (Phase 3)
-- [ ] Outbound appointment reminders
-- [ ] White-label for agencies
-- [ ] API access (Pro tier)
-- [ ] Zapier integration
-- [ ] Industry templates (salon, clinic, restaurant)
-
----
-
-## 6. Pricing
-
-| Plan | Price | Limits | Target |
-|------|-------|--------|--------|
-| Starter | $29/mo | 200 calls/mo, 1 number | Solo operators |
-| Pro | $49/mo | 500 calls/mo, 2 numbers, analytics | Growing SMBs |
-| Business | $99/mo | Unlimited calls, 5 numbers, white-label | Multi-location |
-
-**Unit economics:**
-- Deepgram: ~$0.004/min × 3 min avg = $0.012/call
-- Cartesia: ~$0.005/min × 3 min avg = $0.015/call
-- GPT-4o-mini: ~$0.001/call (150 tokens in + out)
-- Twilio: $0.0085/min × 3 min = $0.026/call
-- **Total COGS per call: ~$0.054**
-- 200 calls on $29 plan = $10.80 COGS → **$18.20 gross profit**
-
----
-
-## 7. Folder Structure
+## 5. Multi-Tenant Architecture
 
 ```
-voicedesk/
-├── backend/
-│   ├── app/
-│   │   ├── main.py              # FastAPI app
-│   │   ├── api/
-│   │   │   ├── calls.py         # Call endpoints
-│   │   │   ├── agents.py        # Agent config CRUD
-│   │   │   ├── webhooks.py      # Twilio + LiveKit webhooks
-│   │   │   └── billing.py       # Stripe endpoints
-│   │   ├── core/
-│   │   │   ├── config.py        # Settings (pydantic-settings)
-│   │   │   ├── database.py      # SQLAlchemy + Postgres
-│   │   │   └── redis.py         # Upstash Redis client
-│   │   └── models/
-│   │       ├── business.py      # Business + agent config
-│   │       ├── call.py          # Call logs + transcripts
-│   │       └── booking.py       # Appointment bookings
-│   ├── agent/
-│   │   ├── agent.py             # LiveKit agent (VoiceDeskAgent class)
-│   │   ├── tools.py             # Agent tools (book/cancel/faq)
-│   │   ├── prompts.py           # System prompts per vertical
-│   │   └── runner.py            # LiveKit worker entrypoint
-│   ├── pyproject.toml
-│   ├── Dockerfile
-│   └── .env.example
-├── frontend/
-│   ├── app/
-│   │   ├── (auth)/              # Login, signup (Clerk)
-│   │   ├── dashboard/
-│   │   │   ├── page.tsx         # Overview + recent calls
-│   │   │   ├── calls/           # Call logs + transcripts
-│   │   │   ├── agent/           # Configure agent
-│   │   │   ├── numbers/         # Phone number management
-│   │   │   └── settings/        # Billing + account
-│   │   ├── onboarding/          # 5-step setup wizard
-│   │   └── layout.tsx
-│   ├── components/
-│   │   ├── ui/                  # shadcn components
-│   │   ├── call-log.tsx
-│   │   ├── agent-config.tsx
-│   │   └── transcript-view.tsx
-│   ├── lib/
-│   │   ├── api.ts               # API client
-│   │   └── types.ts             # Shared types
-│   └── package.json
-├── docs/
-│   ├── PRD.md                   # This file
-│   ├── TECH_SPEC.md
-│   └── API.md
-└── README.md
+Agency (Organization in Clerk)
+  └── Workspace (white-label settings: logo, colors, domain)
+       ├── Client 1 (Business)
+       │    ├── Agent Config (name, template, voice)
+       │    ├── Phone Number (Twilio)
+       │    ├── Call Logs + Transcripts
+       │    └── Bookings
+       ├── Client 2 (Business)
+       └── Client 3 (Business)
 ```
+
+**White-label features (Pro+):**
+- Custom domain (clientdashboard.theiragency.com)
+- Remove "AgentDesk" branding
+- Custom logo + colors in client portal
 
 ---
 
-## 8. Database Schema (Postgres)
+## 6. Database Schema
 
 ```sql
--- Businesses (one per Clerk user)
-CREATE TABLE businesses (
+-- Agencies (map to Clerk org)
+CREATE TABLE agencies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  clerk_user_id TEXT UNIQUE NOT NULL,
+  clerk_org_id TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
-  vertical TEXT, -- salon, clinic, restaurant, etc.
-  phone_number TEXT, -- Twilio provisioned number
-  timezone TEXT DEFAULT 'America/New_York',
+  subdomain TEXT UNIQUE, -- for white-label: agency.agentdesk.app
+  custom_domain TEXT,    -- for white-label: portal.theiragency.com
+  branding JSONB,        -- {logo_url, primary_color, company_name}
   stripe_customer_id TEXT,
   stripe_subscription_id TEXT,
-  plan TEXT DEFAULT 'starter', -- starter|pro|business
+  plan TEXT DEFAULT 'starter', -- starter|pro|agency
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Agent configurations
+-- Businesses (end clients of the agency)
+CREATE TABLE businesses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agency_id UUID REFERENCES agencies(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  vertical TEXT, -- salon|restaurant|repair|general
+  phone_number TEXT,   -- Twilio provisioned
+  twilio_sid TEXT,
+  timezone TEXT DEFAULT 'America/New_York',
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Agent configurations (one per business)
 CREATE TABLE agent_configs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
+  template TEXT NOT NULL, -- salon|restaurant|repair|general
   agent_name TEXT DEFAULT 'Alex',
   voice_id TEXT DEFAULT 'cartesia-sonic-english',
   system_prompt TEXT NOT NULL,
-  business_hours JSONB, -- {mon: {open: "09:00", close: "18:00"}, ...}
-  services JSONB, -- [{name, duration_min, price}]
-  faq JSONB, -- [{question, answer}]
+  business_hours JSONB,
+  services JSONB,   -- [{name, duration_min, price}]
+  faq JSONB,        -- [{question, answer}]
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -243,15 +186,15 @@ CREATE TABLE agent_configs (
 CREATE TABLE calls (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   business_id UUID REFERENCES businesses(id),
-  livekit_room_id TEXT,
+  agency_id UUID REFERENCES agencies(id),
   twilio_call_sid TEXT UNIQUE,
+  livekit_room_id TEXT,
   caller_number TEXT,
   duration_sec INTEGER,
   status TEXT, -- answered|missed|voicemail
-  transcript JSONB, -- [{role, content, timestamp}]
-  summary TEXT, -- LLM-generated summary
-  outcome TEXT, -- booked|cancelled|inquiry|other
-  recording_url TEXT,
+  transcript JSONB,
+  summary TEXT,
+  outcome TEXT,  -- booked|cancelled|inquiry|other
   started_at TIMESTAMPTZ DEFAULT NOW(),
   ended_at TIMESTAMPTZ
 );
@@ -265,70 +208,187 @@ CREATE TABLE bookings (
   customer_phone TEXT,
   service TEXT,
   appointment_at TIMESTAMPTZ,
-  duration_min INTEGER,
-  status TEXT DEFAULT 'confirmed', -- confirmed|cancelled|completed
+  duration_min INTEGER DEFAULT 60,
+  status TEXT DEFAULT 'confirmed',
   notes TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Usage tracking (for billing)
+CREATE TABLE usage (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agency_id UUID REFERENCES agencies(id),
+  business_id UUID REFERENCES businesses(id),
+  month TEXT NOT NULL, -- YYYY-MM
+  calls_count INTEGER DEFAULT 0,
+  call_minutes INTEGER DEFAULT 0,
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(agency_id, business_id, month)
 );
 ```
 
 ---
 
-## 9. Go-to-Market
+## 7. Agent Templates
 
-### Launch Sequence
-1. **Week 1-3:** Build MVP
-2. **Week 4:** Post on GitHub (OSS core, no auth/billing)
-3. **Week 4:** Post on Product Hunt + Hacker News "Show HN"
-4. **Week 4-5:** Twitter thread: "I built an AI receptionist in 3 weeks"
-5. **Week 5:** Reddit: r/smallbusiness, r/entrepreneur, r/SaaS
-6. **Week 6:** Cold DM 50 salon owners on Instagram
+Three templates for MVP. Each pre-fills the system prompt.
 
-### Content Angles
-- "Your receptionist costs $40K/yr. Mine costs $49/mo."
-- "I called 100 small businesses. 67 went to voicemail. Here's what I built."
-- Build-in-public thread series on Twitter
+### Template 1: Salon
+```
+"You are {agent_name}, a friendly receptionist at {business_name}.
+You help customers book haircuts, color treatments, and spa services.
+Business hours: {hours}. You can book appointments, check availability,
+and answer questions about services and pricing."
+```
+Tools: `book_appointment`, `check_availability`, `list_services`
+
+### Template 2: Restaurant
+```
+"You are {agent_name} at {business_name}. You help customers make
+table reservations. Party size, date, time, and name.
+Hours: {hours}. Max party size: {max_party}."
+```
+Tools: `make_reservation`, `check_availability`, `cancel_reservation`
+
+### Template 3: General Business
+```
+"You are {agent_name}, a receptionist at {business_name}.
+You answer general inquiries, take messages, and schedule callbacks."
+```
+Tools: `take_message`, `schedule_callback`, `answer_faq`
 
 ---
 
-## 10. Risks & Mitigations
+## 8. Folder Structure
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| TCPA compliance (outbound) | High | Inbound only for MVP |
-| Twilio cost spikes | Medium | Hard limits per plan |
-| LLM hallucinations on bookings | High | Confirm before booking, send SMS |
-| Calendar sync complexity | Medium | Phase 2, manual entry first |
-| Low conversion from OSS | Low | Landing page + demo video |
+```
+agentdesk/
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── api/
+│   │   │   ├── agencies.py      # Agency CRUD
+│   │   │   ├── businesses.py    # Client management
+│   │   │   ├── calls.py         # Call logs
+│   │   │   ├── webhooks.py      # Twilio + LiveKit
+│   │   │   ├── billing.py       # Stripe
+│   │   │   └── numbers.py       # Twilio provisioning
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   ├── database.py
+│   │   │   └── redis.py
+│   │   └── models/
+│   │       ├── agency.py
+│   │       ├── business.py
+│   │       ├── call.py
+│   │       └── booking.py
+│   ├── agent/
+│   │   ├── agent.py             # Core LiveKit agent class
+│   │   ├── tools.py             # book/cancel/faq tools
+│   │   ├── templates.py         # Prompt templates per vertical
+│   │   ├── providers.py         # STT/LLM/TTS abstraction layer
+│   │   └── runner.py            # LiveKit worker entrypoint
+│   ├── pyproject.toml
+│   └── Dockerfile
+├── frontend/
+│   ├── app/
+│   │   ├── (auth)/              # Clerk auth pages
+│   │   ├── dashboard/           # Agency dashboard
+│   │   │   ├── page.tsx         # Overview
+│   │   │   ├── clients/         # Manage clients
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── new/
+│   │   │   │   └── [id]/
+│   │   │   ├── calls/           # All call logs
+│   │   │   ├── billing/         # Plan + usage
+│   │   │   └── settings/        # White-label config
+│   │   ├── client/[token]/      # Client portal (read-only)
+│   │   └── onboarding/
+│   └── package.json
+└── docs/
+    ├── PRD.md                   # This file
+    ├── TECH_SPEC.md
+    └── API.md
+```
 
 ---
 
-## 11. Success Metrics
+## 9. Pricing
+
+| Plan | Price | Clients | Calls/mo | White-label |
+|------|-------|---------|----------|-------------|
+| Starter | $49/mo | 3 | 300 total | ❌ |
+| Pro | $99/mo | 10 | 1,000 total | ✅ |
+| Agency | $199/mo | Unlimited | Unlimited | ✅ + custom domain |
+
+**Unit economics (Pro plan, 10 clients, 100 calls each):**
+- COGS: 1,000 calls × $0.054 = $54
+- Revenue: $99
+- Gross profit: $45/mo per agency customer
+- At 100 agency customers: $9,900 MRR, $4,500 gross profit
+
+**Agency margin:**
+- Agency charges client: $150/mo
+- Agency pays us: $99/mo ÷ 10 clients = $9.90/client
+- Agency profit per client: $140/mo
+- This is why agencies are sticky — their revenue depends on us
+
+---
+
+## 10. Build Phases
+
+### Phase 1 — Core (Week 1-2)
+- [ ] Voice pipeline: LiveKit + Deepgram + GPT-4o-mini + Cartesia
+- [ ] Single business, single agent, working calls
+- [ ] Postgres schema + Supabase setup
+- [ ] Twilio inbound call → LiveKit routing
+- [ ] Call transcripts saved
+- [ ] Basic dashboard: call list + transcript view
+
+### Phase 2 — Multi-tenant (Week 2-3)
+- [ ] Clerk auth + org support
+- [ ] Agency creates clients
+- [ ] Template selection (salon/restaurant/general)
+- [ ] Phone number provisioning (Twilio)
+- [ ] Client portal (read-only dashboard)
+- [ ] Stripe subscription
+
+### Phase 3 — White-label + Polish (Week 3-4)
+- [ ] Custom subdomain (agency.agentdesk.app)
+- [ ] Remove AgentDesk branding on Pro
+- [ ] Custom logo + colors
+- [ ] Onboarding wizard
+- [ ] SMS confirmation after booking
+- [ ] Landing page + demo video
+
+---
+
+## 11. Go-to-Market
+
+**Target:** AI freelancers / micro-agencies on Twitter who already sell "AI automation"
+
+**Channels:**
+1. Twitter/X: "Built a white-label AI receptionist platform. My first agency customer set up 3 clients in 20 min."
+2. Reddit: r/agency, r/freelance, r/artificial
+3. Cold DM: People selling "AI automations" on Twitter
+4. Product Hunt + Hacker News Show HN
+
+**Positioning vs BookedIn:**
+- BookedIn: Feature-rich, no-code builder, $299/mo+
+- AgentDesk: Simple, works out of the box, $49/mo starter
+- "AgentDesk if you want to start today. BookedIn if you want to build a full agency OS."
+
+---
+
+## 12. MVP Success Metrics
 
 | Metric | Week 4 | Month 3 | Month 6 |
 |--------|--------|---------|---------|
-| GitHub stars | 50 | 500 | 2K |
-| Signups | 10 | 100 | 500 |
-| Paid customers | 2 | 20 | 100 |
-| MRR | $58 | $580 | $4,900 |
+| GitHub stars | 100 | 800 | 3K |
+| Agency signups | 10 | 80 | 300 |
+| Paid agencies | 3 | 25 | 100 |
+| MRR | $147 | $1,225 | $7,350 |
 
 ---
 
-## 12. Open Source Strategy
-
-**What to OSS (Apache 2.0):**
-- Core voice pipeline (agent.py + tools.py)
-- Self-host guide (Docker Compose)
-- Industry prompt templates
-
-**What stays closed (SaaS):**
-- Dashboard UI
-- Twilio number provisioning
-- Stripe billing
-- Multi-tenant management
-
-This drives GitHub stars → free marketing → paid signups.
-
----
-
-*Next step: Build Phase 1. Start with `backend/agent/agent.py`.*
+*Next: Scaffold `backend/agent/agent.py` — the clean voice pipeline.*
