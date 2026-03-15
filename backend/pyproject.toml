@@ -1,74 +1,61 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-include = ["app*", "agent*"]
-exclude = ["tests*", "alembic*"]
-
 [project]
-name = "healthcare-voice-agent"
-version = "1.0.0"
-description = "HIPAA-compliant AI voice agent for doctor appointment management"
-readme = "README.md"
-requires-python = ">=3.11"
+name = "agentdesk-backend"
+version = "0.1.0"
+description = "AgentDesk — White-label AI voice agent platform"
+requires-python = ">=3.12"
 
 dependencies = [
-    # Core Framework
-    "fastapi>=0.104.0",
-    "uvicorn[standard]>=0.24.0",
-    "pydantic>=2.0.0",
-    "pydantic-settings>=2.0.0",
-    "email-validator>=2.0.0",
-    # REQUIRED for SessionMiddleware
-    "itsdangerous>=2.1.2",
+    # Web framework
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "python-multipart>=0.0.12",
+
+    # LiveKit voice infra
+    "livekit-agents>=1.0.0",
+    "livekit-plugins-deepgram>=1.0.0",
+    "livekit-plugins-openai>=1.0.0",
+    "livekit-plugins-cartesia>=1.0.0",
+    "livekit-plugins-silero>=1.0.0",
+
     # Database
     "sqlalchemy[asyncio]>=2.0.0",
-    "asyncpg>=0.29.0",
-    "alembic>=1.13.0",
-    # Cache
-    "redis>=5.0.0",
-    # Security
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+
+    # Config + validation
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "python-dotenv>=1.0.0",
+
+    # Redis
+    "redis[hiredis]>=5.2.0",
+
+    # Auth (Clerk JWT verification)
     "python-jose[cryptography]>=3.3.0",
-    "passlib[bcrypt]>=1.7.0",
-    "cryptography>=41.0.0",
-    # HTTP Client
-    "httpx>=0.25.0",
-    # Task Queue
-    "celery>=5.3.0",
-    # LiveKit Voice Agent (TRS 4.0)
-    "livekit>=0.17.0",
-    "livekit-agents>=0.12.0",
-    "livekit-plugins-openai>=0.10.0",
-    "livekit-plugins-deepgram>=0.7.0",
-    "livekit-plugins-cartesia>=0.4.0",
-    "livekit-plugins-silero>=0.7.0",
-    "resend>=2.19.0",
-    "duckduckgo-search>=8.1.1",
+    "httpx>=0.28.0",
+
+    # Twilio
+    "twilio>=9.4.0",
+
+    # Stripe
+    "stripe>=11.4.0",
+
+    # Utilities
+    "structlog>=24.4.0",
+    "tenacity>=9.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.0",
-    "pytest-asyncio>=0.21.0",
-    "pytest-cov>=4.1.0",
-    "black>=23.0.0",
-    "ruff>=0.1.0",
-    "mypy>=1.7.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "httpx>=0.28.0",
+    "ruff>=0.9.0",
 ]
-
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = ["tests"]
-
-[tool.black]
-line-length = 100
-target-version = ["py311"]
 
 [tool.ruff]
 line-length = 100
-select = ["E", "F", "I", "W"]
+target-version = "py312"
 
-[tool.mypy]
-python_version = "3.11"
-strict = true
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -1,27 +1,29 @@
-"""
-Database Session Management
-TRS Reference: Section 2.1 - PostgreSQL with SQLAlchemy async
-"""
-
-from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from app.core.config import settings
+from sqlalchemy.orm import DeclarativeBase
+from app.core.config import get_settings
+
+settings = get_settings()
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
-    pool_size=settings.DATABASE_POOL_SIZE,
-    max_overflow=settings.DATABASE_MAX_OVERFLOW,
-    pool_timeout=settings.DATABASE_POOL_TIMEOUT,
-    echo=settings.DEBUG,
+    settings.database_url,
+    echo=settings.app_env == "development",
+    pool_pre_ping=True,
+    pool_size=10,
+    max_overflow=20,
 )
 
 AsyncSessionLocal = async_sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
 )
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Dependency for getting async database session."""
+class Base(DeclarativeBase):
+    pass
+
+
+async def get_db() -> AsyncSession:
     async with AsyncSessionLocal() as session:
         try:
             yield session

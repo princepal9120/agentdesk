@@ -1,14 +1,18 @@
-"""
-Redis Cache Client
-TRS Reference: Section 2.1 - Redis for caching and sessions
-"""
+import redis.asyncio as aioredis
+from app.core.config import get_settings
+from functools import lru_cache
 
-import redis.asyncio as redis
-from app.core.config import settings
-
-redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+settings = get_settings()
 
 
-async def get_redis() -> redis.Redis:
-    """Dependency for getting Redis client."""
-    return redis_client
+@lru_cache
+def get_redis_client() -> aioredis.Redis:
+    return aioredis.from_url(
+        settings.redis_url,
+        encoding="utf-8",
+        decode_responses=True,
+    )
+
+
+async def get_redis() -> aioredis.Redis:
+    return get_redis_client()

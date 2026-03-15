@@ -1,75 +1,56 @@
 """
-FastAPI Main Application
-TRS Reference: Section 2.1 - Backend Requirements
-PRD Reference: Section 3 - Solution Overview
+AgentDesk FastAPI application entrypoint.
 """
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import structlog
 
-from app.core.config import settings
-from app.routers import auth, appointments, webhooks, notifications, doctors, patients
-from app.routers.appointments import availability_router
+from app.core.config import get_settings
+from app.core.database import engine, Base
+from app.api import agencies, businesses, calls, webhooks, billing, numbers
+
+logger = structlog.get_logger()
+settings = get_settings()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan - startup and shutdown."""
     # Startup
-    print(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    logger.info("AgentDesk API starting", env=settings.app_env)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     yield
     # Shutdown
-    print("Shutting down...")
+    await engine.dispose()
+    logger.info("AgentDesk API stopped")
 
 
 app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
-    description="HIPAA-compliant AI voice agent for doctor appointment management",
+    title="AgentDesk API",
+    version="0.1.0",
     lifespan=lifespan,
-    docs_url="/docs" if settings.DEBUG else None,
-    redoc_url="/redoc" if settings.DEBUG else None,
+    docs_url="/docs" if not settings.is_production else None,
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"] if not settings.is_production else ["https://agentdesk.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Rate limiting middleware (TRS 2.5)
-from app.core.rate_limit import RateLimitMiddleware
-app.add_middleware(RateLimitMiddleware, redis_url=settings.REDIS_URL)
-
-# Include routers
-app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
-app.include_router(appointments.router, prefix=settings.API_V1_PREFIX)
-app.include_router(availability_router, prefix=settings.API_V1_PREFIX)
-app.include_router(notifications.router, prefix=settings.API_V1_PREFIX)
-app.include_router(doctors.router, prefix=settings.API_V1_PREFIX)
-app.include_router(patients.router, prefix=settings.API_V1_PREFIX)
-app.include_router(webhooks.router, prefix=settings.API_V1_PREFIX)
-from app.routers import calls
-app.include_router(calls.router, prefix=settings.API_V1_PREFIX)
-from app.routers import livekit
-app.include_router(livekit.router, prefix=settings.API_V1_PREFIX)
+# Routers
+app.include_router(agencies.router, prefix="/api/v1/agencies", tags=["agencies"])
+app.include_router(businesses.router, prefix="/api/v1/businesses", tags=["businesses"])
+app.include_router(calls.router, prefix="/api/v1/calls", tags=["calls"])
+app.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
+app.include_router(billing.router, prefix="/api/v1/billing", tags=["billing"])
+app.include_router(numbers.router, prefix="/api/v1/numbers", tags=["numbers"])
 
 
 @app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy", "version": settings.APP_VERSION}
-
-
-@app.get("/")
-async def root():
-    """Root endpoint."""
-    return {
-        "message": "Healthcare Voice Agent API",
-        "version": settings.APP_VERSION,
-        "docs": "/docs" if settings.DEBUG else "Disabled in production"
-    }
+async def health():
+    return {"status": "ok", "version": "0.1.0"}
