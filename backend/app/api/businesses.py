@@ -12,6 +12,7 @@ from app.core.database import get_db
 from app.models.agency import Agency
 from app.models.business import Business, AgentConfig
 from agent.templates import get_template, render_system_prompt
+from app.api.deps import get_current_agency
 
 router = APIRouter()
 
@@ -132,6 +133,30 @@ async def list_businesses(agency_id: uuid.UUID, db: AsyncSession = Depends(get_d
         has_config = config_result.scalar_one_or_none() is not None
         out.append({**b.__dict__, "has_config": has_config})
     return out
+
+
+@router.get("/{business_id}", response_model=BusinessOut)
+async def get_business(
+    business_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
+):
+    result = await db.execute(
+        select(Business).where(
+            Business.id == business_id,
+            Business.agency_id == current_agency.id,
+            Business.active == True,
+        )
+    )
+    business = result.scalar_one_or_none()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+
+    config_result = await db.execute(
+        select(AgentConfig).where(AgentConfig.business_id == business.id)
+    )
+    has_config = config_result.scalar_one_or_none() is not None
+    return {**business.__dict__, "has_config": has_config}
 
 
 @router.get("/{business_id}/config", response_model=AgentConfigOut)

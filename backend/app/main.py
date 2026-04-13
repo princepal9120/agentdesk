@@ -9,7 +9,10 @@ import structlog
 
 from app.core.config import get_settings
 from app.core.database import engine, Base
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import agencies, businesses, calls, webhooks, billing, numbers
+from app.models.agency import Agency
 
 logger = structlog.get_logger()
 settings = get_settings()
@@ -21,6 +24,24 @@ async def lifespan(app: FastAPI):
     logger.info("AgentDesk API starting", env=settings.app_env)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    if settings.app_env == "development":
+        async with AsyncSession(engine) as session:
+            result = await session.execute(
+                select(Agency).where(Agency.id == settings.dev_agency_id)
+            )
+            agency = result.scalar_one_or_none()
+            if not agency:
+                session.add(
+                    Agency(
+                        id=settings.dev_agency_id,
+                        clerk_org_id=settings.dev_agency_id,
+                        name=settings.dev_agency_name,
+                        subdomain="local-demo",
+                    )
+                )
+                await session.commit()
+                logger.info("Bootstrapped local dev agency", agency_id=settings.dev_agency_id)
     yield
     # Shutdown
     await engine.dispose()

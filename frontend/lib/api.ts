@@ -37,21 +37,20 @@ export interface Call {
 
 export const api = {
   businesses: {
-    list: () => req<Business[]>("/api/v1/businesses/"),
+    list: () => req<Business[]>(`/api/v1/businesses/agency/${KEY}`),
     get: (id: string) => req<Business>(`/api/v1/businesses/${id}`),
-    create: (data: { name: string; vertical: string }) =>
+    create: (data: { name: string; vertical: string; timezone?: string }) =>
       req<Business>("/api/v1/businesses/", {
         method: "POST",
-        body: JSON.stringify(data),
+        body: JSON.stringify({ agency_id: KEY, timezone: "America/New_York", ...data }),
       }),
     provision: (id: string, area_code = "415") =>
-      req<{ phone_number: string }>(`/api/v1/businesses/${id}/provision-number`, {
+      req<{ phone_number: string }>(`/api/v1/numbers/business/${id}/provision`, {
         method: "POST",
         body: JSON.stringify({ area_code }),
       }),
   },
   calls: {
-    list: (businessId?: string) =>
-      req<Call[]>(`/api/v1/calls/${businessId ? `?business_id=${businessId}` : ""}`),
+    list: (businessId?: string) => req<Call[]>(businessId ? `/api/v1/calls/business/${businessId}` : `/api/v1/calls/business/${KEY}`),
   },
 };

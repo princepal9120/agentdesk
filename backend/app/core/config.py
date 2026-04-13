@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     # App
     app_env: str = "development"
     app_secret_key: str = "change-me"
+    dev_agency_id: str = "dev-agency"
+    dev_agency_name: str = "Local Demo Agency"
+    voice_mode: str = "demo"  # demo|production
+    voice_provider: str = "openai"  # openai|full
 
     # Database
     database_url: str
@@ -20,19 +24,19 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # LiveKit
-    livekit_url: str
-    livekit_api_key: str
-    livekit_api_secret: str
+    livekit_url: str = ""
+    livekit_api_key: str = ""
+    livekit_api_secret: str = ""
 
     # AI Providers
     openai_api_key: str
-    deepgram_api_key: str
-    cartesia_api_key: str
+    deepgram_api_key: str = ""
+    cartesia_api_key: str = ""
 
     # Twilio
-    twilio_account_sid: str
-    twilio_auth_token: str
-    twilio_phone_number: str
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_phone_number: str = ""
 
     # Stripe
     stripe_secret_key: str
@@ -42,9 +46,9 @@ class Settings(BaseSettings):
     stripe_agency_price_id: str = ""
 
     # Clerk
-    clerk_secret_key: str
-    clerk_publishable_key: str
-    clerk_jwks_url: str
+    clerk_secret_key: str = ""
+    clerk_publishable_key: str = ""
+    clerk_jwks_url: str = ""
 
     @property
     def is_production(self) -> bool:

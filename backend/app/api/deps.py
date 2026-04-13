@@ -11,7 +11,7 @@ import httpx
 import json
 import time
 from functools import lru_cache
-from fastapi import Depends, HTTPException, Security, status
+from fastapi import Depends, Header, HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -83,13 +83,14 @@ def _decode_clerk_token(token: str, jwks: dict) -> dict:
 
 async def get_current_agency(
     credentials: HTTPAuthorizationCredentials | None = Security(bearer_scheme),
+    x_dev_agency_id: str | None = Header(default=None, alias="X-Dev-Agency-Id"),
     db: AsyncSession = Depends(get_db),
 ) -> Agency:
     settings = get_settings()
 
     # ── Dev mode shortcut ──────────────────────────────
     if settings.app_env == "development":
-        dev_id = getattr(settings, "dev_agency_id", None)
+        dev_id = x_dev_agency_id or getattr(settings, "dev_agency_id", None)
         if dev_id:
             result = await db.execute(select(Agency).where(Agency.id == dev_id))
             agency = result.scalar_one_or_none()

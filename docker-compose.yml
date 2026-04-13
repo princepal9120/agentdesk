@@ -58,6 +58,7 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://agentdesk:agentdesk_dev@db:5432/agentdesk
       REDIS_URL: redis://redis:6379/0
+      VOICE_MODE: ${VOICE_MODE:-demo}
     depends_on:
       db:
         condition: service_healthy
