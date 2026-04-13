@@ -32,6 +32,8 @@ Why:
 - provider-specific logic moved behind `backend/agent/provider_factory.py`
 - full stack mode still uses Deepgram + Cartesia + Silero
 - openai mode avoids hard-coding those providers at agent construction time
+- webhook transport is now provider-aware
+- in `openai` mode, Twilio and LiveKit webhooks fail gracefully instead of pretending full routing exists
 
 ## Recommended use
 

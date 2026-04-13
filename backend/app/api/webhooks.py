@@ -1,5 +1,8 @@
-"""
-Webhook handlers for Twilio and LiveKit.
+"""Webhook handlers for Twilio and LiveKit.
+
+These routes are now provider-aware:
+- full mode: Twilio + LiveKit room routing
+- openai mode: graceful fallback response until dedicated transport is implemented
 """
 
 from fastapi import APIRouter, Request, Form, Response
@@ -20,6 +23,10 @@ settings = get_settings()
 router = APIRouter()
 
 
+def using_full_transport() -> bool:
+    return (settings.voice_provider or "openai").lower() == "full"
+
+
 @router.post("/twilio/voice")
 async def twilio_voice_inbound(
     request: Request,
@@ -33,8 +40,17 @@ async def twilio_voice_inbound(
     Looks up which business owns this phone number,
     creates a LiveKit room, and connects the call via SIP.
     """
+
+    if not using_full_transport():
+        response = VoiceResponse()
+        response.say(
+            "Thanks for calling. This number is currently running in demo mode, so live phone routing is not enabled yet. Please use the local dashboard or enable full voice mode."
+        )
+        response.hangup()
+        logger.info("twilio_demo_mode_blocked", to=To, from_=From, call_sid=CallSid)
+        return Response(content=str(response), media_type="application/xml")
+
     from livekit import api as lkapi
-    import uuid
 
     # Look up business by phone number
     result = await db.execute(
@@ -111,6 +127,10 @@ async def twilio_call_status(
 @router.post("/livekit")
 async def livekit_webhook(request: Request):
     """LiveKit webhook for room/participant events."""
+    if not using_full_transport():
+        logger.info("livekit_webhook_ignored_demo_mode")
+        return {"ok": True, "ignored": True, "reason": "demo_mode"}
+
     body = await request.body()
     try:
         event = json.loads(body)
