@@ -1,87 +1,187 @@
 # AgentDesk
 
-**White-label AI voice agent platform for agencies.**
+Open-source white-label AI voice agent platform. Deploy AI receptionists for any business in minutes.
 
-Deploy AI receptionists for your clients in 5 minutes. They answer calls 24/7, book appointments, and handle FAQs. Your clients get a white-labeled dashboard. You keep the margin.
-
-> Inspired by [BookedIn.ai](https://bookedin.ai) ($56K MRR) — simpler, cheaper, faster to start.
+> Built with LiveKit, Deepgram, GPT-4o-mini, and Cartesia.
 
 ---
 
-## How It Works
+## What it does
 
-```
-Agency signs up → Adds clients → Picks a template → Gets a US phone number
-→ AI agent answers all calls → Client sees dashboard with calls + bookings
-→ Agency charges client $100-300/mo, pays us $49-99/mo
-```
+AgentDesk lets you run an AI receptionist that:
+- Answers inbound calls with a natural voice
+- Books appointments, answers FAQs, takes messages, handles reservations
+- Works out of the box for salons, restaurants, repair shops, or any general business
+- Gives you a dashboard to manage multiple client businesses
 
 ---
 
 ## Stack
 
-- **Voice:** LiveKit + Deepgram Nova-3 + GPT-4o-mini + Cartesia Sonic
-- **Backend:** FastAPI (Python 3.12) + PostgreSQL + Redis
-- **Frontend:** Next.js 15 + Tailwind CSS v4 + shadcn/ui
-- **Phone:** Twilio (SIP inbound)
-- **Auth:** Clerk | **Payments:** Stripe | **Deploy:** Railway + Vercel
+| Layer | Tech |
+|---|---|
+| Voice pipeline | LiveKit + Deepgram STT + GPT-4o-mini + Cartesia TTS |
+| Backend API | FastAPI + SQLAlchemy async + PostgreSQL |
+| Phone numbers | Twilio SIP |
+| Auth | Clerk (JWT) |
+| Frontend | Next.js 15 + Tailwind |
+| Cache | Redis |
+| Billing | Stripe (optional) |
 
 ---
 
-## Quick Start
+## Quick start
+
+### Prerequisites
+
+- Docker + Docker Compose
+- Python 3.12+
+- Node 20+
+- API keys: OpenAI, Deepgram, Cartesia, Twilio, LiveKit
+
+### 1. Clone and configure
 
 ```bash
-git clone https://github.com/princepal9120/voicedesk
-cd voicedesk
+git clone https://github.com/princepal9120/agentdesk.git
+cd agentdesk
 
-# Start backend + DB + Redis
 cp backend/.env.example backend/.env
-# Fill in your API keys in backend/.env
-docker-compose up
+# Edit backend/.env with your API keys
+```
 
-# API available at http://localhost:8000
-# Docs at http://localhost:8000/docs
+### 2. Start backend
+
+```bash
+docker compose up -d
+```
+
+This starts:
+- FastAPI on `http://localhost:8000`
+- PostgreSQL on `5432`
+- Redis on `6379`
+
+### 3. Run database migrations
+
+```bash
+cd backend
+pip install uv && uv sync
+uv run alembic upgrade head
+```
+
+### 4. Start the voice agent
+
+```bash
+cd backend
+uv run python run_agent.py
+```
+
+### 5. Start frontend
+
+```bash
+cd frontend
+cp .env.example .env
+# Add your Clerk + API URL
+npm install
+npm run dev
+```
+
+Dashboard at `http://localhost:3000`
+
+---
+
+## Architecture
+
+```
+Inbound call
+    |
+Twilio SIP
+    |
+LiveKit room (room = call-{CallSid})
+    |
+VoiceDeskAgent
+    |-- Deepgram Nova-3 (STT)
+    |-- GPT-4o-mini (LLM + tools)
+    |-- Cartesia Sonic (TTS)
+    |-- Silero (VAD)
+    |
+Tools: book_appointment, check_availability, answer_faq,
+       take_message, list_services, schedule_callback ...
 ```
 
 ---
 
-## Branches
+## Agent verticals
 
-| Branch | Description |
-|--------|-------------|
-| `main` | AgentDesk — full multi-tenant agency platform |
-| `main-2` | VoiceDesk OSS — single-tenant, self-hostable, open source |
-
----
-
-## Pricing
-
-| Plan | Price | Clients | Calls/mo |
-|------|-------|---------|----------|
-| Starter | $49/mo | 3 | 300 |
-| Pro | $99/mo | 10 | 1,000 |
-| Agency | $199/mo | Unlimited | Unlimited |
+| Vertical | Template | Tools enabled |
+|---|---|---|
+| `salon` | Hair/nail salon receptionist | Booking, services, hours |
+| `restaurant` | Restaurant host | Reservations, menu, hours |
+| `repair` | Repair shop | Intake, estimates, callbacks |
+| `general` | General business | FAQ, messages, callbacks |
 
 ---
 
-## Project Structure
+## API
 
 ```
-voicedesk/
-├── backend/
-│   ├── app/          # FastAPI application
-│   ├── agent/        # LiveKit voice agent
-│   ├── Dockerfile
-│   └── pyproject.toml
-├── frontend/         # Next.js 15 dashboard (coming soon)
-├── docs/
-│   └── PRD.md        # Full product requirements
-└── docker-compose.yml
+POST   /api/v1/agencies/           Create agency
+GET    /api/v1/agencies/me         Get my agency
+GET    /api/v1/agencies/me/usage   Usage stats
+
+POST   /api/v1/businesses/         Add client business
+GET    /api/v1/businesses/         List businesses
+GET    /api/v1/businesses/{id}     Get business
+POST   /api/v1/businesses/{id}/provision-number  Get a Twilio number
+
+GET    /api/v1/calls/              List calls (filter by business)
+
+POST   /api/v1/billing/checkout    Stripe checkout
+POST   /api/v1/billing/portal      Stripe portal
+
+POST   /webhooks/twilio/voice      Inbound call hook
+POST   /webhooks/twilio/status     Call status updates
+POST   /webhooks/livekit           LiveKit room events
+```
+
+---
+
+## Environment variables
+
+```env
+# App
+DATABASE_URL=postgresql+asyncpg://agentdesk:agentdesk_dev@localhost:5432/agentdesk
+REDIS_URL=redis://localhost:6379/0
+APP_ENV=development
+
+# Auth (Clerk)
+CLERK_SECRET_KEY=sk_...
+CLERK_JWT_ISSUER=https://...clerk.accounts.dev
+
+# AI
+OPENAI_API_KEY=sk-...
+DEEPGRAM_API_KEY=...
+CARTESIA_API_KEY=...
+
+# Voice / Telephony
+LIVEKIT_URL=wss://...
+LIVEKIT_API_KEY=...
+LIVEKIT_API_SECRET=...
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+
+# Billing (optional)
+STRIPE_SECRET_KEY=sk_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
 ---
 
 ## License
 
-AgentDesk (`main` branch): Proprietary
-VoiceDesk (`main-2` branch): MIT
+MIT — use it however you want.
+
+---
+
+## Contributing
+
+PRs welcome. Open an issue first for anything non-trivial.
