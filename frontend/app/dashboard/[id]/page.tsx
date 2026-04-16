@@ -115,13 +115,13 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
               <div key={c.id} className="card flex items-center gap-4">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-mono text-gray-700">{c.caller_number}</p>
-                  <p className="text-xs text-gray-400">{fmt(c.created_at)}</p>
+                  <p className="text-xs text-gray-400">{fmt(c.started_at)}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLOR[c.status] ?? "bg-gray-100 text-gray-500"}`}>
                     {c.status}
                   </span>
-                  <p className="text-xs text-gray-400 mt-1">{dur(c.duration_seconds)}</p>
+                  <p className="text-xs text-gray-400 mt-1">{dur(c.duration_sec)}</p>
                 </div>
               </div>
             ))}

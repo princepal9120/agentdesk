@@ -9,7 +9,9 @@ from pydantic import BaseModel
 import uuid
 from datetime import datetime
 
+from app.api.deps import get_current_agency
 from app.core.database import get_db
+from app.models.agency import Agency
 from app.models.call import Call, Booking
 
 router = APIRouter()
@@ -47,26 +49,33 @@ class CallStatsOut(BaseModel):
     period: str
 
 
-@router.get("/business/{business_id}", response_model=list[CallOut])
+@router.get("/", response_model=list[CallOut])
 async def list_calls(
-    business_id: uuid.UUID,
+    business_id: uuid.UUID | None = None,
     limit: int = 50,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
 ):
+    query = select(Call).where(Call.agency_id == current_agency.id)
+    if business_id is not None:
+        query = query.where(Call.business_id == business_id)
+
     result = await db.execute(
-        select(Call)
-        .where(Call.business_id == business_id)
-        .order_by(desc(Call.started_at))
-        .limit(limit)
-        .offset(offset)
+        query.order_by(desc(Call.started_at)).limit(limit).offset(offset)
     )
     return result.scalars().all()
 
 
 @router.get("/{call_id}/transcript", response_model=TranscriptOut)
-async def get_transcript(call_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Call).where(Call.id == call_id))
+async def get_transcript(
+    call_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
+):
+    result = await db.execute(
+        select(Call).where(Call.id == call_id, Call.agency_id == current_agency.id)
+    )
     call = result.scalar_one_or_none()
     if not call:
         raise HTTPException(status_code=404, detail="Call not found")
@@ -84,6 +93,7 @@ async def get_call_stats(
     business_id: uuid.UUID,
     period: str = "month",  # week|month|all
     db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
 ):
     from datetime import timedelta
 
@@ -98,6 +108,7 @@ async def get_call_stats(
     # Total + answered
     total_result = await db.execute(
         select(func.count()).where(
+            Call.agency_id == current_agency.id,
             Call.business_id == business_id,
             Call.started_at >= since,
         )
@@ -106,6 +117,7 @@ async def get_call_stats(
 
     answered_result = await db.execute(
         select(func.count()).where(
+            Call.agency_id == current_agency.id,
             Call.business_id == business_id,
             Call.started_at >= since,
             Call.status == "answered",
@@ -115,8 +127,10 @@ async def get_call_stats(
 
     # Bookings
     bookings_result = await db.execute(
-        select(func.count()).where(
+        select(func.count()).select_from(Booking, Call).where(
             Booking.business_id == business_id,
+            Booking.call_id == Call.id,
+            Call.agency_id == current_agency.id,
             Booking.created_at >= since,
         )
     )
@@ -125,6 +139,7 @@ async def get_call_stats(
     # Avg duration
     avg_result = await db.execute(
         select(func.avg(Call.duration_sec)).where(
+            Call.agency_id == current_agency.id,
             Call.business_id == business_id,
             Call.started_at >= since,
             Call.duration_sec.isnot(None),

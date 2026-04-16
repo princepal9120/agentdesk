@@ -27,14 +27,14 @@ That starts:
 - voice agent worker
 - Next.js frontend
 
-## Dev auth
+## Local agency bootstrapping
 
 In local development, the backend auto-creates a demo agency:
 
 - `DEV_AGENCY_ID=dev-agency`
 - `DEV_AGENCY_NAME=Local Demo Agency`
 
-The frontend uses this automatically through the `X-Dev-Agency-Id` header.
+The frontend talks directly to that local API path without any extra auth header wiring.
 
 No Clerk setup is required for basic local usage.
 

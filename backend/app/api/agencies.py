@@ -1,5 +1,5 @@
 """
-Agency CRUD — create, read, update agency (one per Clerk org).
+Agency CRUD for OSS/local deployment.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -8,6 +8,7 @@ from sqlalchemy import select
 from pydantic import BaseModel
 import uuid
 
+from app.api.deps import get_current_agency
 from app.core.database import get_db
 from app.models.agency import Agency
 
@@ -17,7 +18,6 @@ router = APIRouter()
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
 class AgencyCreate(BaseModel):
-    clerk_org_id: str
     name: str
     subdomain: str | None = None
 
@@ -31,7 +31,7 @@ class AgencyUpdate(BaseModel):
 
 class AgencyOut(BaseModel):
     id: uuid.UUID
-    clerk_org_id: str
+    clerk_org_id: str | None
     name: str
     subdomain: str | None
     custom_domain: str | None
@@ -48,17 +48,23 @@ class AgencyOut(BaseModel):
 
 @router.post("/", response_model=AgencyOut, status_code=status.HTTP_201_CREATED)
 async def create_agency(payload: AgencyCreate, db: AsyncSession = Depends(get_db)):
-    """Register a new agency (called after Clerk org creation)."""
-    existing = await db.execute(
-        select(Agency).where(Agency.clerk_org_id == payload.clerk_org_id)
-    )
-    if existing.scalar_one_or_none():
-        raise HTTPException(status_code=409, detail="Agency already exists for this org")
+    """Create an agency record for self-hosted setups."""
+    if payload.subdomain:
+        existing = await db.execute(
+            select(Agency).where(Agency.subdomain == payload.subdomain)
+        )
+        if existing.scalar_one_or_none():
+            raise HTTPException(status_code=409, detail="Agency already exists for this subdomain")
 
     agency = Agency(**payload.model_dump())
     db.add(agency)
     await db.commit()
     await db.refresh(agency)
+    return agency
+
+
+@router.get("/me", response_model=AgencyOut)
+async def get_me(agency: Agency = Depends(get_current_agency)):
     return agency
 
 

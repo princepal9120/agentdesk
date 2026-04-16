@@ -20,7 +20,7 @@ def upgrade() -> None:
     op.create_table(
         "agencies",
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("clerk_org_id", sa.String(255), unique=True, nullable=False),
+        sa.Column("clerk_org_id", sa.String(255), unique=True, nullable=True),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("subdomain", sa.String(100), unique=True, nullable=True),
         sa.Column("custom_domain", sa.String(255), unique=True, nullable=True),

@@ -35,7 +35,6 @@ async def lifespan(app: FastAPI):
                 session.add(
                     Agency(
                         id=settings.dev_agency_id,
-                        clerk_org_id=settings.dev_agency_id,
                         name=settings.dev_agency_name,
                         subdomain="local-demo",
                     )

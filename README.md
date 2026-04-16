@@ -87,7 +87,7 @@ See `OPENAI_ONLY.md` for details.
 
 - Docker first
 - local demo agency bootstrapped automatically
-- Clerk optional for onboarding
+- no Clerk required for onboarding
 - Stripe optional for onboarding
 - OpenAI-first config path
 

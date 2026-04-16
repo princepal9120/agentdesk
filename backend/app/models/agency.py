@@ -12,7 +12,7 @@ class Agency(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    clerk_org_id: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    clerk_org_id: Mapped[str | None] = mapped_column(String(255), unique=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     subdomain: Mapped[str | None] = mapped_column(String(100), unique=True)
     custom_domain: Mapped[str | None] = mapped_column(String(255), unique=True)

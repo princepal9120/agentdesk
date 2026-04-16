@@ -68,7 +68,7 @@ Then also provide:
 
 In development:
 - backend auto-creates `dev-agency`
-- frontend uses `X-Dev-Agency-Id=dev-agency`
+- frontend talks directly to the local API without extra auth headers
 - Clerk is not required for initial use
 
 ## Optional services

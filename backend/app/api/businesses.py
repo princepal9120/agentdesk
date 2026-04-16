@@ -20,7 +20,6 @@ router = APIRouter()
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
 class BusinessCreate(BaseModel):
-    agency_id: uuid.UUID
     name: str
     vertical: str = "general"  # salon|restaurant|repair|general
     timezone: str = "America/New_York"
@@ -67,31 +66,29 @@ class AgentConfigOut(BaseModel):
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/", response_model=BusinessOut, status_code=status.HTTP_201_CREATED)
-async def create_business(payload: BusinessCreate, db: AsyncSession = Depends(get_db)):
-    """Add a new client business for an agency."""
-
-    # Check agency exists + plan limit
-    result = await db.execute(select(Agency).where(Agency.id == payload.agency_id))
-    agency = result.scalar_one_or_none()
-    if not agency:
-        raise HTTPException(status_code=404, detail="Agency not found")
+async def create_business(
+    payload: BusinessCreate,
+    db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
+):
+    """Add a new client business for the current agency."""
 
     # Count existing clients
     count_result = await db.execute(
         select(func.count()).where(
-            Business.agency_id == payload.agency_id,
+            Business.agency_id == current_agency.id,
             Business.active == True,
         )
     )
     current_count = count_result.scalar()
 
-    if current_count >= agency.client_limit:
+    if current_count >= current_agency.client_limit:
         raise HTTPException(
             status_code=402,
-            detail=f"Plan limit reached ({current_count}/{agency.client_limit} clients). Upgrade to add more."
+            detail=f"Plan limit reached ({current_count}/{current_agency.client_limit} clients). Upgrade to add more."
         )
 
-    business = Business(**payload.model_dump())
+    business = Business(**payload.model_dump(), agency_id=current_agency.id)
     db.add(business)
     await db.flush()  # Get ID without committing
 
@@ -118,10 +115,13 @@ async def create_business(payload: BusinessCreate, db: AsyncSession = Depends(ge
     return {**business.__dict__, "has_config": True}
 
 
-@router.get("/agency/{agency_id}", response_model=list[BusinessOut])
-async def list_businesses(agency_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+@router.get("/", response_model=list[BusinessOut])
+async def list_businesses(
+    db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
+):
     result = await db.execute(
-        select(Business).where(Business.agency_id == agency_id, Business.active == True)
+        select(Business).where(Business.agency_id == current_agency.id, Business.active == True)
     )
     businesses = result.scalars().all()
 

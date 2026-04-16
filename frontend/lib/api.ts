@@ -1,12 +1,10 @@
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const KEY = process.env.NEXT_PUBLIC_ADMIN_KEY ?? "";
 
 async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     ...opts,
     headers: {
       "Content-Type": "application/json",
-      "X-Dev-Agency-Id": KEY,
       ...(opts.headers ?? {}),
     },
   });
@@ -28,21 +26,22 @@ export interface Business {
 
 export interface Call {
   id: string;
-  caller_number: string;
+  business_id: string;
+  caller_number: string | null;
   status: string;
   outcome: string | null;
-  duration_seconds: number | null;
-  created_at: string;
+  duration_sec: number | null;
+  started_at: string;
 }
 
 export const api = {
   businesses: {
-    list: () => req<Business[]>(`/api/v1/businesses/agency/${KEY}`),
+    list: () => req<Business[]>(`/api/v1/businesses/`),
     get: (id: string) => req<Business>(`/api/v1/businesses/${id}`),
     create: (data: { name: string; vertical: string; timezone?: string }) =>
       req<Business>("/api/v1/businesses/", {
         method: "POST",
-        body: JSON.stringify({ agency_id: KEY, timezone: "America/New_York", ...data }),
+        body: JSON.stringify({ timezone: "America/New_York", ...data }),
       }),
     provision: (id: string, area_code = "415") =>
       req<{ phone_number: string }>(`/api/v1/numbers/business/${id}/provision`, {
@@ -51,6 +50,10 @@ export const api = {
       }),
   },
   calls: {
-    list: (businessId?: string) => req<Call[]>(businessId ? `/api/v1/calls/business/${businessId}` : `/api/v1/calls/business/${KEY}`),
+    list: (businessId?: string) => {
+      const params = new URLSearchParams();
+      if (businessId) params.set("business_id", businessId);
+      return req<Call[]>(`/api/v1/calls/?${params.toString()}`);
+    },
   },
 };
