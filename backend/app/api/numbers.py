@@ -62,7 +62,7 @@ async def provision_number(
         raise HTTPException(status_code=503, detail="No phone numbers available")
 
     # Purchase the number
-    webhook_base = f"https://api.agentdesk.app"  # TODO: from config
+    webhook_base = settings.public_base_url.rstrip("/")
     purchased = client.incoming_phone_numbers.create(
         phone_number=available[0].phone_number,
         voice_url=f"{webhook_base}/webhooks/twilio/voice",

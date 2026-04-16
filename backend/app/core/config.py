@@ -7,6 +7,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
     # App
@@ -37,10 +38,11 @@ class Settings(BaseSettings):
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""
     twilio_phone_number: str = ""
+    public_base_url: str = "http://localhost:8000"
 
     # Stripe
-    stripe_secret_key: str
-    stripe_webhook_secret: str
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
     stripe_starter_price_id: str = ""
     stripe_pro_price_id: str = ""
     stripe_agency_price_id: str = ""
