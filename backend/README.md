@@ -1,18 +1,34 @@
 # AgentDesk Backend
 
-FastAPI backend for AgentDesk, an open-source white-label AI voice agent platform.
+FastAPI backend for AgentDesk.
 
 ## What this service does
 
-- manages agencies and client businesses
-- stores agent configuration
-- tracks call logs
-- handles Twilio and LiveKit webhooks
-- provides the API used by the dashboard
+The backend powers the current AgentDesk product flow:
 
-## Local development
+- supports the dashboard workspace
+- manages agencies and businesses
+- stores business and call data
+- exposes API routes used by the frontend
+- includes webhook surfaces for production-oriented integrations
+- starts the voice agent worker used by the runtime
 
-AgentDesk is designed to run Docker-first for local setup.
+## Current local reality
+
+For open source local use, the backend is set up around a simple demo path:
+
+- Docker-first local development
+- auto-bootstrapped demo agency in development
+- no Clerk requirement for the OSS path
+- OpenAI-first config defaults
+
+The current frontend flow is:
+
+1. landing page
+2. first-run setup
+3. dashboard workspace
+
+## Run locally
 
 From the repo root:
 
@@ -21,25 +37,47 @@ docker compose up --build
 ```
 
 That starts:
+
 - Postgres
 - Redis
 - FastAPI API
 - voice agent worker
 - Next.js frontend
 
-## Local agency bootstrapping
+## Local demo agency bootstrap
 
-In local development, the backend auto-creates a demo agency:
+In development, the backend auto-creates a demo agency:
 
 - `DEV_AGENCY_ID=dev-agency`
 - `DEV_AGENCY_NAME=Local Demo Agency`
 
-The frontend talks directly to that local API path without any extra auth header wiring.
+The frontend uses that local agency path directly.
 
-No Clerk setup is required for basic local usage.
+## Minimal local env
 
-## Notes
+The most important local settings are:
 
-- Twilio, LiveKit, OpenAI, Deepgram, and Cartesia are still required for real voice calls.
-- You can still explore the dashboard and create businesses locally before wiring production telephony.
-- API docs are available at `http://localhost:8000/docs`
+```env
+OPENAI_API_KEY=sk-...
+VOICE_MODE=demo
+VOICE_PROVIDER=openai
+```
+
+## Important voice runtime note
+
+`VOICE_PROVIDER=openai` is the simplified local-first mode, but it does **not** mean the whole runtime has been reduced to OpenAI alone.
+
+The repo still includes LiveKit-oriented runtime infrastructure, and the broader production stack is still represented in config and code.
+
+For real phone workflows, expect production-oriented setup with services such as:
+
+- LiveKit
+- Twilio
+- Deepgram
+- Cartesia
+
+## API docs
+
+When running locally, API docs are available at:
+
+`http://localhost:8000/docs`
