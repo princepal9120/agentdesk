@@ -34,6 +34,17 @@ export interface Call {
   started_at: string;
 }
 
+export interface Lead {
+  id: string;
+  name: string;
+  company: string;
+  phone: string;
+  location: string;
+  score: number;
+  status: "new" | "queued" | "called";
+  summary?: string;
+}
+
 export const api = {
   businesses: {
     list: () => req<Business[]>(`/api/v1/businesses/`),
