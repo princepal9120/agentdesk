@@ -53,16 +53,16 @@ export default function NewBusiness() {
             <Sparkles className="h-4 w-4" />
             Workspace setup
           </div>
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
+          <h1 className="mt-6 text-3xl font-semibold tracking-[-0.03em] text-gray-950 sm:text-4xl">
             Create a business workspace
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-7 text-gray-600">
-            This gets the business into AgentDesk so you can assign a number, review activity, and keep setup moving from a real dashboard.
+            Start with the essentials, then refine prompts, routing, and number setup from inside a calmer operational workspace.
           </p>
 
           <div className="mt-8 space-y-3">
             {STEPS.map((step, index) => (
-              <div key={step} className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div key={step} className="surface rounded-2xl p-4">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600 text-sm font-semibold text-white">
                   {index + 1}
                 </div>
@@ -73,14 +73,14 @@ export default function NewBusiness() {
             ))}
           </div>
 
-          <div className="mt-8 rounded-3xl border border-violet-200 bg-violet-50 p-6">
+          <div className="mt-8 rounded-3xl border border-violet-200 bg-violet-50/80 p-6 shadow-sm">
             <p className="text-sm font-semibold text-violet-800">Selected use case</p>
             <p className="mt-3 text-lg font-semibold text-gray-950">{selectedVertical.label}</p>
             <p className="mt-2 text-sm leading-6 text-gray-600">{selectedVertical.prompt}</p>
           </div>
         </div>
 
-        <form onSubmit={submit} className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+        <form onSubmit={submit} className="surface p-6 sm:p-8">
           <div className="mb-6">
             <p className="text-sm font-medium text-gray-500">Business setup</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">Start a new workspace</h2>

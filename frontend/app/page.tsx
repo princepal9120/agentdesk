@@ -34,10 +34,10 @@ const pillars = [
 ];
 
 const highlights = [
-  "Landing page first, dashboard second. Better first-run storytelling.",
-  "OpenAI-first demo path so setup stays simple for now.",
-  "Dashboard remains the operational layer after branding and setup.",
-  "Built to evolve into a real production voice platform.",
+  "Lead with product clarity before asking users to configure anything.",
+  "Keep first-run setup lightweight with an OpenAI-first demo path.",
+  "Hand users into a workspace that already feels operational.",
+  "Preserve a path from demo onboarding to a deeper voice stack later.",
 ];
 
 const setupFlow = [
@@ -58,25 +58,25 @@ const setupFlow = [
 const dashboardCards = [
   {
     label: "Landing",
-    value: "Branding-first",
-    note: "Clear narrative, crisp positioning, strong CTA",
+    value: "Clear positioning",
+    note: "A sharper product story with a calmer, more premium first impression.",
   },
   {
     label: "Setup",
-    value: "OpenAI-first",
-    note: "Simple first-run configuration for faster adoption",
+    value: "Fast onboarding",
+    note: "A lightweight first-run path that gets users into the product quickly.",
   },
   {
     label: "Dashboard",
-    value: "Ops-ready",
-    note: "Businesses, workflows, and future production controls",
+    value: "Operational core",
+    note: "Workspaces, businesses, and call flows stay organized in one place.",
   },
 ];
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white text-gray-900">
-      <section className="border-b border-gray-200 bg-white">
+    <main className="min-h-screen bg-[#fcfcfe] text-gray-900">
+      <section className="border-b border-gray-200/80 bg-white/90 backdrop-blur">
         <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
           <header className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -105,23 +105,23 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-white">
-        <div className="mx-auto grid max-w-7xl gap-16 px-6 py-20 lg:grid-cols-[1.1fr_0.9fr] lg:px-8 lg:py-24">
+      <section className="bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(167,139,250,0.10),transparent_28%),#fcfcfe]">
+        <div className="mx-auto grid max-w-7xl gap-16 px-6 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-28">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-medium text-violet-700">
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-2 text-sm font-medium text-violet-700 shadow-sm">
               <Orbit className="h-4 w-4" />
               Brand-first launch experience
             </div>
-            <h1 className="mt-8 text-5xl font-semibold tracking-tight text-gray-950 sm:text-6xl">
-              Your AI voice product should sell itself before users ever reach the dashboard.
+            <h1 className="mt-8 max-w-4xl text-5xl font-semibold tracking-[-0.04em] text-gray-950 sm:text-6xl sm:leading-[1.02]">
+              A more refined front door for launching white-label AI voice products.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-              AgentDesk gives you a polished first landing page, a simple setup path, and an operations dashboard behind it. For now, the brand story leads. Then setup happens. Then the dashboard takes over.
+              AgentDesk now opens with a calmer brand experience, moves into a lightweight setup flow, and hands users into a workspace that feels ready to operate. It is a better first impression, and a better product narrative.
             </p>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Link href="/dashboard" className="btn-primary inline-flex items-center justify-center gap-2 px-5 py-3 text-sm">
-                Continue to dashboard
+                Explore the dashboard
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
@@ -134,7 +134,7 @@ export default function Home() {
 
             <div className="mt-12 grid gap-4 sm:grid-cols-2">
               {highlights.map((item) => (
-                <div key={item} className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm leading-6 text-gray-600">
+                <div key={item} className="surface-muted p-4 text-sm leading-6 text-gray-600">
                   <div className="mb-2 flex items-center gap-2 text-gray-900">
                     <CheckCircle2 className="h-4 w-4 text-violet-600" />
                     <span className="font-medium">AgentDesk flow</span>
@@ -145,12 +145,12 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="rounded-[2rem] border border-gray-200 bg-gray-50 p-6 shadow-sm">
-            <div className="rounded-[1.5rem] border border-violet-100 bg-white p-6 shadow-[0_20px_80px_-50px_rgba(124,58,237,0.55)]">
+          <div className="surface-muted p-6">
+            <div className="surface border-violet-100 p-6 shadow-[0_30px_90px_-55px_rgba(124,58,237,0.5)]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Launch structure</p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">Landing. Setup. Dashboard.</h2>
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">Landing. Setup. Workspace.</h2>
                 </div>
                 <div className="rounded-2xl bg-violet-100 p-3 text-violet-700">
                   <PanelsTopLeft className="h-5 w-5" />
@@ -159,7 +159,7 @@ export default function Home() {
 
               <div className="mt-6 space-y-4">
                 {dashboardCards.map((card) => (
-                  <div key={card.label} className="rounded-2xl border border-gray-200 bg-white p-4">
+                  <div key={card.label} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-medium text-gray-500">{card.label}</p>
                       <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700">{card.value}</span>
@@ -183,7 +183,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-gray-200 bg-gray-50">
+      <section className="border-y border-gray-200 bg-white/70">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
           <div className="max-w-2xl">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">Positioning</p>
@@ -197,7 +197,7 @@ export default function Home() {
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {pillars.map(({ title, description, icon: Icon }) => (
-              <div key={title} className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
+              <div key={title} className="surface p-7">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
                   <Icon className="h-5 w-5" />
                 </div>
@@ -223,7 +223,7 @@ export default function Home() {
 
           <div className="space-y-5">
             {setupFlow.map((step, index) => (
-              <div key={step.title} className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+              <div key={step.title} className="surface p-6">
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 flex-none items-center justify-center rounded-2xl bg-violet-600 text-sm font-semibold text-white">
                     {index + 1}
@@ -236,7 +236,7 @@ export default function Home() {
               </div>
             ))}
 
-            <div className="rounded-3xl border border-gray-200 bg-gray-50 p-6">
+            <div className="surface-muted p-6">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
                 <Workflow className="h-4 w-4 text-violet-600" />
                 Current first-run path
@@ -254,15 +254,15 @@ VOICE_PROVIDER=openai`}</pre>
       </section>
 
       <section className="px-6 pb-20 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[2rem] border border-violet-200 bg-white px-8 py-12 shadow-[0_20px_80px_-45px_rgba(124,58,237,0.45)] sm:px-12">
+        <div className="mx-auto max-w-7xl rounded-[2rem] border border-violet-200 bg-white px-8 py-12 shadow-[0_30px_100px_-50px_rgba(124,58,237,0.42)] sm:px-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">Ready to explore</p>
               <h2 className="mt-4 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
-                Use the landing page as the brand layer, then move straight into setup and dashboard.
+                Start with a stronger landing page, then move naturally into setup and the operational workspace.
               </h2>
               <p className="mt-4 text-base leading-7 text-gray-600">
-                This gives AgentDesk a much stronger first impression right now, while keeping the real product surface in the dashboard where it belongs.
+                This makes AgentDesk feel more considered, more premium, and more trustworthy while keeping the real product depth in the dashboard.
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">

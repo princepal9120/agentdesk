@@ -85,15 +85,15 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
         <ArrowLeft className="h-4 w-4" /> All businesses
       </Link>
 
-      <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="surface p-6 sm:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="max-w-2xl">
             <div className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
               {VERTICAL_LABELS[biz.vertical] ?? biz.vertical}
             </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-gray-950">{biz.name}</h1>
+            <h1 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-gray-950">{biz.name}</h1>
             <p className="mt-3 text-sm leading-6 text-gray-600 sm:text-base">
-              Review phone readiness and recent call activity for this workspace.
+              Review phone readiness, call activity, and the overall operational state of this workspace.
             </p>
           </div>
 
@@ -107,15 +107,15 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+          <div className="surface-muted p-4">
             <p className="text-sm text-gray-500">Total calls</p>
             <p className="mt-2 text-2xl font-semibold text-gray-950">{callStats.total}</p>
           </div>
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+          <div className="surface-muted p-4">
             <p className="text-sm text-gray-500">Completed</p>
             <p className="mt-2 text-2xl font-semibold text-gray-950">{callStats.completed}</p>
           </div>
-          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+          <div className="surface-muted p-4">
             <p className="text-sm text-gray-500">Missed or failed</p>
             <p className="mt-2 text-2xl font-semibold text-gray-950">{callStats.missed}</p>
           </div>
@@ -123,20 +123,20 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="surface p-6">
           <div className="flex items-center gap-2">
             <Phone className="h-4 w-4 text-violet-600" />
             <p className="text-sm font-medium text-gray-900">Phone number</p>
           </div>
 
           {biz.phone_number ? (
-            <div className="mt-4 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+            <div className="mt-4 surface-muted p-4">
               <p className="text-sm text-gray-500">Assigned number</p>
               <p className="mt-2 font-mono text-lg text-gray-950">{biz.phone_number}</p>
               <p className="mt-2 text-sm text-gray-500">Ready for inbound calls through Twilio.</p>
             </div>
           ) : (
-            <div className="mt-4 space-y-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-4">
+            <div className="mt-4 space-y-4 rounded-2xl border border-dashed border-gray-300 bg-gray-50/80 p-4">
               <div>
                 <p className="text-sm font-medium text-gray-900">Provision a number</p>
                 <p className="mt-1 text-sm leading-6 text-gray-500">
@@ -161,7 +161,7 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
           {error && <p className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
         </div>
 
-        <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="surface p-6">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <PhoneCall className="h-4 w-4 text-gray-400" />
@@ -184,7 +184,7 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
           ) : (
             <div className="space-y-3">
               {calls.map((c) => (
-                <div key={c.id} className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div key={c.id} className="surface-muted p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <p className="font-mono text-sm text-gray-800">{c.caller_number ?? "Unknown caller"}</p>
