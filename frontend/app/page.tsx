@@ -80,7 +80,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
           <header className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#00754A] text-white shadow-sm">
                 <Mic className="h-5 w-5" />
               </div>
               <div>
@@ -105,18 +105,18 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.08),transparent_30%),radial-gradient(circle_at_top_right,rgba(167,139,250,0.10),transparent_28%),#fcfcfe]">
+      <section className="bg-[#f2f0eb]">
         <div className="mx-auto grid max-w-7xl gap-16 px-6 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-28">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-white px-4 py-2 text-sm font-medium text-violet-700 shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#00754A]/20 bg-white px-4 py-2 text-sm font-medium text-[#00754A] shadow-sm">
               <Orbit className="h-4 w-4" />
               Brand-first launch experience
             </div>
             <h1 className="mt-8 max-w-4xl text-5xl font-semibold tracking-[-0.04em] text-gray-950 sm:text-6xl sm:leading-[1.02]">
-              A more refined front door for launching white-label AI voice products.
+              A warmer, calmer front door for launching AI voice workflows.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-              AgentDesk now opens with a calmer brand experience, moves into a lightweight setup flow, and hands users into a workspace that feels ready to operate. It is a better first impression, and a better product narrative.
+              AgentDesk now feels more grounded and more welcoming. The experience opens with a clear brand layer, moves into lightweight setup, and then hands users into an operational workspace built for AI-led calling workflows.
             </p>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
@@ -136,7 +136,7 @@ export default function Home() {
               {highlights.map((item) => (
                 <div key={item} className="surface-muted p-4 text-sm leading-6 text-gray-600">
                   <div className="mb-2 flex items-center gap-2 text-gray-900">
-                    <CheckCircle2 className="h-4 w-4 text-violet-600" />
+                    <CheckCircle2 className="h-4 w-4 text-[#00754A]" />
                     <span className="font-medium">AgentDesk flow</span>
                   </div>
                   {item}
@@ -146,13 +146,13 @@ export default function Home() {
           </div>
 
           <div className="surface-muted p-6">
-            <div className="surface border-violet-100 p-6 shadow-[0_30px_90px_-55px_rgba(124,58,237,0.5)]">
+            <div className="surface border-[#d4e9e2] p-6 shadow-[0_20px_40px_-30px_rgba(0,98,65,0.24)]">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-500">Launch structure</p>
                   <h2 className="mt-2 text-2xl font-semibold tracking-tight text-gray-950">Landing. Setup. Workspace.</h2>
                 </div>
-                <div className="rounded-2xl bg-violet-100 p-3 text-violet-700">
+                <div className="rounded-2xl bg-[#d4e9e2] p-3 text-[#00754A]">
                   <PanelsTopLeft className="h-5 w-5" />
                 </div>
               </div>
@@ -162,19 +162,19 @@ export default function Home() {
                   <div key={card.label} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-medium text-gray-500">{card.label}</p>
-                      <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700">{card.value}</span>
+                      <span className="rounded-full bg-[#d4e9e2] px-3 py-1 text-xs font-medium text-[#00754A]">{card.value}</span>
                     </div>
                     <p className="mt-3 text-sm leading-6 text-gray-600">{card.note}</p>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-6 rounded-2xl border border-violet-200 bg-violet-50 p-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-violet-800">
+              <div className="mt-6 rounded-2xl border border-[#d4e9e2] bg-[#d4e9e2]/60 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[#006241]">
                   <ShieldCheck className="h-4 w-4" />
                   Current launch approach
                 </div>
-                <p className="mt-2 text-sm leading-6 text-violet-900/80">
+                <p className="mt-2 text-sm leading-6 text-[#1E3932]">
                   Use the landing page as the brand layer for now. After setup, users move into the dashboard where the full product experience lives.
                 </p>
               </div>
@@ -183,10 +183,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-gray-200 bg-white/70">
+      <section className="border-y border-black/5 bg-[#edebe9]">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">Positioning</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#006241]">Positioning</p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
               A cleaner front door for AgentDesk, inspired by modern product-branding pages.
             </h2>
@@ -198,7 +198,7 @@ export default function Home() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {pillars.map(({ title, description, icon: Icon }) => (
               <div key={title} className="surface p-7">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#d4e9e2] text-[#00754A]">
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="mt-5 text-xl font-semibold tracking-tight text-gray-950">{title}</h3>
@@ -212,7 +212,7 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">How users move</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#006241]">How users move</p>
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
               First impression matters. Then setup. Then operations.
             </h2>
@@ -225,7 +225,7 @@ export default function Home() {
             {setupFlow.map((step, index) => (
               <div key={step.title} className="surface p-6">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 flex-none items-center justify-center rounded-2xl bg-violet-600 text-sm font-semibold text-white">
+                  <div className="flex h-10 w-10 flex-none items-center justify-center rounded-2xl bg-[#00754A] text-sm font-semibold text-white">
                     {index + 1}
                   </div>
                   <div>
@@ -238,7 +238,7 @@ export default function Home() {
 
             <div className="surface-muted p-6">
               <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-                <Workflow className="h-4 w-4 text-violet-600" />
+                <Workflow className="h-4 w-4 text-[#00754A]" />
                 Current first-run path
               </div>
               <div className="mt-4 overflow-x-auto rounded-2xl border border-gray-200 bg-white p-4 text-sm text-gray-700 shadow-sm">
@@ -254,14 +254,14 @@ VOICE_PROVIDER=openai`}</pre>
       </section>
 
       <section className="px-6 pb-20 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[2rem] border border-violet-200 bg-white px-8 py-12 shadow-[0_30px_100px_-50px_rgba(124,58,237,0.42)] sm:px-12">
+        <div className="mx-auto max-w-7xl rounded-[2rem] border border-[#d4e9e2] bg-[#1E3932] px-8 py-12 text-white shadow-[0_20px_60px_-40px_rgba(0,0,0,0.28)] sm:px-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-2xl">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-700">Ready to explore</p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-gray-950 sm:text-4xl">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#cba258]">Ready to explore</p>
+              <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 Start with a stronger landing page, then move naturally into setup and the operational workspace.
               </h2>
-              <p className="mt-4 text-base leading-7 text-gray-600">
+              <p className="mt-4 text-base leading-7 text-white/70">
                 This makes AgentDesk feel more considered, more premium, and more trustworthy while keeping the real product depth in the dashboard.
               </p>
             </div>
@@ -274,7 +274,7 @@ VOICE_PROVIDER=openai`}</pre>
                 href="https://github.com/princepal9120/agentdesk"
                 target="_blank"
                 rel="noreferrer"
-                className="btn-secondary inline-flex items-center justify-center px-5 py-3 text-sm"
+                className="btn-secondary inline-flex items-center justify-center border-white text-white px-5 py-3 text-sm hover:bg-white/10"
               >
                 View GitHub
               </a>

@@ -4,33 +4,36 @@
 
 @layer base {
   body {
-    @apply bg-[#fcfcfe] text-gray-900 antialiased;
+    @apply bg-[#f2f0eb] text-[rgba(0,0,0,0.87)] antialiased;
   }
 }
 
 @layer components {
   .surface {
-    @apply rounded-[1.75rem] border border-gray-200/80 bg-white shadow-[0_20px_60px_-40px_rgba(17,24,39,0.22)];
+    @apply rounded-[1.5rem] border border-black/5 bg-white shadow-[0_0_0.5px_rgba(0,0,0,0.14),0_1px_1px_rgba(0,0,0,0.24)];
   }
   .surface-muted {
-    @apply rounded-[1.5rem] border border-gray-200/80 bg-gray-50/80;
+    @apply rounded-[1.5rem] border border-black/5 bg-[#edebe9];
   }
   .card {
     @apply surface p-5;
   }
   .btn {
-    @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold tracking-[-0.01em] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#00754A]/20 focus:ring-offset-2;
+  }
+  .btn:active {
+    transform: scale(0.95);
   }
   .btn-primary {
-    @apply btn bg-violet-600 text-white shadow-sm hover:bg-violet-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50;
+    @apply btn border border-[#00754A] bg-[#00754A] text-white shadow-sm hover:bg-[#006241] hover:border-[#006241];
   }
   .btn-secondary {
-    @apply btn border border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50;
+    @apply btn border border-[rgba(0,0,0,0.87)] bg-transparent text-[rgba(0,0,0,0.87)] hover:bg-white/60;
   }
   .input {
-    @apply w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm shadow-sm transition focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-100;
+    @apply w-full rounded-xl border border-[#d6dbde] bg-white px-3.5 py-3 text-sm text-[rgba(0,0,0,0.87)] shadow-sm transition focus:border-[#00754A] focus:outline-none focus:ring-2 focus:ring-[#d4e9e2];
   }
   .label {
-    @apply mb-1.5 block text-sm font-medium text-gray-700;
+    @apply mb-1.5 block text-sm font-medium text-[rgba(0,0,0,0.87)];
   }
 }
