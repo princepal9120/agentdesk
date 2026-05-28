@@ -131,7 +131,7 @@ TWILIO_PHONE_NUMBER=+1...
 
 ## 🗺 Roadmap
 
-- [ ] Visual conversation flow builder (drag-drop)
+- [x] Visual conversation flow builder (drag-drop)
 - [ ] Local LLM support (Ollama + Whisper + Kokoro)
 - [ ] PDF/document knowledge base upload
 - [ ] Multi-language voice support
@@ -140,6 +140,8 @@ TWILIO_PHONE_NUMBER=+1...
 ---
 
 ## 🤝 Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on local environment setup, style guidelines, and our pull request process.
 
 1. Fork the repo
 2. Create a feature branch: `git checkout -b feat/my-feature`
@@ -152,7 +154,7 @@ New templates especially welcome — each niche helps more businesses deploy voi
 
 ## 📄 License
 
-MIT — use it, fork it, ship it.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
