@@ -7,7 +7,6 @@ Create Date: 2026-03-15
 from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 revision: str = "001_agentdesk"
 down_revision: Union[str, None] = None
@@ -19,12 +18,12 @@ def upgrade() -> None:
     # --- agencies ---
     op.create_table(
         "agencies",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(36), primary_key=True),
         sa.Column("clerk_org_id", sa.String(255), unique=True, nullable=True),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("subdomain", sa.String(100), unique=True, nullable=True),
         sa.Column("custom_domain", sa.String(255), unique=True, nullable=True),
-        sa.Column("branding", postgresql.JSONB(), nullable=True),
+        sa.Column("branding", sa.JSON(), nullable=True),
         sa.Column("stripe_customer_id", sa.String(255), nullable=True),
         sa.Column("stripe_subscription_id", sa.String(255), nullable=True),
         sa.Column("plan", sa.String(50), server_default="starter", nullable=False),
@@ -37,10 +36,10 @@ def upgrade() -> None:
     # --- businesses ---
     op.create_table(
         "businesses",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(36), primary_key=True),
         sa.Column(
             "agency_id",
-            postgresql.UUID(as_uuid=True),
+            sa.String(36),
             sa.ForeignKey("agencies.id", ondelete="CASCADE"),
             nullable=False,
         ),
@@ -58,10 +57,10 @@ def upgrade() -> None:
     # --- agent_configs ---
     op.create_table(
         "agent_configs",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(36), primary_key=True),
         sa.Column(
             "business_id",
-            postgresql.UUID(as_uuid=True),
+            sa.String(36),
             sa.ForeignKey("businesses.id", ondelete="CASCADE"),
             nullable=False,
             unique=True,
@@ -70,25 +69,26 @@ def upgrade() -> None:
         sa.Column("agent_name", sa.String(100), server_default="Alex"),
         sa.Column("voice_id", sa.String(100), server_default="sonic-english"),
         sa.Column("system_prompt", sa.Text(), nullable=False),
-        sa.Column("business_hours", postgresql.JSONB(), nullable=True),
-        sa.Column("services", postgresql.JSONB(), nullable=True),
-        sa.Column("faq", postgresql.JSONB(), nullable=True),
+        sa.Column("business_hours", sa.JSON(), nullable=True),
+        sa.Column("services", sa.JSON(), nullable=True),
+        sa.Column("faq", sa.JSON(), nullable=True),
+        sa.Column("flow_data", sa.JSON(), nullable=True),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
 
     # --- calls ---
     op.create_table(
         "calls",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(36), primary_key=True),
         sa.Column(
             "business_id",
-            postgresql.UUID(as_uuid=True),
+            sa.String(36),
             sa.ForeignKey("businesses.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column(
             "agency_id",
-            postgresql.UUID(as_uuid=True),
+            sa.String(36),
             sa.ForeignKey("agencies.id", ondelete="CASCADE"),
             nullable=False,
         ),
@@ -97,7 +97,7 @@ def upgrade() -> None:
         sa.Column("caller_number", sa.String(20), nullable=True),
         sa.Column("duration_sec", sa.Integer(), nullable=True),
         sa.Column("status", sa.String(50), server_default="in_progress"),
-        sa.Column("transcript", postgresql.JSONB(), nullable=True),
+        sa.Column("transcript", sa.JSON(), nullable=True),
         sa.Column("summary", sa.Text(), nullable=True),
         sa.Column("outcome", sa.String(50), nullable=True),
         sa.Column("recording_url", sa.String(500), nullable=True),
@@ -110,16 +110,16 @@ def upgrade() -> None:
     # --- bookings ---
     op.create_table(
         "bookings",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(36), primary_key=True),
         sa.Column(
             "business_id",
-            postgresql.UUID(as_uuid=True),
+            sa.String(36),
             sa.ForeignKey("businesses.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column(
             "call_id",
-            postgresql.UUID(as_uuid=True),
+            sa.String(36),
             sa.ForeignKey("calls.id", ondelete="SET NULL"),
             nullable=True,
         ),
@@ -138,16 +138,16 @@ def upgrade() -> None:
     # --- usage ---
     op.create_table(
         "usage",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(36), primary_key=True),
         sa.Column(
             "agency_id",
-            postgresql.UUID(as_uuid=True),
+            sa.String(36),
             sa.ForeignKey("agencies.id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column(
             "business_id",
-            postgresql.UUID(as_uuid=True),
+            sa.String(36),
             sa.ForeignKey("businesses.id", ondelete="CASCADE"),
             nullable=False,
         ),

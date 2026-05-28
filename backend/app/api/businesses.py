@@ -32,6 +32,7 @@ class AgentConfigUpdate(BaseModel):
     services: list | None = None
     faq: list | None = None
     system_prompt_override: str | None = None  # Custom prompt (Pro feature)
+    flow_data: dict | None = None
 
 
 class BusinessOut(BaseModel):
@@ -58,6 +59,7 @@ class AgentConfigOut(BaseModel):
     business_hours: dict | None
     services: list | None
     faq: list | None
+    flow_data: dict | None
 
     class Config:
         from_attributes = True

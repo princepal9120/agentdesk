@@ -24,6 +24,19 @@ export interface Business {
   created_at: string;
 }
 
+export interface AgentConfig {
+  id: string;
+  business_id: string;
+  template: string;
+  agent_name: string;
+  voice_id: string;
+  system_prompt: string;
+  business_hours: Record<string, any> | null;
+  services: any[] | null;
+  faq: any[] | null;
+  flow_data: Record<string, any> | null;
+}
+
 export interface Call {
   id: string;
   business_id: string;
@@ -58,6 +71,12 @@ export const api = {
       req<{ phone_number: string }>(`/api/v1/numbers/business/${id}/provision`, {
         method: "POST",
         body: JSON.stringify({ area_code }),
+      }),
+    getConfig: (id: string) => req<AgentConfig>(`/api/v1/businesses/${id}/config`),
+    updateConfig: (id: string, data: Partial<AgentConfig>) =>
+      req<AgentConfig>(`/api/v1/businesses/${id}/config`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
       }),
   },
   calls: {

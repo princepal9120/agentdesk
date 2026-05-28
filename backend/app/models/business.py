@@ -51,6 +51,7 @@ class AgentConfig(Base):
     business_hours: Mapped[dict | None] = mapped_column(JSON)
     services: Mapped[list | None] = mapped_column(JSON)
     faq: Mapped[list | None] = mapped_column(JSON)
+    flow_data: Mapped[dict | None] = mapped_column(JSON)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )
