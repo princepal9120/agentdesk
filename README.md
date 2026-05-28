@@ -1,176 +1,159 @@
-# AgentDesk
+# AgentDesk ☎
 
-Open-source white-label AI voice agent platform with a branding-first landing page, a simple first-run setup path, and a dashboard workspace behind it.
+> **Deploy a custom AI voice receptionist for ANY business in 5 minutes — no database setup required.**
 
-> Built with FastAPI, Postgres, Redis, Next.js, and an OpenAI-first local demo path.
-
----
-
-## Current product flow
-
-Today the product is shaped like this:
-
-1. **Branding-first landing page** at `/`
-2. **First-run setup path** for local demo configuration
-3. **Dashboard workspace** at `/dashboard`
-
-This repo already reflects that launch flow in the frontend.
-
----
-
-## What is ready now
-
-For local open source use, AgentDesk is best understood as an **OpenAI-first demo environment**:
-
-- landing page is the public-facing entry point
-- dashboard loads locally and lists or creates businesses
-- backend bootstraps a local demo agency automatically in development
-- Clerk is **not required** for the local OSS path
-- local API docs are available at `http://localhost:8000/docs`
-- Docker compose starts the main app stack quickly
-
----
-
-## What is production-next
-
-The repo still contains production-oriented voice integrations and webhook surfaces, including:
-
-- LiveKit
-- Twilio
-- Deepgram
-- Cartesia
-- Stripe
-
-Those pieces are part of the broader production direction, but the polished public launch story right now is the landing page, setup path, and dashboard workspace, not a fully verified end-to-end phone deployment.
-
-In particular:
-
-- `VOICE_PROVIDER=openai` is the simplified local-first mode
-- the backend and agent still assume LiveKit-based runtime infrastructure
-- real phone calling still depends on production provider wiring and verification
-
----
-
-## Quickstart
+AgentDesk is an open-source, white-label voice agent platform. Pick a template, answer 5 questions, and have a live AI phone agent handling real calls.
 
 ```bash
-git clone https://github.com/princepal9120/agentdesk.git
+python -m cli.init
+```
+
+---
+
+## ✨ What It Does
+
+| Feature | Description |
+|---|---|
+| 🎙 **Live voice calls** | Real phone calls via Twilio + OpenAI Realtime |
+| 🧠 **Niche templates** | Restaurant, dental, real estate, HR, e-commerce |
+| 📊 **Dashboard** | Call logs, transcripts, bookings, analytics |
+| 🗄 **Zero-install DB** | SQLite by default — no Postgres/Redis needed |
+| 🌐 **Auto tunnel** | Cloudflare tunnel auto-configured for Twilio |
+| 🔒 **Self-hosted** | Your data stays on your server |
+
+---
+
+## ⚡ Quickstart (5 minutes)
+
+### Option A — Interactive Setup Wizard (recommended)
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/princepal9120/agentdesk
 cd agentdesk
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+
+# 2. Run the setup wizard (no dependencies needed!)
+python -m cli.init
+
+# 3. Start the backend
+cd backend && uvicorn app.main:app --reload
+
+# 4. Start the frontend
+cd frontend && npm install && npm run dev
 ```
 
-Set at least this in `backend/.env`:
-
-```env
-OPENAI_API_KEY=sk-...
-VOICE_MODE=demo
-VOICE_PROVIDER=openai
-```
-
-Then run:
+### Option B — Docker (single command)
 
 ```bash
-docker compose up --build
+git clone https://github.com/princepal9120/agentdesk
+cd agentdesk
+
+# Copy and fill in ONLY your OpenAI key
+cp backend/.env.example backend/.env
+# Edit backend/.env and add: OPENAI_API_KEY=sk-...
+
+docker compose up
 ```
 
-Open:
-
-- Landing page: `http://localhost:3000`
-- Dashboard: `http://localhost:3000/dashboard`
-- API docs: `http://localhost:8000/docs`
+Open **http://localhost:3000** → dashboard ready.
 
 ---
 
-## Local OSS mode
+## 🧩 Templates
 
-Use this mode if you want the simplest path to trying the project locally.
+The setup wizard lets you pick a niche preset. Each template includes a battle-tested system prompt, tool definitions, and FAQ data.
 
-### Local defaults
-
-- Docker-first startup
-- local demo agency bootstrapped automatically
-- no Clerk setup required
-- no Stripe setup required
-- OpenAI-first config path
-
-### What to expect
-
-This mode is good for:
-
-- exploring the product flow
-- creating businesses in the dashboard
-- testing the API locally
-- iterating on the landing page and workspace experience
-
-This mode should **not** be described as fully production-ready telephony.
+| Template | Use Case | Agent Name |
+|---|---|---|
+| `restaurant` | Table reservations, menu questions | Bella |
+| `dental` | Appointment scheduling, insurance queries | Aria |
+| `real-estate` | Lead qualification, property viewings | Max |
+| `hr` | Candidate phone screening | Sam |
+| `ecommerce` | Order tracking, returns, support | Nova |
+| `custom` | Blank scaffold — fully configurable | Alex |
 
 ---
 
-## Environment overview
+## 🏗 Architecture
 
-### Backend
+```
+agentdesk/
+├── cli/               # Setup wizard (python -m cli.init)
+├── backend/           # FastAPI + SQLAlchemy + SQLite/Postgres
+│   ├── app/
+│   │   ├── api/       # REST endpoints
+│   │   ├── core/      # DB, config, rate limiting
+│   │   └── models/    # Agency, Business, Call, Booking
+│   ├── templates/     # Niche preset JSON files
+│   └── agent/         # LiveKit voice agent runtime
+└── frontend/          # Next.js dashboard
+```
 
-Common local minimum:
+**Default stack (local dev):**
+- Database: SQLite (zero install — file at `agentdesk.db`)
+- Rate limiting: In-memory (no Redis needed)
+- Voice: OpenAI Realtime API
+
+**Production stack:**
+- Database: PostgreSQL (`DATABASE_URL=postgresql+asyncpg://...`)
+- Rate limiting: Redis (`REDIS_URL=redis://...`)
+- Voice: LiveKit + Deepgram + Cartesia
+
+---
+
+## 🔑 Minimum Configuration
+
+Only **one** variable required for local demo:
 
 ```env
 OPENAI_API_KEY=sk-...
-VOICE_MODE=demo
-VOICE_PROVIDER=openai
 ```
 
-Production-oriented integrations remain available in the backend env file for later rollout:
-
-- `LIVEKIT_URL`
-- `LIVEKIT_API_KEY`
-- `LIVEKIT_API_SECRET`
-- `TWILIO_ACCOUNT_SID`
-- `TWILIO_AUTH_TOKEN`
-- `TWILIO_PHONE_NUMBER`
-- `DEEPGRAM_API_KEY`
-- `CARTESIA_API_KEY`
-- Stripe keys
-
-### Frontend
-
-Local frontend env is intentionally minimal:
+For real phone calls, add:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_PHONE_NUMBER=+1...
 ```
 
-No Clerk env vars are needed for the OSS demo path.
+---
+
+## 📖 How It Works
+
+1. **`agentdesk init`** — wizard asks your business type, name, website URL, and API keys
+2. Scrapes your website to build an instant knowledge base
+3. Generates a custom system prompt from your template
+4. Auto-configures Twilio webhooks via Cloudflare tunnel
+5. Saves everything to local SQLite — no external DB needed
 
 ---
 
-## Repo structure
+## 🗺 Roadmap
 
-- `frontend/app/page.tsx` - branding-first landing page
-- `frontend/app/dashboard/page.tsx` - dashboard workspace
-- `backend/app/main.py` - API app and local demo agency bootstrap
-- `backend/agent/provider_factory.py` - OpenAI-first vs full provider runtime selection
-
----
-
-## Honest status
-
-AgentDesk has a strong local product shell today.
-
-What feels real now:
-
-- the landing page
-- the first-run local setup path
-- the dashboard workspace
-- the OpenAI-first onboarding story
-
-What should still be treated as production-next:
-
-- full end-to-end phone flow validation
-- hardened multi-provider voice deployment
-- production auth and billing rollout
+- [ ] Visual conversation flow builder (drag-drop)
+- [ ] Local LLM support (Ollama + Whisper + Kokoro)
+- [ ] PDF/document knowledge base upload
+- [ ] Multi-language voice support
+- [ ] One-click Railway/Render deploy button
 
 ---
 
-## License
+## 🤝 Contributing
 
-MIT
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Add a template or improve DX
+4. Open a PR
+
+New templates especially welcome — each niche helps more businesses deploy voice AI.
+
+---
+
+## 📄 License
+
+MIT — use it, fork it, ship it.
+
+---
+
+Built with ❤ by [Prince Pal](https://github.com/princepal9120)

@@ -1,0 +1,50 @@
+{
+  "key": "ecommerce",
+  "label": "E-commerce / Online Store",
+  "agent_name": "Nova",
+  "voice_id": "sonic-english",
+  "dashboard_labels": {
+    "calls": "Support Calls",
+    "bookings": "Returns & Refunds",
+    "outcome_booked": "Return Approved",
+    "outcome_inquiry": "Order Inquiry",
+    "outcome_callback": "Escalated to Human"
+  },
+  "system_prompt": "You are {agent_name}, the AI customer support agent for {business_name}.\n\nYour primary jobs are:\n1. Track order status — ask for order number or email address\n2. Handle return and refund requests (within 30 days of purchase)\n3. Answer product questions\n4. Resolve shipping issues (lost/delayed packages)\n5. Process address change requests for unshipped orders\n\nFor refund requests over $200: flag for human agent review, do not auto-approve.\nFor lost packages: verify shipping address, check carrier tracking, then escalate if unresolved.\nAlways verify identity by asking for email address and last 4 digits of payment card.",
+  "tools": [
+    {
+      "name": "track_order",
+      "description": "Look up order status by order ID or email",
+      "parameters": {
+        "order_id": "string",
+        "customer_email": "string"
+      }
+    },
+    {
+      "name": "create_return_request",
+      "description": "Initiate a return or refund request",
+      "parameters": {
+        "order_id": "string",
+        "customer_name": "string",
+        "reason": "string",
+        "refund_amount": "number",
+        "return_item": "string"
+      }
+    },
+    {
+      "name": "escalate_to_human",
+      "description": "Flag this call for human agent follow-up",
+      "parameters": {
+        "customer_name": "string",
+        "phone": "string",
+        "issue_summary": "string",
+        "priority": "string (low|medium|high)"
+      }
+    }
+  ],
+  "sample_faq": [
+    {"q": "What is your return policy?", "a": "We accept returns within 30 days of delivery for unused items in original packaging."},
+    {"q": "How long does shipping take?", "a": "Standard shipping is 3–5 business days. Express is 1–2 business days."},
+    {"q": "Can I cancel my order?", "a": "Orders can be cancelled within 2 hours of placement if not yet shipped."}
+  ]
+}

@@ -2,15 +2,14 @@ import uuid
 from datetime import datetime
 from sqlalchemy import String, Text, Boolean, DateTime, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 
 
 class Agency(Base):
     __tablename__ = "agencies"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
     clerk_org_id: Mapped[str | None] = mapped_column(String(255), unique=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -27,7 +26,7 @@ class Agency(Base):
     )
 
     # Relationships
-    businesses: Mapped[list["Business"]] = relationship(
+    businesses: Mapped[list["Business"]] = relationship(  # type: ignore[assignment]
         "Business", back_populates="agency", cascade="all, delete-orphan"
     )
 

@@ -19,7 +19,8 @@ dependencies = [
 
     # Database
     "sqlalchemy[asyncio]>=2.0.0",
-    "asyncpg>=0.30.0",
+    "aiosqlite>=0.20.0",      # SQLite async driver (default/dev)
+    "asyncpg>=0.30.0",        # Postgres async driver (production)
     "alembic>=1.14.0",
 
     # Config + validation
@@ -27,8 +28,9 @@ dependencies = [
     "pydantic-settings>=2.7.0",
     "python-dotenv>=1.0.0",
 
-    # Redis
-    "redis[hiredis]>=5.2.0",
+    # Redis — optional, used for distributed rate-limiting in production
+    # Install with: uv add redis[hiredis]
+    # "redis[hiredis]>=5.2.0",
 
     # Auth (Clerk JWT verification)
     "python-jose[cryptography]>=3.3.0",

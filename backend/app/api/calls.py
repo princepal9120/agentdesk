@@ -18,8 +18,8 @@ router = APIRouter()
 
 
 class CallOut(BaseModel):
-    id: uuid.UUID
-    business_id: uuid.UUID
+    id: str
+    business_id: str
     twilio_call_sid: str | None
     caller_number: str | None
     duration_sec: int | None
@@ -34,7 +34,7 @@ class CallOut(BaseModel):
 
 
 class TranscriptOut(BaseModel):
-    call_id: uuid.UUID
+    call_id: str
     transcript: list | None
     duration_sec: int | None
     outcome: str | None
@@ -51,7 +51,7 @@ class CallStatsOut(BaseModel):
 
 @router.get("/", response_model=list[CallOut])
 async def list_calls(
-    business_id: uuid.UUID | None = None,
+    business_id: str | None = None,
     limit: int = 50,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
@@ -69,7 +69,7 @@ async def list_calls(
 
 @router.get("/{call_id}/transcript", response_model=TranscriptOut)
 async def get_transcript(
-    call_id: uuid.UUID,
+    call_id: str,
     db: AsyncSession = Depends(get_db),
     current_agency: Agency = Depends(get_current_agency),
 ):
@@ -90,7 +90,7 @@ async def get_transcript(
 
 @router.get("/business/{business_id}/stats", response_model=CallStatsOut)
 async def get_call_stats(
-    business_id: uuid.UUID,
+    business_id: str,
     period: str = "month",  # week|month|all
     db: AsyncSession = Depends(get_db),
     current_agency: Agency = Depends(get_current_agency),

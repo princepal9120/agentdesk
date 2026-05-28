@@ -18,10 +18,11 @@ class Settings(BaseSettings):
     voice_mode: str = "demo"  # demo|production
     voice_provider: str = "openai"  # openai|full
 
-    # Database
-    database_url: str
+    # Database — defaults to local SQLite for zero-install dev experience
+    # Set DATABASE_URL=postgresql+asyncpg://... for production
+    database_url: str = "sqlite+aiosqlite:///./agentdesk.db"
 
-    # Redis
+    # Redis — optional, used for rate limiting in production only
     redis_url: str = "redis://localhost:6379/0"
 
     # LiveKit

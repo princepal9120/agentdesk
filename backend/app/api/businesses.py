@@ -11,7 +11,7 @@ import uuid
 from app.core.database import get_db
 from app.models.agency import Agency
 from app.models.business import Business, AgentConfig
-from agent.templates import get_template, render_system_prompt
+from app.templates import get_template, render_system_prompt, get_sample_faq
 from app.api.deps import get_current_agency
 
 router = APIRouter()
@@ -35,8 +35,8 @@ class AgentConfigUpdate(BaseModel):
 
 
 class BusinessOut(BaseModel):
-    id: uuid.UUID
-    agency_id: uuid.UUID
+    id: str
+    agency_id: str
     name: str
     vertical: str | None
     phone_number: str | None
@@ -49,8 +49,8 @@ class BusinessOut(BaseModel):
 
 
 class AgentConfigOut(BaseModel):
-    id: uuid.UUID
-    business_id: uuid.UUID
+    id: str
+    business_id: str
     template: str
     agent_name: str
     voice_id: str
@@ -93,20 +93,21 @@ async def create_business(
     await db.flush()  # Get ID without committing
 
     # Auto-create default agent config from template
-    template = get_template(payload.vertical)
-    system_prompt = render_system_prompt(template, {
-        "agent_name": template.default_agent_name,
-        "business_name": payload.name,
-        "business_hours": None,
-        "services": [],
-        "faq": [],
-    })
+    tmpl = get_template(payload.vertical) or get_template("custom")
+    agent_name = tmpl.get("agent_name", "Alex") if tmpl else "Alex"
+    system_prompt = render_system_prompt(
+        template_key=payload.vertical,
+        agent_name=agent_name,
+        business_name=payload.name,
+    )
+    sample_faq = get_sample_faq(payload.vertical)
 
     config = AgentConfig(
         business_id=business.id,
         template=payload.vertical,
-        agent_name=template.default_agent_name,
+        agent_name=agent_name,
         system_prompt=system_prompt,
+        faq=sample_faq or [],
     )
     db.add(config)
     await db.commit()
@@ -202,15 +203,11 @@ async def update_agent_config(
     if custom_prompt:
         config.system_prompt = custom_prompt
     else:
-        template = get_template(config.template)
-        config.system_prompt = render_system_prompt(template, {
-            "agent_name": config.agent_name,
-            "business_name": business.name,
-            "phone_number": business.phone_number or "",
-            "business_hours": config.business_hours,
-            "services": config.services or [],
-            "faq": config.faq or [],
-        })
+        config.system_prompt = render_system_prompt(
+            template_key=config.template,
+            agent_name=config.agent_name,
+            business_name=business.name,
+        )
 
     await db.commit()
     await db.refresh(config)
@@ -218,7 +215,7 @@ async def update_agent_config(
 
 
 @router.delete("/{business_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def deactivate_business(business_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def deactivate_business(business_id: str, db: AsyncSession = Depends(get_db)):
     """Soft-delete a client business."""
     result = await db.execute(select(Business).where(Business.id == business_id))
     business = result.scalar_one_or_none()

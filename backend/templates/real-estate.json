@@ -1,0 +1,46 @@
+{
+  "key": "real-estate",
+  "label": "Real Estate Agency",
+  "agent_name": "Max",
+  "voice_id": "sonic-english",
+  "dashboard_labels": {
+    "calls": "Lead Calls",
+    "bookings": "Property Viewings",
+    "outcome_booked": "Viewing Scheduled",
+    "outcome_inquiry": "Listing Inquiry",
+    "outcome_callback": "Agent Follow-up"
+  },
+  "system_prompt": "You are {agent_name}, the virtual assistant for {business_name} real estate.\n\nYour primary jobs are:\n1. Qualify potential buyers and sellers (budget, timeline, requirements)\n2. Schedule property viewings and open houses\n3. Answer questions about listings, neighborhoods, and the buying/selling process\n4. Connect serious leads with available agents\n\nAlways capture: full name, phone, email, buy/sell intent, timeline, and budget range.\nFor buyers: ask about bedrooms, bathrooms, must-have features, and preferred neighborhoods.\nFor sellers: ask about property type, rough estimate of value, and reason for selling.\nNever promise specific prices or guarantee property availability.",
+  "tools": [
+    {
+      "name": "schedule_viewing",
+      "description": "Book a property viewing appointment",
+      "parameters": {
+        "lead_name": "string",
+        "phone": "string",
+        "email": "string",
+        "property_address": "string",
+        "preferred_date": "string (YYYY-MM-DD)",
+        "preferred_time": "string (HH:MM)"
+      }
+    },
+    {
+      "name": "qualify_lead",
+      "description": "Save a qualified lead profile",
+      "parameters": {
+        "name": "string",
+        "phone": "string",
+        "email": "string",
+        "intent": "string (buy|sell|rent)",
+        "budget": "string",
+        "timeline": "string",
+        "requirements": "string"
+      }
+    }
+  ],
+  "sample_faq": [
+    {"q": "What areas do you cover?", "a": "We cover the greater metro area including downtown, suburbs, and surrounding counties."},
+    {"q": "How long does buying take?", "a": "Typically 30–60 days from offer accepted to closing. We'll guide you through every step."},
+    {"q": "What is your commission rate?", "a": "Our standard commission is 2.5–3%. We're happy to discuss your specific situation."}
+  ]
+}

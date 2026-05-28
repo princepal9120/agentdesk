@@ -30,7 +30,7 @@ class AgencyUpdate(BaseModel):
 
 
 class AgencyOut(BaseModel):
-    id: uuid.UUID
+    id: str
     clerk_org_id: str | None
     name: str
     subdomain: str | None
@@ -69,7 +69,7 @@ async def get_me(agency: Agency = Depends(get_current_agency)):
 
 
 @router.get("/{agency_id}", response_model=AgencyOut)
-async def get_agency(agency_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def get_agency(agency_id: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Agency).where(Agency.id == agency_id))
     agency = result.scalar_one_or_none()
     if not agency:
@@ -79,7 +79,7 @@ async def get_agency(agency_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
 
 @router.patch("/{agency_id}", response_model=AgencyOut)
 async def update_agency(
-    agency_id: uuid.UUID, payload: AgencyUpdate, db: AsyncSession = Depends(get_db)
+    agency_id: str, payload: AgencyUpdate, db: AsyncSession = Depends(get_db)
 ):
     result = await db.execute(select(Agency).where(Agency.id == agency_id))
     agency = result.scalar_one_or_none()
