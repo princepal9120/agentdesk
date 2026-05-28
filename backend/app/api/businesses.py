@@ -11,7 +11,8 @@ import uuid
 from app.core.database import get_db
 from app.models.agency import Agency
 from app.models.business import Business, AgentConfig
-from agent.templates import get_template, render_system_prompt
+from app.templates import get_template, render_system_prompt, get_sample_faq
+from app.api.deps import get_current_agency
 
 router = APIRouter()
 
@@ -19,7 +20,6 @@ router = APIRouter()
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
 class BusinessCreate(BaseModel):
-    agency_id: uuid.UUID
     name: str
     vertical: str = "general"  # salon|restaurant|repair|general
     timezone: str = "America/New_York"
@@ -35,8 +35,8 @@ class AgentConfigUpdate(BaseModel):
 
 
 class BusinessOut(BaseModel):
-    id: uuid.UUID
-    agency_id: uuid.UUID
+    id: str
+    agency_id: str
     name: str
     vertical: str | None
     phone_number: str | None
@@ -49,8 +49,8 @@ class BusinessOut(BaseModel):
 
 
 class AgentConfigOut(BaseModel):
-    id: uuid.UUID
-    business_id: uuid.UUID
+    id: str
+    business_id: str
     template: str
     agent_name: str
     voice_id: str
@@ -66,49 +66,48 @@ class AgentConfigOut(BaseModel):
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.post("/", response_model=BusinessOut, status_code=status.HTTP_201_CREATED)
-async def create_business(payload: BusinessCreate, db: AsyncSession = Depends(get_db)):
-    """Add a new client business for an agency."""
-
-    # Check agency exists + plan limit
-    result = await db.execute(select(Agency).where(Agency.id == payload.agency_id))
-    agency = result.scalar_one_or_none()
-    if not agency:
-        raise HTTPException(status_code=404, detail="Agency not found")
+async def create_business(
+    payload: BusinessCreate,
+    db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
+):
+    """Add a new client business for the current agency."""
 
     # Count existing clients
     count_result = await db.execute(
         select(func.count()).where(
-            Business.agency_id == payload.agency_id,
+            Business.agency_id == current_agency.id,
             Business.active == True,
         )
     )
     current_count = count_result.scalar()
 
-    if current_count >= agency.client_limit:
+    if current_count >= current_agency.client_limit:
         raise HTTPException(
             status_code=402,
-            detail=f"Plan limit reached ({current_count}/{agency.client_limit} clients). Upgrade to add more."
+            detail=f"Plan limit reached ({current_count}/{current_agency.client_limit} clients). Upgrade to add more."
         )
 
-    business = Business(**payload.model_dump())
+    business = Business(**payload.model_dump(), agency_id=current_agency.id)
     db.add(business)
     await db.flush()  # Get ID without committing
 
     # Auto-create default agent config from template
-    template = get_template(payload.vertical)
-    system_prompt = render_system_prompt(template, {
-        "agent_name": template.default_agent_name,
-        "business_name": payload.name,
-        "business_hours": None,
-        "services": [],
-        "faq": [],
-    })
+    tmpl = get_template(payload.vertical) or get_template("custom")
+    agent_name = tmpl.get("agent_name", "Alex") if tmpl else "Alex"
+    system_prompt = render_system_prompt(
+        template_key=payload.vertical,
+        agent_name=agent_name,
+        business_name=payload.name,
+    )
+    sample_faq = get_sample_faq(payload.vertical)
 
     config = AgentConfig(
         business_id=business.id,
         template=payload.vertical,
-        agent_name=template.default_agent_name,
+        agent_name=agent_name,
         system_prompt=system_prompt,
+        faq=sample_faq or [],
     )
     db.add(config)
     await db.commit()
@@ -117,10 +116,13 @@ async def create_business(payload: BusinessCreate, db: AsyncSession = Depends(ge
     return {**business.__dict__, "has_config": True}
 
 
-@router.get("/agency/{agency_id}", response_model=list[BusinessOut])
-async def list_businesses(agency_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+@router.get("/", response_model=list[BusinessOut])
+async def list_businesses(
+    db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
+):
     result = await db.execute(
-        select(Business).where(Business.agency_id == agency_id, Business.active == True)
+        select(Business).where(Business.agency_id == current_agency.id, Business.active == True)
     )
     businesses = result.scalars().all()
 
@@ -132,6 +134,30 @@ async def list_businesses(agency_id: uuid.UUID, db: AsyncSession = Depends(get_d
         has_config = config_result.scalar_one_or_none() is not None
         out.append({**b.__dict__, "has_config": has_config})
     return out
+
+
+@router.get("/{business_id}", response_model=BusinessOut)
+async def get_business(
+    business_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
+):
+    result = await db.execute(
+        select(Business).where(
+            Business.id == business_id,
+            Business.agency_id == current_agency.id,
+            Business.active == True,
+        )
+    )
+    business = result.scalar_one_or_none()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+
+    config_result = await db.execute(
+        select(AgentConfig).where(AgentConfig.business_id == business.id)
+    )
+    has_config = config_result.scalar_one_or_none() is not None
+    return {**business.__dict__, "has_config": has_config}
 
 
 @router.get("/{business_id}/config", response_model=AgentConfigOut)
@@ -177,15 +203,11 @@ async def update_agent_config(
     if custom_prompt:
         config.system_prompt = custom_prompt
     else:
-        template = get_template(config.template)
-        config.system_prompt = render_system_prompt(template, {
-            "agent_name": config.agent_name,
-            "business_name": business.name,
-            "phone_number": business.phone_number or "",
-            "business_hours": config.business_hours,
-            "services": config.services or [],
-            "faq": config.faq or [],
-        })
+        config.system_prompt = render_system_prompt(
+            template_key=config.template,
+            agent_name=config.agent_name,
+            business_name=business.name,
+        )
 
     await db.commit()
     await db.refresh(config)
@@ -193,7 +215,7 @@ async def update_agent_config(
 
 
 @router.delete("/{business_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def deactivate_business(business_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def deactivate_business(business_id: str, db: AsyncSession = Depends(get_db)):
     """Soft-delete a client business."""
     result = await db.execute(select(Business).where(Business.id == business_id))
     business = result.scalar_one_or_none()

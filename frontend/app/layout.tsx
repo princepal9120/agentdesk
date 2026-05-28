@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AgentDesk",
-  description: "Open-source AI voice agent platform",
+  title: "AgentDesk | Open-source AI voice agent platform",
+  description:
+    "AgentDesk is an open-source white-label AI voice agent platform with an OpenAI-first demo path and a production voice stack for live deployments.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

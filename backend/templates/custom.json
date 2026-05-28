@@ -1,0 +1,16 @@
+{
+  "key": "custom",
+  "label": "Custom — Configure Manually",
+  "agent_name": "Alex",
+  "voice_id": "sonic-english",
+  "dashboard_labels": {
+    "calls": "Calls",
+    "bookings": "Bookings",
+    "outcome_booked": "Completed",
+    "outcome_inquiry": "Inquiry",
+    "outcome_callback": "Callback"
+  },
+  "system_prompt": "You are {agent_name}, the AI assistant for {business_name}.\n\nHelp callers with their inquiries professionally and efficiently.\nAlways be friendly, concise, and offer to transfer to a human if you cannot help.",
+  "tools": [],
+  "sample_faq": []
+}

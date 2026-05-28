@@ -7,44 +7,51 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
     # App
     app_env: str = "development"
     app_secret_key: str = "change-me"
+    dev_agency_id: str = "dev-agency"
+    dev_agency_name: str = "Local Demo Agency"
+    voice_mode: str = "demo"  # demo|production
+    voice_provider: str = "openai"  # openai|full
 
-    # Database
-    database_url: str
+    # Database — defaults to local SQLite for zero-install dev experience
+    # Set DATABASE_URL=postgresql+asyncpg://... for production
+    database_url: str = "sqlite+aiosqlite:///./agentdesk.db"
 
-    # Redis
+    # Redis — optional, used for rate limiting in production only
     redis_url: str = "redis://localhost:6379/0"
 
     # LiveKit
-    livekit_url: str
-    livekit_api_key: str
-    livekit_api_secret: str
+    livekit_url: str = ""
+    livekit_api_key: str = ""
+    livekit_api_secret: str = ""
 
     # AI Providers
     openai_api_key: str
-    deepgram_api_key: str
-    cartesia_api_key: str
+    deepgram_api_key: str = ""
+    cartesia_api_key: str = ""
 
     # Twilio
-    twilio_account_sid: str
-    twilio_auth_token: str
-    twilio_phone_number: str
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_phone_number: str = ""
+    public_base_url: str = "http://localhost:8000"
 
     # Stripe
-    stripe_secret_key: str
-    stripe_webhook_secret: str
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
     stripe_starter_price_id: str = ""
     stripe_pro_price_id: str = ""
     stripe_agency_price_id: str = ""
 
     # Clerk
-    clerk_secret_key: str
-    clerk_publishable_key: str
-    clerk_jwks_url: str
+    clerk_secret_key: str = ""
+    clerk_publishable_key: str = ""
+    clerk_jwks_url: str = ""
 
     @property
     def is_production(self) -> bool:

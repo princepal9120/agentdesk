@@ -1,187 +1,159 @@
-# AgentDesk
+# AgentDesk ☎
 
-Open-source white-label AI voice agent platform. Deploy AI receptionists for any business in minutes.
+> **Deploy a custom AI voice receptionist for ANY business in 5 minutes — no database setup required.**
 
-> Built with LiveKit, Deepgram, GPT-4o-mini, and Cartesia.
-
----
-
-## What it does
-
-AgentDesk lets you run an AI receptionist that:
-- Answers inbound calls with a natural voice
-- Books appointments, answers FAQs, takes messages, handles reservations
-- Works out of the box for salons, restaurants, repair shops, or any general business
-- Gives you a dashboard to manage multiple client businesses
-
----
-
-## Stack
-
-| Layer | Tech |
-|---|---|
-| Voice pipeline | LiveKit + Deepgram STT + GPT-4o-mini + Cartesia TTS |
-| Backend API | FastAPI + SQLAlchemy async + PostgreSQL |
-| Phone numbers | Twilio SIP |
-| Auth | Clerk (JWT) |
-| Frontend | Next.js 15 + Tailwind |
-| Cache | Redis |
-| Billing | Stripe (optional) |
-
----
-
-## Quick start
-
-### Prerequisites
-
-- Docker + Docker Compose
-- Python 3.12+
-- Node 20+
-- API keys: OpenAI, Deepgram, Cartesia, Twilio, LiveKit
-
-### 1. Clone and configure
+AgentDesk is an open-source, white-label voice agent platform. Pick a template, answer 5 questions, and have a live AI phone agent handling real calls.
 
 ```bash
-git clone https://github.com/princepal9120/agentdesk.git
+python -m cli.init
+```
+
+---
+
+## ✨ What It Does
+
+| Feature | Description |
+|---|---|
+| 🎙 **Live voice calls** | Real phone calls via Twilio + OpenAI Realtime |
+| 🧠 **Niche templates** | Restaurant, dental, real estate, HR, e-commerce |
+| 📊 **Dashboard** | Call logs, transcripts, bookings, analytics |
+| 🗄 **Zero-install DB** | SQLite by default — no Postgres/Redis needed |
+| 🌐 **Auto tunnel** | Cloudflare tunnel auto-configured for Twilio |
+| 🔒 **Self-hosted** | Your data stays on your server |
+
+---
+
+## ⚡ Quickstart (5 minutes)
+
+### Option A — Interactive Setup Wizard (recommended)
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/princepal9120/agentdesk
 cd agentdesk
 
+# 2. Run the setup wizard (no dependencies needed!)
+python -m cli.init
+
+# 3. Start the backend
+cd backend && uvicorn app.main:app --reload
+
+# 4. Start the frontend
+cd frontend && npm install && npm run dev
+```
+
+### Option B — Docker (single command)
+
+```bash
+git clone https://github.com/princepal9120/agentdesk
+cd agentdesk
+
+# Copy and fill in ONLY your OpenAI key
 cp backend/.env.example backend/.env
-# Edit backend/.env with your API keys
+# Edit backend/.env and add: OPENAI_API_KEY=sk-...
+
+docker compose up
 ```
 
-### 2. Start backend
-
-```bash
-docker compose up -d
-```
-
-This starts:
-- FastAPI on `http://localhost:8000`
-- PostgreSQL on `5432`
-- Redis on `6379`
-
-### 3. Run database migrations
-
-```bash
-cd backend
-pip install uv && uv sync
-uv run alembic upgrade head
-```
-
-### 4. Start the voice agent
-
-```bash
-cd backend
-uv run python run_agent.py
-```
-
-### 5. Start frontend
-
-```bash
-cd frontend
-cp .env.example .env
-# Add your Clerk + API URL
-npm install
-npm run dev
-```
-
-Dashboard at `http://localhost:3000`
+Open **http://localhost:3000** → dashboard ready.
 
 ---
 
-## Architecture
+## 🧩 Templates
 
-```
-Inbound call
-    |
-Twilio SIP
-    |
-LiveKit room (room = call-{CallSid})
-    |
-VoiceDeskAgent
-    |-- Deepgram Nova-3 (STT)
-    |-- GPT-4o-mini (LLM + tools)
-    |-- Cartesia Sonic (TTS)
-    |-- Silero (VAD)
-    |
-Tools: book_appointment, check_availability, answer_faq,
-       take_message, list_services, schedule_callback ...
-```
+The setup wizard lets you pick a niche preset. Each template includes a battle-tested system prompt, tool definitions, and FAQ data.
 
----
-
-## Agent verticals
-
-| Vertical | Template | Tools enabled |
+| Template | Use Case | Agent Name |
 |---|---|---|
-| `salon` | Hair/nail salon receptionist | Booking, services, hours |
-| `restaurant` | Restaurant host | Reservations, menu, hours |
-| `repair` | Repair shop | Intake, estimates, callbacks |
-| `general` | General business | FAQ, messages, callbacks |
+| `restaurant` | Table reservations, menu questions | Bella |
+| `dental` | Appointment scheduling, insurance queries | Aria |
+| `real-estate` | Lead qualification, property viewings | Max |
+| `hr` | Candidate phone screening | Sam |
+| `ecommerce` | Order tracking, returns, support | Nova |
+| `custom` | Blank scaffold — fully configurable | Alex |
 
 ---
 
-## API
+## 🏗 Architecture
 
 ```
-POST   /api/v1/agencies/           Create agency
-GET    /api/v1/agencies/me         Get my agency
-GET    /api/v1/agencies/me/usage   Usage stats
-
-POST   /api/v1/businesses/         Add client business
-GET    /api/v1/businesses/         List businesses
-GET    /api/v1/businesses/{id}     Get business
-POST   /api/v1/businesses/{id}/provision-number  Get a Twilio number
-
-GET    /api/v1/calls/              List calls (filter by business)
-
-POST   /api/v1/billing/checkout    Stripe checkout
-POST   /api/v1/billing/portal      Stripe portal
-
-POST   /webhooks/twilio/voice      Inbound call hook
-POST   /webhooks/twilio/status     Call status updates
-POST   /webhooks/livekit           LiveKit room events
+agentdesk/
+├── cli/               # Setup wizard (python -m cli.init)
+├── backend/           # FastAPI + SQLAlchemy + SQLite/Postgres
+│   ├── app/
+│   │   ├── api/       # REST endpoints
+│   │   ├── core/      # DB, config, rate limiting
+│   │   └── models/    # Agency, Business, Call, Booking
+│   ├── templates/     # Niche preset JSON files
+│   └── agent/         # LiveKit voice agent runtime
+└── frontend/          # Next.js dashboard
 ```
+
+**Default stack (local dev):**
+- Database: SQLite (zero install — file at `agentdesk.db`)
+- Rate limiting: In-memory (no Redis needed)
+- Voice: OpenAI Realtime API
+
+**Production stack:**
+- Database: PostgreSQL (`DATABASE_URL=postgresql+asyncpg://...`)
+- Rate limiting: Redis (`REDIS_URL=redis://...`)
+- Voice: LiveKit + Deepgram + Cartesia
 
 ---
 
-## Environment variables
+## 🔑 Minimum Configuration
+
+Only **one** variable required for local demo:
 
 ```env
-# App
-DATABASE_URL=postgresql+asyncpg://agentdesk:agentdesk_dev@localhost:5432/agentdesk
-REDIS_URL=redis://localhost:6379/0
-APP_ENV=development
-
-# Auth (Clerk)
-CLERK_SECRET_KEY=sk_...
-CLERK_JWT_ISSUER=https://...clerk.accounts.dev
-
-# AI
 OPENAI_API_KEY=sk-...
-DEEPGRAM_API_KEY=...
-CARTESIA_API_KEY=...
+```
 
-# Voice / Telephony
-LIVEKIT_URL=wss://...
-LIVEKIT_API_KEY=...
-LIVEKIT_API_SECRET=...
+For real phone calls, add:
+
+```env
 TWILIO_ACCOUNT_SID=AC...
 TWILIO_AUTH_TOKEN=...
-
-# Billing (optional)
-STRIPE_SECRET_KEY=sk_...
-STRIPE_WEBHOOK_SECRET=whsec_...
+TWILIO_PHONE_NUMBER=+1...
 ```
 
 ---
 
-## License
+## 📖 How It Works
 
-MIT — use it however you want.
+1. **`agentdesk init`** — wizard asks your business type, name, website URL, and API keys
+2. Scrapes your website to build an instant knowledge base
+3. Generates a custom system prompt from your template
+4. Auto-configures Twilio webhooks via Cloudflare tunnel
+5. Saves everything to local SQLite — no external DB needed
 
 ---
 
-## Contributing
+## 🗺 Roadmap
 
-PRs welcome. Open an issue first for anything non-trivial.
+- [ ] Visual conversation flow builder (drag-drop)
+- [ ] Local LLM support (Ollama + Whisper + Kokoro)
+- [ ] PDF/document knowledge base upload
+- [ ] Multi-language voice support
+- [ ] One-click Railway/Render deploy button
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Add a template or improve DX
+4. Open a PR
+
+New templates especially welcome — each niche helps more businesses deploy voice AI.
+
+---
+
+## 📄 License
+
+MIT — use it, fork it, ship it.
+
+---
+
+Built with ❤ by [Prince Pal](https://github.com/princepal9120)

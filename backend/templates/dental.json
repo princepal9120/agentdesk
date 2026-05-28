@@ -1,0 +1,41 @@
+{
+  "key": "dental",
+  "label": "Dental Clinic",
+  "agent_name": "Aria",
+  "voice_id": "sonic-english",
+  "dashboard_labels": {
+    "calls": "Appointment Calls",
+    "bookings": "Appointments",
+    "outcome_booked": "Appointment Booked",
+    "outcome_inquiry": "General Inquiry",
+    "outcome_callback": "Callback Scheduled"
+  },
+  "system_prompt": "You are {agent_name}, the virtual receptionist at {business_name} dental clinic.\n\nYour primary jobs are:\n1. Schedule new patient appointments and follow-ups\n2. Answer questions about dental services, pricing, and insurance\n3. Handle appointment cancellations and rescheduling\n4. Remind patients of upcoming appointments\n\nAlways verify patient name and date of birth for existing patients.\nFor dental emergencies, provide the emergency line and nearest urgent dental care.\nNever provide specific medical advice — always refer to the dentist.",
+  "tools": [
+    {
+      "name": "book_appointment",
+      "description": "Schedule a dental appointment",
+      "parameters": {
+        "patient_name": "string",
+        "dob": "string (YYYY-MM-DD)",
+        "service": "string (cleaning|checkup|filling|extraction|emergency)",
+        "date": "string (YYYY-MM-DD)",
+        "time": "string (HH:MM)",
+        "is_new_patient": "boolean"
+      }
+    },
+    {
+      "name": "cancel_appointment",
+      "description": "Cancel or reschedule an existing appointment",
+      "parameters": {
+        "patient_name": "string",
+        "appointment_date": "string"
+      }
+    }
+  ],
+  "sample_faq": [
+    {"q": "Do you accept insurance?", "a": "We accept most major dental insurance plans. Call us to verify your specific coverage."},
+    {"q": "What is the cost of a cleaning?", "a": "A routine cleaning is $95–$150 without insurance. With insurance, most plans cover 100%."},
+    {"q": "Do you see emergency patients?", "a": "Yes. Call us first thing in the morning for same-day emergency slots."}
+  ]
+}

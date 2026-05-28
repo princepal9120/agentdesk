@@ -4,13 +4,23 @@ from app.core.config import get_settings
 
 settings = get_settings()
 
-engine = create_async_engine(
-    settings.database_url,
-    echo=settings.app_env == "development",
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-)
+_is_sqlite = settings.database_url.startswith("sqlite")
+
+# SQLite needs different engine config — no connection pool, check_same_thread=False
+if _is_sqlite:
+    engine = create_async_engine(
+        settings.database_url,
+        echo=settings.app_env == "development",
+        connect_args={"check_same_thread": False},
+    )
+else:
+    engine = create_async_engine(
+        settings.database_url,
+        echo=settings.app_env == "development",
+        pool_pre_ping=True,
+        pool_size=10,
+        max_overflow=20,
+    )
 
 AsyncSessionLocal = async_sessionmaker(
     engine,

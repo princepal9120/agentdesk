@@ -14,7 +14,8 @@ from app.core.database import get_db
 from app.models.agency import Agency
 
 settings = get_settings()
-stripe.api_key = settings.stripe_secret_key
+if settings.stripe_secret_key:
+    stripe.api_key = settings.stripe_secret_key
 logger = structlog.get_logger()
 router = APIRouter()
 
@@ -32,6 +33,11 @@ class CheckoutRequest(BaseModel):
     cancel_url: str
 
 
+def _ensure_stripe_configured() -> None:
+    if not settings.stripe_secret_key:
+        raise HTTPException(status_code=503, detail="Stripe is not configured")
+
+
 @router.post("/checkout")
 async def create_checkout_session(
     payload: CheckoutRequest,
@@ -39,6 +45,8 @@ async def create_checkout_session(
 ):
     """Create a Stripe Checkout session for a plan upgrade."""
     import uuid as _uuid
+
+    _ensure_stripe_configured()
 
     result = await db.execute(
         select(Agency).where(Agency.id == _uuid.UUID(payload.agency_id))
@@ -72,6 +80,8 @@ async def create_billing_portal(
     """Create a Stripe billing portal session for self-service."""
     import uuid as _uuid
 
+    _ensure_stripe_configured()
+
     result = await db.execute(
         select(Agency).where(Agency.id == _uuid.UUID(agency_id))
     )
@@ -93,6 +103,7 @@ async def stripe_webhook(
     db: AsyncSession = Depends(get_db),
 ):
     """Handle Stripe webhook events."""
+    _ensure_stripe_configured()
     body = await request.body()
 
     try:

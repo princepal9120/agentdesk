@@ -1,32 +1,14 @@
+# ══════════════════════════════════════════════════════════════════
+# AgentDesk — Docker Compose
+#
+# DEV MODE (default): SQLite + no Redis. Just set OPENAI_API_KEY.
+#   docker compose up
+#
+# PROD MODE: Postgres + Redis included.
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
+# ══════════════════════════════════════════════════════════════════
+
 services:
-  db:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: agentdesk
-      POSTGRES_USER: agentdesk
-      POSTGRES_PASSWORD: agentdesk_dev
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U agentdesk"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   api:
     build:
       context: ./backend
@@ -37,16 +19,14 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: postgresql+asyncpg://agentdesk:agentdesk_dev@db:5432/agentdesk
-      REDIS_URL: redis://redis:6379/0
+      # SQLite by default — no database container needed
+      DATABASE_URL: sqlite+aiosqlite:////app/data/agentdesk.db
       APP_ENV: development
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    volumes:
+      # Persist SQLite file across restarts
+      - agentdesk_data:/app/data
     command: >
-      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   agent:
     build:
@@ -56,13 +36,10 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: postgresql+asyncpg://agentdesk:agentdesk_dev@db:5432/agentdesk
-      REDIS_URL: redis://redis:6379/0
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      DATABASE_URL: sqlite+aiosqlite:////app/data/agentdesk.db
+      VOICE_MODE: ${VOICE_MODE:-demo}
+    volumes:
+      - agentdesk_data:/app/data
     command: python run_agent.py
 
   frontend:
@@ -74,9 +51,8 @@ services:
       - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
-      NEXT_PUBLIC_ADMIN_KEY: dev-secret-key
     depends_on:
       - api
 
 volumes:
-  pgdata:
+  agentdesk_data:

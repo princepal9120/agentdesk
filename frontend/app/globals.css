@@ -2,23 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-[#f2f0eb] text-[rgba(0,0,0,0.87)] antialiased;
+  }
+}
+
 @layer components {
+  .surface {
+    @apply rounded-[1.5rem] border border-black/5 bg-white shadow-[0_0_0.5px_rgba(0,0,0,0.14),0_1px_1px_rgba(0,0,0,0.24)];
+  }
+  .surface-muted {
+    @apply rounded-[1.5rem] border border-black/5 bg-[#edebe9];
+  }
   .card {
-    @apply bg-white border border-gray-200 rounded-xl p-5;
+    @apply surface p-5;
   }
   .btn {
-    @apply px-4 py-2 rounded-lg text-sm font-medium transition-colors;
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold tracking-[-0.01em] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#00754A]/20 focus:ring-offset-2;
+  }
+  .btn:active {
+    transform: scale(0.95);
   }
   .btn-primary {
-    @apply btn bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50;
+    @apply btn border border-[#00754A] bg-[#00754A] text-white shadow-sm hover:bg-[#006241] hover:border-[#006241];
   }
   .btn-secondary {
-    @apply btn border border-gray-200 text-gray-700 hover:bg-gray-50;
+    @apply btn border border-[rgba(0,0,0,0.87)] bg-transparent text-[rgba(0,0,0,0.87)] hover:bg-white/60;
   }
   .input {
-    @apply w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-violet-500;
+    @apply w-full rounded-xl border border-[#d6dbde] bg-white px-3.5 py-3 text-sm text-[rgba(0,0,0,0.87)] shadow-sm transition focus:border-[#00754A] focus:outline-none focus:ring-2 focus:ring-[#d4e9e2];
   }
   .label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    @apply mb-1.5 block text-sm font-medium text-[rgba(0,0,0,0.87)];
   }
 }

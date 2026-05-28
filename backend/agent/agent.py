@@ -23,6 +23,7 @@ from livekit.plugins import deepgram, openai, cartesia, silero
 
 from agent.templates import get_template, render_system_prompt, Vertical
 from agent.tools import get_tools_for_template
+from agent.provider_factory import is_full_provider_mode, get_runtime_capabilities
 from app.core.config import get_settings
 
 logger = logging.getLogger("agentdesk.agent")
@@ -51,26 +52,43 @@ class VoiceDeskAgent(Agent):
     """
 
     def __init__(self, system_prompt: str, tools: list):
-        super().__init__(
-            instructions=system_prompt,
-            tools=tools,
-            stt=deepgram.STT(
+        capabilities = get_runtime_capabilities()
+
+        stt = (
+            deepgram.STT(
                 model="nova-3",
                 language="en-US",
                 api_key=settings.deepgram_api_key,
-            ),
+            )
+            if is_full_provider_mode()
+            else None
+        )
+
+        tts = (
+            cartesia.TTS(
+                model="sonic-english",
+                voice="79a125e8-cd45-4c13-8a67-188112f4dd22",
+                api_key=settings.cartesia_api_key,
+            )
+            if is_full_provider_mode()
+            else None
+        )
+
+        vad = silero.VAD.load() if is_full_provider_mode() else None
+
+        super().__init__(
+            instructions=system_prompt,
+            tools=tools,
+            stt=stt,
             llm=openai.LLM(
                 model="gpt-4o-mini",
                 api_key=settings.openai_api_key,
                 temperature=0.7,
             ),
-            tts=cartesia.TTS(
-                model="sonic-english",
-                voice="79a125e8-cd45-4c13-8a67-188112f4dd22",  # Friendly female voice
-                api_key=settings.cartesia_api_key,
-            ),
-            vad=silero.VAD.load(),
+            tts=tts,
+            vad=vad,
         )
+        logger.info("voice_agent_initialized", capabilities=capabilities)
 
 
 async def load_agent_config(business_id: str) -> dict | None:

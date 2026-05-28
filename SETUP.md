@@ -1,153 +1,135 @@
-# Local Setup
+# AgentDesk Setup
 
-Get AgentDesk running on your machine in under 10 minutes.
+## Recommended path
 
-## What you need
+Start with the local OpenAI-first demo path.
 
-- [Docker + Docker Compose](https://docs.docker.com/get-docker/)
-- API keys for: OpenAI, Deepgram, Cartesia, LiveKit, Twilio
+That is the most honest and supported way to experience the repo today.
 
-That's it. Python and Node are not required locally — Docker handles everything.
+## What you are setting up
 
----
+The current launch flow is:
 
-## Step 1: Clone
+1. landing page at `/`
+2. first-run local setup
+3. dashboard workspace at `/dashboard`
+
+The goal of local setup is to get that flow running quickly without requiring Clerk or a full production telephony stack.
+
+## Requirements
+
+- Docker
+- Docker Compose
+- OpenAI API key
+
+## Quickstart
 
 ```bash
 git clone https://github.com/princepal9120/agentdesk.git
 cd agentdesk
-git checkout agentdesk-oss
-```
-
----
-
-## Step 2: Configure environment
-
-```bash
 cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 ```
 
-Open `backend/.env` and fill in your keys:
+Edit `backend/.env` to at least include:
 
 ```env
-# Required — AI
 OPENAI_API_KEY=sk-...
-DEEPGRAM_API_KEY=...
-CARTESIA_API_KEY=...
-
-# Required — LiveKit (get one free at livekit.io)
-LIVEKIT_URL=wss://your-project.livekit.cloud
-LIVEKIT_API_KEY=API...
-LIVEKIT_API_SECRET=...
-
-# Required — Twilio (for inbound calls)
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
-
-# Auth (leave as-is for local dev — no Clerk needed)
-DEV_AGENCY_ID=dev-agency
-APP_ENV=development
+VOICE_MODE=demo
+VOICE_PROVIDER=openai
 ```
 
-> For local dev you do NOT need Clerk, Stripe, or a domain. The API accepts
-> `X-Dev-Agency-Id: dev-secret-key` for auth when `APP_ENV=development`.
-
----
-
-## Step 3: Start everything
+Then run:
 
 ```bash
 docker compose up --build
 ```
 
-First run takes 2-3 minutes to build the images.
+## Local URLs
 
-Once up:
+- Landing page: <http://localhost:3000>
+- Dashboard: <http://localhost:3000/dashboard>
+- API: <http://localhost:8000>
+- API docs: <http://localhost:8000/docs>
 
-| Service | URL |
-|---|---|
-| Dashboard | http://localhost:3000 |
-| API | http://localhost:8000 |
-| API docs | http://localhost:8000/docs |
-| Postgres | localhost:5432 |
-| Redis | localhost:6379 |
+## What demo mode gives you
 
-The API container automatically runs `alembic upgrade head` on startup — no manual migration step needed.
+Demo mode is for smooth open source onboarding.
 
----
+It gives you:
 
-## Step 4: Add your first business
+- the public landing page
+- the dashboard workspace
+- local business creation
+- API exploration
+- a bootstrapped demo agency in development
+- no Clerk dependency for first use
 
-1. Open http://localhost:3000
-2. Click **Add business**
-3. Enter a name and pick a vertical (salon, restaurant, repair, general)
-4. On the business page, enter an area code and click **Get a number** to provision a Twilio number
+## What demo mode does not promise
 
----
+Demo mode should not be treated as fully verified live telephony.
 
-## Step 5: Receive calls
+Important nuance:
 
-When a call comes in to your Twilio number:
+- `VOICE_PROVIDER=openai` is the simplified local-first mode
+- the runtime still keeps LiveKit-oriented infrastructure in the stack
+- real phone workflows still belong in the production-oriented setup path
 
-1. Twilio sends the call to `/webhooks/twilio/voice`
-2. The API creates a LiveKit room and redirects via SIP
-3. The voice agent joins the room and handles the call
+## Local auth behavior
 
-For Twilio to reach your local machine you need a tunnel:
+In development:
 
+- backend auto-creates `dev-agency`
+- frontend talks directly to the local API
+- no Clerk setup is required for the OSS demo path
+
+## Optional services for local onboarding
+
+You do **not** need these to get the local demo running:
+
+- Clerk
+- Stripe
+- Twilio phone number provisioning
+
+## Production-oriented mode
+
+If you want to move beyond the demo experience, switch to:
+
+```env
+VOICE_MODE=production
+VOICE_PROVIDER=full
+```
+
+Then expect to configure the broader provider stack, including:
+
+- OpenAI
+- LiveKit
+- Twilio
+- Deepgram
+- Cartesia
+
+That path is better understood as production-next, not the default OSS quickstart.
+
+## Common commands
+
+### Start
 ```bash
-# Install ngrok (or use Cloudflare Tunnel)
-ngrok http 8000
+docker compose up --build
 ```
 
-Then in your Twilio console, set the inbound call webhook to:
-```
-https://YOUR-NGROK-URL.ngrok.io/webhooks/twilio/voice
-```
-
----
-
-## Stopping
-
+### Stop
 ```bash
 docker compose down
 ```
 
-To also wipe the database:
-
+### Reset
 ```bash
 docker compose down -v
 ```
 
----
-
-## Rebuilding after code changes
-
+### Logs
 ```bash
-docker compose up --build api agent
+docker compose logs api
+docker compose logs frontend
+docker compose logs agent
 ```
-
-Frontend only:
-
-```bash
-docker compose up --build frontend
-```
-
----
-
-## Troubleshooting
-
-**API fails to start**
-Check `docker compose logs api` — usually a missing env var.
-
-**"relation does not exist" error**
-Migration didn't run. Try:
-```bash
-docker compose exec api alembic upgrade head
-```
-
-**Agent won't connect to LiveKit**
-Make sure `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET` are set correctly.
-
-**Twilio call doesn't reach the agent**
-Make sure your ngrok URL is set as the Twilio webhook and the tunnel is running.

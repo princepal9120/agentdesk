@@ -2,18 +2,17 @@ import uuid
 from datetime import datetime
 from sqlalchemy import String, Boolean, DateTime, JSON, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
 
 
 class Business(Base):
     __tablename__ = "businesses"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    agency_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False
+    agency_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     vertical: Mapped[str | None] = mapped_column(String(50))  # salon|restaurant|repair|general
@@ -39,11 +38,11 @@ class Business(Base):
 class AgentConfig(Base):
     __tablename__ = "agent_configs"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    business_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False
+    business_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False
     )
     template: Mapped[str] = mapped_column(String(50), nullable=False)  # salon|restaurant|repair|general
     agent_name: Mapped[str] = mapped_column(String(100), default="Alex")
