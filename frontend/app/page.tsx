@@ -3,7 +3,7 @@ import {
   ArrowRight,
   CheckCircle,
   CodeBlock,
-  StackLayers,
+  Stack,
   MicrophoneStage,
   Planet,
   Browser,
@@ -23,7 +23,7 @@ const pillars = [
     title: "White-label agency workflow",
     description:
       "Run multiple business setups from one dashboard and shape the experience like a product your clients would gladly pay for.",
-    icon: StackLayers,
+    icon: Stack,
   },
   {
     title: "Open-source control",

@@ -44,7 +44,7 @@ const getId = () => `dndnode_${id++}`;
 function FlowEditor({ businessId }: { businessId: string }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
