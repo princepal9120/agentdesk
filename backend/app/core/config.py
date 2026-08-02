@@ -41,18 +41,6 @@ class Settings(BaseSettings):
     twilio_phone_number: str = ""
     public_base_url: str = "http://localhost:8000"
 
-    # Stripe
-    stripe_secret_key: str = ""
-    stripe_webhook_secret: str = ""
-    stripe_starter_price_id: str = ""
-    stripe_pro_price_id: str = ""
-    stripe_agency_price_id: str = ""
-
-    # Clerk
-    clerk_secret_key: str = ""
-    clerk_publishable_key: str = ""
-    clerk_jwks_url: str = ""
-
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"

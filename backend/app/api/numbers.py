@@ -17,7 +17,7 @@ router = APIRouter()
 
 
 class ProvisionRequest(BaseModel):
-    business_id: uuid.UUID
+    business_id: str
     area_code: str = "415"  # Default SF area code
 
 
@@ -84,7 +84,7 @@ async def provision_number(
 
 @router.delete("/{business_id}/release")
 async def release_number(
-    business_id: uuid.UUID,
+    business_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """Release a Twilio number (when client is deleted)."""

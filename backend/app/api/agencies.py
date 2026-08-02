@@ -31,14 +31,10 @@ class AgencyUpdate(BaseModel):
 
 class AgencyOut(BaseModel):
     id: str
-    clerk_org_id: str | None
     name: str
     subdomain: str | None
     custom_domain: str | None
     branding: dict | None
-    plan: str
-    client_limit: int
-    monthly_call_limit: int
 
     class Config:
         from_attributes = True

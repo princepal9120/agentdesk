@@ -11,7 +11,7 @@ from app.core.config import get_settings
 from app.core.database import engine, Base
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api import agencies, businesses, calls, webhooks, billing, numbers
+from app.api import agencies, businesses, calls, webhooks, numbers
 from app.models.agency import Agency
 
 logger = structlog.get_logger()
@@ -67,7 +67,6 @@ app.include_router(agencies.router, prefix="/api/v1/agencies", tags=["agencies"]
 app.include_router(businesses.router, prefix="/api/v1/businesses", tags=["businesses"])
 app.include_router(calls.router, prefix="/api/v1/calls", tags=["calls"])
 app.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
-app.include_router(billing.router, prefix="/api/v1/billing", tags=["billing"])
 app.include_router(numbers.router, prefix="/api/v1/numbers", tags=["numbers"])
 
 

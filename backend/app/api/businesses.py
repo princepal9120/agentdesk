@@ -75,20 +75,7 @@ async def create_business(
 ):
     """Add a new client business for the current agency."""
 
-    # Count existing clients
-    count_result = await db.execute(
-        select(func.count()).where(
-            Business.agency_id == current_agency.id,
-            Business.active == True,
-        )
-    )
-    current_count = count_result.scalar()
-
-    if current_count >= current_agency.client_limit:
-        raise HTTPException(
-            status_code=402,
-            detail=f"Plan limit reached ({current_count}/{current_agency.client_limit} clients). Upgrade to add more."
-        )
+    # Open Source / Self-Hosted: Unlimited client creation enabled
 
     business = Business(**payload.model_dump(), agency_id=current_agency.id)
     db.add(business)
@@ -140,7 +127,7 @@ async def list_businesses(
 
 @router.get("/{business_id}", response_model=BusinessOut)
 async def get_business(
-    business_id: uuid.UUID,
+    business_id: str,
     db: AsyncSession = Depends(get_db),
     current_agency: Agency = Depends(get_current_agency),
 ):
@@ -163,7 +150,7 @@ async def get_business(
 
 
 @router.get("/{business_id}/config", response_model=AgentConfigOut)
-async def get_agent_config(business_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def get_agent_config(business_id: str, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(AgentConfig).where(AgentConfig.business_id == business_id)
     )
@@ -175,7 +162,7 @@ async def get_agent_config(business_id: uuid.UUID, db: AsyncSession = Depends(ge
 
 @router.patch("/{business_id}/config", response_model=AgentConfigOut)
 async def update_agent_config(
-    business_id: uuid.UUID,
+    business_id: str,
     payload: AgentConfigUpdate,
     db: AsyncSession = Depends(get_db),
 ):
