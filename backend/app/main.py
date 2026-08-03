@@ -11,8 +11,9 @@ from app.core.config import get_settings
 from app.core.database import engine, Base
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api import agencies, businesses, calls, webhooks, numbers
+from app.api import agencies, businesses, calls, webhooks, numbers, workflows
 from app.models.agency import Agency
+from app.models import Contact, FlowVersion, Campaign  # noqa: F401
 
 logger = structlog.get_logger()
 settings = get_settings()
@@ -68,6 +69,7 @@ app.include_router(businesses.router, prefix="/api/v1/businesses", tags=["busine
 app.include_router(calls.router, prefix="/api/v1/calls", tags=["calls"])
 app.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
 app.include_router(numbers.router, prefix="/api/v1/numbers", tags=["numbers"])
+app.include_router(workflows.router, prefix="/api/v1", tags=["workflows"])
 
 
 @app.get("/health")

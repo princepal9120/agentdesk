@@ -5,36 +5,35 @@ TRS Reference: Section 4.2 - Voice Agent Parameters
 Configuration for the LiveKit Voice Agent including STT, LLM, TTS, and VAD settings.
 """
 
-from dataclasses import dataclass, field
-from typing import Optional
 import os
+from dataclasses import dataclass, field
 
 
 @dataclass
 class STTConfig:
-    """Speech-to-Text configuration (Deepgram)"""
-    provider: str = "deepgram"
-    model: str = "nova-2"
-    language: str = "en"
+    """Speech-to-Text configuration (Sarvam Saaras)"""
+    provider: str = "sarvam"
+    model: str = "saaras:v3"
+    language: str = "en-IN"
     punctuate: bool = True
     smart_format: bool = True
 
 
 @dataclass
 class LLMConfig:
-    """LLM configuration (OpenAI GPT-4)"""
-    provider: str = "openai"
-    model: str = "gpt-4o-mini"
+    """LLM configuration (Sarvam)"""
+    provider: str = "sarvam"
+    model: str = "sarvam-30b"
     temperature: float = 0.3  # Lower = more consistent responses
     max_tokens: int = 500
 
 
 @dataclass
 class TTSConfig:
-    """Text-to-Speech configuration (Cartesia)"""
-    provider: str = "cartesia"
-    model: str = "sonic-english"
-    voice: str = "248be419-c632-4f23-adf1-5324ed7dbf1d"  # Professional female voice
+    """Text-to-Speech configuration (Sarvam Bulbul)"""
+    provider: str = "sarvam"
+    model: str = "bulbul:v3"
+    voice: str = "shubh"
     speed: float = 1.0
 
 
@@ -128,18 +127,18 @@ Remember: You are speaking on the phone, so be conversational and natural. Avoid
         """Create configuration from environment variables"""
         return cls(
             stt=STTConfig(
-                model=os.getenv("DEEPGRAM_MODEL", "nova-2"),
-                language=os.getenv("AGENT_LANGUAGE", "en"),
+                model=os.getenv("SARVAM_STT_MODEL", "saaras:v3"),
+                language=os.getenv("SARVAM_LANGUAGE", "en-IN"),
             ),
             llm=LLMConfig(
-                model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+                model=os.getenv("SARVAM_MODEL", "sarvam-30b"),
                 temperature=float(os.getenv("LLM_TEMPERATURE", "0.3")),
             ),
             tts=TTSConfig(
-                voice=os.getenv("CARTESIA_VOICE_ID", "248be419-c632-4f23-adf1-5324ed7dbf1d"),
+                model=os.getenv("SARVAM_TTS_MODEL", "bulbul:v3"),
+                voice=os.getenv("SARVAM_TTS_SPEAKER", "shubh"),
             ),
             sip=SIPConfig(
                 enabled=os.getenv("SIP_ENABLED", "false").lower() == "true",
             ),
         )
-

@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from sqlalchemy import select
 from app.models.business import Business
+from app.models.call import Call
 
 logger = structlog.get_logger()
 settings = get_settings()
@@ -121,6 +122,57 @@ async def twilio_call_status(
 ):
     """Twilio call status callback."""
     logger.info("twilio_status", sid=CallSid, status=CallStatus, duration=CallDuration)
+    return {"ok": True}
+
+
+@router.post("/exotel/status")
+async def exotel_call_status(request: Request):
+    """Accept Exotel terminal/answered callbacks for reminder and SIP calls."""
+
+    expected_token = settings.exotel_webhook_token
+    if expected_token and request.query_params.get("token") != expected_token:
+        return Response(status_code=401, content="invalid webhook token")
+
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        payload = await request.json()
+    else:
+        payload = dict(await request.form())
+
+    call_payload = payload.get("Call", payload)
+    call_sid = (
+        call_payload.get("CallSid")
+        or call_payload.get("Sid")
+        or call_payload.get("sid")
+    )
+    status = call_payload.get("Status") or call_payload.get("status") or "unknown"
+
+    # The callback is intentionally idempotent.  Exotel can send both answered
+    # and terminal events, and the call may not have a local record for a trial
+    # smoke test.
+    from app.core.database import AsyncSessionLocal
+
+    if call_sid:
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(select(Call).where(Call.provider_call_id == str(call_sid)))
+            call = result.scalar_one_or_none()
+            if call:
+                call.status = {
+                    "completed": "answered",
+                    "in-progress": "in_progress",
+                    "answered": "answered",
+                    "failed": "failed",
+                    "busy": "missed",
+                    "no-answer": "missed",
+                }.get(str(status).lower(), str(status).lower())
+                if call_payload.get("RecordingUrl") or call_payload.get("recording_url"):
+                    call.recording_url = (
+                        call_payload.get("RecordingUrl")
+                        or call_payload.get("recording_url")
+                    )
+                await db.commit()
+
+    logger.info("exotel_call_status", sid=call_sid, status=status)
     return {"ok": True}
 
 

@@ -83,7 +83,7 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
     setError("");
     try {
       const res = await api.businesses.provision(id, areaCode);
-      setBiz((prev) => (prev ? { ...prev, phone_number: res.phone_number } : prev));
+      setBiz((prev) => (prev ? { ...prev, phone_number: res.phone_number, telephony_provider: res.provider } : prev));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -179,7 +179,7 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
               <p className="mt-3 font-mono text-3xl font-semibold text-theme-fg tracking-tight">{biz.phone_number}</p>
               <div className="mt-4 flex items-center gap-2 text-sm text-theme-btn-accent font-medium">
                 <div className="h-2 w-2 rounded-full bg-theme-btn-accent" />
-                Ready for inbound calls via Twilio
+                Ready for inbound calls via {biz.telephony_provider === "exotel" ? "Exotel" : "Twilio"}
               </div>
             </div>
           ) : (
@@ -187,21 +187,25 @@ export default function BusinessDetail({ params }: { params: Promise<{ id: strin
               <div className="mb-6">
                 <p className="text-base font-semibold text-theme-fg">Provision a number</p>
                 <p className="mt-2 text-sm leading-relaxed text-theme-label">
-                  Pick a 3-digit area code to claim a dedicated Twilio number for this workspace.
+                  {biz.telephony_provider === "exotel"
+                    ? "Attach the Exotel trial ExoPhone configured in the backend environment."
+                    : "Pick a 3-digit area code to claim a dedicated Twilio number for this workspace."}
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <input
                   className="input sm:max-w-32 font-mono"
-                  placeholder="Area code"
+                  placeholder={biz.telephony_provider === "exotel" ? "Not used" : "Area code"}
                   value={areaCode}
                   onChange={(e) => setAreaCode(e.target.value.replace(/\D/g, "").slice(0, 3))}
                 />
-                <button className="btn-primary" onClick={provision} disabled={provisioning || areaCode.length !== 3}>
+                <button className="btn-primary" onClick={provision} disabled={provisioning || (biz.telephony_provider !== "exotel" && areaCode.length !== 3)}>
                   {provisioning ? "Provisioning..." : "Claim Number"}
                 </button>
               </div>
-              <p className="mt-4 text-xs font-medium text-theme-label opacity-60">Example: 415, 212, or 305.</p>
+              <p className="mt-4 text-xs font-medium text-theme-label opacity-60">
+                {biz.telephony_provider === "exotel" ? "EXOTEL_CALLER_ID must be set before provisioning." : "Example: 415, 212, or 305."}
+              </p>
             </div>
           )}
 

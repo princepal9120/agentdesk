@@ -331,6 +331,22 @@ async def schedule_callback(
     )
 
 
+@function_tool
+async def set_call_outcome(
+    ctx: RunContext,
+    outcome: str,
+    notes: str = "",
+) -> str:
+    """Persist a structured result for a generic outbound call flow."""
+    allowed = {"confirmed", "cancelled", "interested", "not_interested", "callback", "handoff_requested", "completed"}
+    value = outcome.strip().lower()
+    if value not in allowed:
+        return "Use one of: confirmed, cancelled, interested, not_interested, callback, handoff_requested, completed."
+    ctx.userdata["outcome"] = value
+    ctx.userdata["outcome_notes"] = notes[:1000]
+    return "The call outcome has been recorded."
+
+
 # ── Tool registry ─────────────────────────────────────────────────────────────
 
 ALL_TOOLS = {
@@ -342,6 +358,7 @@ ALL_TOOLS = {
     "answer_faq": answer_faq,
     "list_services": list_services,
     "schedule_callback": schedule_callback,
+    "set_call_outcome": set_call_outcome,
 }
 
 

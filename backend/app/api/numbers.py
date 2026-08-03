@@ -1,6 +1,4 @@
-"""
-Twilio phone number provisioning.
-"""
+"""Provider-aware phone number assignment."""
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,6 +14,39 @@ settings = get_settings()
 router = APIRouter()
 
 
+@router.get("/config")
+async def telephony_config():
+    """Expose non-secret provider readiness for the dashboard."""
+
+    provider = settings.telephony_provider.lower()
+    if provider == "exotel":
+        configured = all(
+            (
+                settings.exotel_api_key,
+                settings.exotel_api_token,
+                settings.exotel_account_sid,
+                settings.exotel_caller_id,
+            )
+        )
+        return {
+            "provider": "exotel",
+            "configured": configured,
+            "number_mode": "existing_exophone",
+            "setup_hint": "Set EXOTEL_CALLER_ID to the verified Exotel trial ExoPhone.",
+        }
+
+    return {
+        "provider": "twilio",
+        "configured": bool(
+            settings.twilio_account_sid
+            and settings.twilio_auth_token
+            and settings.twilio_phone_number
+        ),
+        "number_mode": "provisioned",
+        "setup_hint": "Twilio provisions a new US number during onboarding.",
+    }
+
+
 class ProvisionRequest(BaseModel):
     business_id: str
     area_code: str = "415"  # Default SF area code
@@ -23,7 +54,8 @@ class ProvisionRequest(BaseModel):
 
 class NumberOut(BaseModel):
     phone_number: str
-    twilio_sid: str
+    provider: str
+    provider_number_id: str | None = None
 
 
 @router.post("/provision", response_model=NumberOut)
@@ -31,9 +63,6 @@ async def provision_number(
     payload: ProvisionRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    """Buy and assign a Twilio phone number to a business."""
-    from twilio.rest import Client
-
     result = await db.execute(select(Business).where(Business.id == payload.business_id))
     business = result.scalar_one_or_none()
     if not business:
@@ -41,6 +70,35 @@ async def provision_number(
 
     if business.phone_number:
         raise HTTPException(status_code=409, detail="Business already has a phone number")
+
+    if settings.telephony_provider.lower() == "exotel":
+        # Exotel trial accounts assign an ExoPhone in the dashboard.  We attach
+        # that verified number to this workspace rather than pretending the API
+        # can purchase arbitrary local numbers.
+        if not settings.exotel_caller_id:
+            raise HTTPException(
+                status_code=503,
+                detail="Configure EXOTEL_CALLER_ID with your Exotel trial ExoPhone first",
+            )
+
+        from app.services.telephony import normalize_e164
+
+        try:
+            exotel_number = normalize_e164(settings.exotel_caller_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+        business.phone_number = exotel_number
+        business.telephony_provider = "exotel"
+        business.provider_number_id = exotel_number
+        await db.commit()
+        return {
+            "phone_number": business.phone_number,
+            "provider": "exotel",
+            "provider_number_id": business.provider_number_id,
+        }
+
+    from twilio.rest import Client
 
     client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
 
@@ -73,13 +131,26 @@ async def provision_number(
 
     # Save to DB
     business.phone_number = purchased.phone_number
+    business.telephony_provider = "twilio"
+    business.provider_number_id = purchased.sid
     business.twilio_sid = purchased.sid
     await db.commit()
 
     return {
         "phone_number": purchased.phone_number,
-        "twilio_sid": purchased.sid,
+        "provider": "twilio",
+        "provider_number_id": purchased.sid,
     }
+
+
+@router.post("/business/{business_id}/provision", response_model=NumberOut)
+async def provision_business_number(
+    business_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Dashboard-friendly alias for provisioning a workspace number."""
+
+    return await provision_number(ProvisionRequest(business_id=business_id), db)
 
 
 @router.delete("/{business_id}/release")
@@ -87,19 +158,27 @@ async def release_number(
     business_id: str,
     db: AsyncSession = Depends(get_db),
 ):
-    """Release a Twilio number (when client is deleted)."""
-    from twilio.rest import Client
-
     result = await db.execute(select(Business).where(Business.id == business_id))
     business = result.scalar_one_or_none()
-    if not business or not business.twilio_sid:
+    if not business or not business.phone_number:
         raise HTTPException(status_code=404, detail="No number to release")
 
+    if business.telephony_provider == "exotel":
+        # Exotel owns the ExoPhone lifecycle.  Clearing the workspace mapping
+        # avoids releasing a shared/customer-owned trial number accidentally.
+        business.phone_number = None
+        business.provider_number_id = None
+        await db.commit()
+        return {"released": True, "provider": "exotel"}
+
+    from twilio.rest import Client
+
     client = Client(settings.twilio_account_sid, settings.twilio_auth_token)
-    client.incoming_phone_numbers(business.twilio_sid).delete()
+    client.incoming_phone_numbers(business.provider_number_id or business.twilio_sid).delete()
 
     business.phone_number = None
+    business.provider_number_id = None
     business.twilio_sid = None
     await db.commit()
 
-    return {"released": True}
+    return {"released": True, "provider": "twilio"}

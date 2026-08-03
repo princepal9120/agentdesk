@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from sqlalchemy import String, Integer, DateTime, JSON, ForeignKey, Text
+from sqlalchemy import String, Integer, DateTime, JSON, ForeignKey, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.database import Base
 
@@ -18,6 +18,12 @@ class Call(Base):
         String(36), ForeignKey("agencies.id", ondelete="CASCADE"), nullable=False
     )
     twilio_call_sid: Mapped[str | None] = mapped_column(String(255), unique=True)
+    provider_call_id: Mapped[str | None] = mapped_column(String(255), unique=True)
+    contact_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("contacts.id", ondelete="SET NULL"))
+    campaign_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("campaigns.id", ondelete="SET NULL"))
+    flow_version_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("flow_versions.id", ondelete="SET NULL"))
+    direction: Mapped[str] = mapped_column(String(20), default="inbound")
+    telephony_provider: Mapped[str | None] = mapped_column(String(30))
     livekit_room_id: Mapped[str | None] = mapped_column(String(255))
     caller_number: Mapped[str | None] = mapped_column(String(20))
     duration_sec: Mapped[int | None] = mapped_column(Integer)
@@ -35,6 +41,43 @@ class Call(Base):
     # Relationships
     business: Mapped["Business"] = relationship("Business", back_populates="calls")
     bookings: Mapped[list["Booking"]] = relationship("Booking", back_populates="call")
+
+
+class Contact(Base):
+    __tablename__ = "contacts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    business_id: Mapped[str] = mapped_column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+    name: Mapped[str | None] = mapped_column(String(255))
+    phone_number: Mapped[str] = mapped_column(String(20), nullable=False)
+    extra_data: Mapped[dict | None] = mapped_column(JSON)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class FlowVersion(Base):
+    __tablename__ = "flow_versions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    business_id: Mapped[str] = mapped_column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), default="Untitled call flow")
+    nodes: Mapped[list] = mapped_column(JSON, default=list)
+    start_node_id: Mapped[str | None] = mapped_column(String(100))
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class Campaign(Base):
+    __tablename__ = "campaigns"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    business_id: Mapped[str] = mapped_column(String(36), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False)
+    flow_version_id: Mapped[str] = mapped_column(String(36), ForeignKey("flow_versions.id", ondelete="RESTRICT"), nullable=False)
+    contact_ids: Mapped[list] = mapped_column(JSON, default=list)
+    name: Mapped[str] = mapped_column(String(255), default="Call campaign")
+    status: Mapped[str] = mapped_column(String(30), default="draft")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
 
 class Booking(Base):

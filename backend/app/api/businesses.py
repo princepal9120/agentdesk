@@ -41,6 +41,7 @@ class BusinessOut(BaseModel):
     name: str
     vertical: str | None
     phone_number: str | None
+    telephony_provider: str
     timezone: str
     active: bool
     has_config: bool
