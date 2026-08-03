@@ -9,7 +9,9 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 from app.core.celery_app import celery_app
-from app.core.config import settings
+from app.core.config import get_settings
+
+settings = get_settings()
 
 
 @celery_app.task(bind=True, max_retries=3)
@@ -81,14 +83,50 @@ def make_confirmation_call(
     self,
     phone_number: str,
     appointment_id: str,
-    notification_id: Optional[str] = None
+    notification_id: Optional[str] = None,
+    business_id: Optional[str] = None,
 ):
     """
     Make outbound confirmation call.
     PRD US-3: Confirmation call 24h before appointment
     """
     try:
-        if not settings.TWILIO_ACCOUNT_SID:
+        if settings.telephony_provider.lower() == "exotel":
+            if settings.exotel_outbound_mode.lower() == "livekit":
+                if not business_id:
+                    raise RuntimeError(
+                        "business_id is required when EXOTEL_OUTBOUND_MODE=livekit"
+                    )
+                from app.services.livekit_telephony import start_livekit_agent_call
+
+                result = asyncio.run(
+                    start_livekit_agent_call(
+                        business_id=business_id,
+                        phone_number=phone_number,
+                        reminder_text=(
+                            "This is a reminder for your upcoming appointment. "
+                            "Please let the assistant know if you need help."
+                        ),
+                    )
+                )
+                return {"status": "initiated", "provider": "exotel-livekit", **result}
+
+            from app.services.telephony import ExotelClient, exotel_status_callback_url
+
+            result = asyncio.run(
+                ExotelClient(settings).connect_customer_to_flow(
+                    phone_number,
+                    custom_field=f"appointment_id={appointment_id}",
+                    status_callback=exotel_status_callback_url(),
+                )
+            )
+            return {
+                "status": "initiated",
+                "call_sid": result.provider_call_id,
+                "provider": "exotel",
+            }
+
+        if not settings.twilio_account_sid:
             print(f"[DEV] Call to {phone_number} for appointment {appointment_id}")
             return {"status": "initiated", "call_sid": "dev_mode"}
         
@@ -112,8 +150,8 @@ def make_confirmation_call(
         call = client.calls.create(
             twiml=twiml,
             to=phone_number,
-            from_=settings.TWILIO_PHONE_NUMBER,
-            status_callback=f"{settings.API_V1_PREFIX}/webhooks/twilio/call-status"
+            from_=settings.twilio_phone_number,
+            status_callback=f"{settings.public_base_url.rstrip('/')}/webhooks/twilio/status",
         )
         
         return {"status": "initiated", "call_sid": call.sid}

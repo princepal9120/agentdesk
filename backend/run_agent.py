@@ -7,9 +7,10 @@ Modes:
 - production: requires full provider configuration
 """
 
+import logging
 import os
 import sys
-import logging
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,8 +42,12 @@ def print_banner(settings):
 
 def validate_demo_mode(settings):
     missing = []
-    if not settings.openai_api_key:
-        missing.append("OPENAI_API_KEY")
+    provider_key = {
+        "sarvam": (settings.sarvam_api_key, "SARVAM_API_KEY"),
+        "openai": (settings.openai_api_key, "OPENAI_API_KEY"),
+    }.get(settings.voice_provider, (settings.openai_api_key, "OPENAI_API_KEY"))
+    if not provider_key[0]:
+        missing.append(provider_key[1])
 
     if missing:
         print("⚠️  Demo mode still needs:")
@@ -52,18 +57,23 @@ def validate_demo_mode(settings):
         return False
 
     print("ℹ️  Running in demo mode. Full telephony providers are optional for local onboarding.")
-    if settings.voice_provider == "openai":
-        print("ℹ️  OpenAI-first provider mode enabled.")
+    if settings.voice_provider == "sarvam":
+        print("ℹ️  Sarvam end-to-end local voice mode enabled.")
+    elif settings.voice_provider == "openai":
+        print("ℹ️  Legacy OpenAI provider mode enabled.")
     return True
 
 
 def validate_production_mode(settings):
     required = [
-        "openai_api_key",
         "livekit_url",
         "livekit_api_key",
         "livekit_api_secret",
     ]
+    if settings.voice_provider == "sarvam":
+        required.append("sarvam_api_key")
+    else:
+        required.append("openai_api_key")
     if settings.voice_provider == "full":
         required.extend([
             "deepgram_api_key",
@@ -91,8 +101,9 @@ def main():
         sys.exit(0 if settings.voice_mode == "demo" else 1)
 
     try:
+        from livekit.agents import WorkerOptions, cli
+
         from agent.agent import entrypoint
-        from livekit.agents import cli, WorkerOptions
     except Exception as e:
         print(f"⚠️  Agent runtime import failed: {e}")
         print("If this is local onboarding only, the dashboard and API can still be used.")

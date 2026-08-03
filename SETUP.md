@@ -2,7 +2,7 @@
 
 ## Recommended path
 
-Start with the local OpenAI-first demo path.
+Start with the local Sarvam end-to-end demo path.
 
 That is the most honest and supported way to experience the repo today.
 
@@ -20,7 +20,7 @@ The goal of local setup is to get that flow running quickly without requiring Cl
 
 - Docker
 - Docker Compose
-- OpenAI API key
+- Sarvam API key
 
 ## Quickstart
 
@@ -34,9 +34,9 @@ cp frontend/.env.example frontend/.env
 Edit `backend/.env` to at least include:
 
 ```env
-OPENAI_API_KEY=sk-...
+SARVAM_API_KEY=sk_...
 VOICE_MODE=demo
-VOICE_PROVIDER=openai
+VOICE_PROVIDER=sarvam
 ```
 
 Then run:
@@ -71,7 +71,7 @@ Demo mode should not be treated as fully verified live telephony.
 
 Important nuance:
 
-- `VOICE_PROVIDER=openai` is the simplified local-first mode
+- `VOICE_PROVIDER=sarvam` uses Sarvam Saaras STT, Sarvam LLM, and Bulbul TTS
 - the runtime still keeps LiveKit-oriented infrastructure in the stack
 - real phone workflows still belong in the production-oriented setup path
 
@@ -102,7 +102,7 @@ VOICE_PROVIDER=full
 
 Then expect to configure the broader provider stack, including:
 
-- OpenAI
+- OpenAI (legacy compatibility path)
 - LiveKit
 - Twilio
 - Deepgram

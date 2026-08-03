@@ -16,7 +16,9 @@ class Business(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     vertical: Mapped[str | None] = mapped_column(String(50))  # salon|restaurant|repair|general
-    phone_number: Mapped[str | None] = mapped_column(String(20))  # Twilio number
+    phone_number: Mapped[str | None] = mapped_column(String(20))  # Provider number
+    telephony_provider: Mapped[str] = mapped_column(String(30), default="twilio")
+    provider_number_id: Mapped[str | None] = mapped_column(String(255))
     twilio_sid: Mapped[str | None] = mapped_column(String(255))
     timezone: Mapped[str] = mapped_column(String(50), default="America/New_York")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -52,6 +54,7 @@ class AgentConfig(Base):
     services: Mapped[list | None] = mapped_column(JSON)
     faq: Mapped[list | None] = mapped_column(JSON)
     flow_data: Mapped[dict | None] = mapped_column(JSON)
+    active_flow_version_id: Mapped[str | None] = mapped_column(String(36))
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow
     )

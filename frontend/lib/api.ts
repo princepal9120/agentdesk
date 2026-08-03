@@ -20,6 +20,7 @@ export interface Business {
   name: string;
   vertical: string;
   phone_number: string | null;
+  telephony_provider: string;
   active: boolean;
   created_at: string;
 }
@@ -47,6 +48,26 @@ export interface Call {
   started_at: string;
 }
 
+export interface FlowVersion {
+  id: string;
+  business_id: string;
+  name: string;
+  nodes: Array<Record<string, any>>;
+  start_node_id: string | null;
+  version: number;
+  active: boolean;
+  created_at: string;
+}
+
+export interface Contact {
+  id: string;
+  business_id: string;
+  name: string | null;
+  phone_number: string;
+  extra_data: Record<string, any> | null;
+  active: boolean;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -68,7 +89,7 @@ export const api = {
         body: JSON.stringify({ timezone: "America/New_York", ...data }),
       }),
     provision: (id: string, area_code = "415") =>
-      req<{ phone_number: string }>(`/api/v1/numbers/business/${id}/provision`, {
+      req<{ phone_number: string; provider: string }>(`/api/v1/numbers/business/${id}/provision`, {
         method: "POST",
         body: JSON.stringify({ area_code }),
       }),
@@ -85,5 +106,35 @@ export const api = {
       if (businessId) params.set("business_id", businessId);
       return req<Call[]>(`/api/v1/calls/?${params.toString()}`);
     },
+    outbound: (data: { business_id: string; phone_number: string; flow_version_id?: string }) =>
+      req<Record<string, string>>(`/api/v1/calls/outbound`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+  },
+  flows: {
+    list: (businessId: string) => req<FlowVersion[]>(`/api/v1/businesses/${businessId}/flows`),
+    create: (businessId: string, data: { name: string; nodes: Array<Record<string, any>>; start_node_id?: string }) =>
+      req<FlowVersion>(`/api/v1/businesses/${businessId}/flows`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+  },
+  contacts: {
+    list: (businessId: string) => req<Contact[]>(`/api/v1/businesses/${businessId}/contacts`),
+    create: (businessId: string, data: { name?: string; phone_number: string }) =>
+      req<Contact>(`/api/v1/businesses/${businessId}/contacts`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+  },
+  campaigns: {
+    create: (businessId: string, data: { name: string; flow_version_id: string; contact_ids: string[] }) =>
+      req<Record<string, any>>(`/api/v1/businesses/${businessId}/campaigns`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    start: (campaignId: string) =>
+      req<Record<string, any>>(`/api/v1/campaigns/${campaignId}/start`, { method: "POST" }),
   },
 };

@@ -10,7 +10,6 @@ def main() -> None:
     print(f"voice_mode={settings.voice_mode}")
     print(f"voice_provider={settings.voice_provider}")
     print(f"public_base_url={settings.public_base_url}")
-    print(f"stripe_configured={bool(settings.stripe_secret_key)}")
     print(f"twilio_configured={bool(settings.twilio_account_sid and settings.twilio_auth_token)}")
 
 

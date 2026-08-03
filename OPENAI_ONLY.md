@@ -1,4 +1,7 @@
-# OpenAI-Only Voice Mode
+# Legacy OpenAI Voice Mode
+
+> The default local voice provider is now Sarvam. This document describes the
+> retained OpenAI compatibility path for existing installations.
 
 This document explains the current OpenAI-first refactor state.
 

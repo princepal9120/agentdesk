@@ -12,7 +12,8 @@ from datetime import datetime
 from app.api.deps import get_current_agency
 from app.core.database import get_db
 from app.models.agency import Agency
-from app.models.call import Call, Booking
+from app.models.call import Call, Booking, FlowVersion, Contact
+from app.models.business import Business
 
 router = APIRouter()
 
@@ -47,6 +48,116 @@ class CallStatsOut(BaseModel):
     bookings_made: int
     avg_duration_sec: float
     period: str
+
+
+class OutboundCallRequest(BaseModel):
+    business_id: str
+    phone_number: str
+    reminder_text: str = "This is a reminder from your business. How can I help you today?"
+    flow_version_id: str | None = None
+    contact_id: str | None = None
+
+
+class OutboundCallOut(BaseModel):
+    call_id: str
+    provider: str
+    room_name: str
+    participant_identity: str
+    provider_call_id: str
+
+
+@router.post("/outbound", response_model=OutboundCallOut, status_code=202)
+async def start_outbound_agent_call(
+    payload: OutboundCallRequest,
+    db: AsyncSession = Depends(get_db),
+    current_agency: Agency = Depends(get_current_agency),
+):
+    """Start an AI reminder call through the configured Exotel SIP trunk."""
+
+    result = await db.execute(
+        select(Business).where(
+            Business.id == payload.business_id,
+            Business.agency_id == current_agency.id,
+            Business.active == True,
+        )
+    )
+    business = result.scalar_one_or_none()
+    if not business:
+        raise HTTPException(status_code=404, detail="Business not found")
+
+    from app.services.livekit_telephony import start_livekit_agent_call
+
+    local_call_id: str | None = None
+    try:
+        flow = None
+        if payload.flow_version_id:
+            flow_result = await db.execute(
+                select(FlowVersion).where(
+                    FlowVersion.id == payload.flow_version_id,
+                    FlowVersion.business_id == business.id,
+                    FlowVersion.active.is_(True),
+                )
+            )
+            flow = flow_result.scalar_one_or_none()
+            if not flow:
+                raise HTTPException(status_code=404, detail="Flow not found")
+
+        contact = None
+        if payload.contact_id:
+            contact = await db.get(Contact, payload.contact_id)
+            if not contact or contact.business_id != business.id:
+                raise HTTPException(status_code=404, detail="Contact not found")
+
+        local_call = Call(
+            business_id=business.id,
+            agency_id=business.agency_id,
+            contact_id=contact.id if contact else None,
+            flow_version_id=flow.id if flow else None,
+            caller_number=payload.phone_number,
+            telephony_provider=business.telephony_provider,
+            direction="outbound",
+            status="dialing",
+        )
+        db.add(local_call)
+        await db.commit()
+        await db.refresh(local_call)
+        local_call_id = local_call.id
+        dial = await start_livekit_agent_call(
+            business_id=str(business.id),
+            phone_number=payload.phone_number,
+            reminder_text=payload.reminder_text,
+            call_id=local_call_id,
+            contact_id=contact.id if contact else None,
+            flow_version_id=flow.id if flow else None,
+            flow_data=(
+                {"start_node_id": flow.start_node_id, "nodes": flow.nodes}
+                if flow
+                else None
+            ),
+        )
+    except ValueError as exc:
+        if local_call_id:
+            failed = await db.get(Call, local_call_id)
+            if failed:
+                failed.status = "failed"
+                failed.outcome = "invalid_request"
+                await db.commit()
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        if local_call_id:
+            failed = await db.get(Call, local_call_id)
+            if failed:
+                failed.status = "failed"
+                failed.outcome = "dial_failed"
+                await db.commit()
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    # The local call row was created before dialing; attach the provider id now.
+    saved_call = await db.get(Call, local_call_id)
+    if saved_call:
+        saved_call.provider_call_id = dial.get("provider_call_id") or None
+        await db.commit()
+    return {"call_id": local_call_id, "provider": "exotel-livekit", **dial}
 
 
 @router.get("/", response_model=list[CallOut])

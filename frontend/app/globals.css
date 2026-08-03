@@ -3,49 +3,85 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Brand Theme (Purple/Black/White/Gray) */
+    --theme-bg: #fafafa;
+    --theme-fg: #111111;
+    --theme-surface: #ffffff;
+    --theme-surface-muted: #f3f0ff;
+    --theme-surface-glass: rgba(255, 255, 255, 0.8);
+    --theme-border: #e5e7eb;
+    --theme-border-muted: #ddd6fe;
+    
+    --theme-btn-primary: #111111;
+    --theme-btn-primary-hover: #000000;
+    --theme-btn-primary-fg: #ffffff;
+    
+    --theme-btn-secondary: transparent;
+    --theme-btn-secondary-hover: #f9fafb;
+    --theme-btn-secondary-fg: #111111;
+    --theme-btn-secondary-border: #e5e7eb;
+    
+    --theme-btn-accent: #8b5cf6;
+    --theme-btn-accent-hover: #7c3aed;
+    --theme-btn-accent-fg: #ffffff;
+    --theme-btn-accent-border: #8b5cf6;
+    
+    --theme-ring: rgba(139, 92, 246, 0.2);
+    
+    --theme-input-bg: #ffffff;
+    --theme-input-border: #e5e7eb;
+    --theme-input-border-hover: #8b5cf6;
+    --theme-input-border-focus: #ddd6fe;
+    --theme-input-fg: #111111;
+    --theme-input-placeholder: #9ca3af;
+    
+    --theme-label: #374151;
+  }
+
   body {
-    @apply antialiased bg-[#fafafa] text-zinc-900;
+    @apply antialiased bg-theme-bg text-theme-fg;
   }
 }
 
 @layer components {
   /* Bento 2.0 Surfaces */
   .surface {
-    @apply rounded-[2.5rem] border border-slate-200/50 bg-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)];
+    @apply rounded-[1.5rem] border border-theme-border bg-theme-surface shadow-[0_0_0.5px_rgba(0,0,0,0.14),0_1px_1px_rgba(0,0,0,0.24)];
   }
   .surface-muted {
-    @apply rounded-[1.5rem] border border-slate-200 bg-slate-50;
+    @apply rounded-[1.5rem] border border-[var(--theme-border-muted)] bg-theme-surface-muted;
   }
   .surface-glass {
-    @apply rounded-[2rem] border border-white/10 bg-white/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.4)];
+    @apply rounded-[2rem] border border-white/10 bg-theme-surface-glass backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.4)];
   }
 
   .card {
-    @apply surface p-8;
+    @apply surface p-5;
   }
 
   /* Interactive Elements */
   .btn {
-    @apply inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold tracking-tight transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold tracking-[-0.01em] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-theme-ring focus:ring-offset-2;
   }
   .btn:active {
-    transform: scale(0.98);
+    transform: scale(0.95);
   }
   .btn-primary {
-    @apply btn border border-zinc-900 bg-zinc-900 text-white shadow-md hover:bg-zinc-800 hover:shadow-lg;
+    @apply btn border border-theme-btn-primary bg-theme-btn-primary text-theme-btn-primary-fg shadow-sm hover:bg-theme-btn-primary-hover hover:border-theme-btn-primary-hover;
   }
   .btn-secondary {
-    @apply btn border border-zinc-200 bg-white text-zinc-800 shadow-sm hover:border-zinc-300 hover:bg-zinc-50;
+    @apply btn border border-theme-btn-secondary-border bg-theme-btn-secondary text-theme-btn-secondary-fg hover:bg-theme-btn-secondary-hover;
   }
   .btn-accent {
-    @apply btn border border-emerald-500 bg-emerald-500 text-white shadow-md hover:bg-emerald-600 hover:border-emerald-600;
+    @apply btn border border-theme-btn-accent-border bg-theme-btn-accent text-theme-btn-accent-fg shadow-md hover:bg-theme-btn-accent-hover hover:border-theme-btn-accent-hover;
   }
 
   /* Forms */
   .input {
-    @apply w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3.5 text-sm text-zinc-900 shadow-sm transition duration-300 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-4 focus:ring-zinc-900/5 hover:border-zinc-300;
+    @apply w-full rounded-xl border border-theme-input-border bg-theme-input-bg px-3.5 py-3 text-sm text-theme-input-fg shadow-sm transition duration-300 placeholder:text-theme-input-placeholder focus:border-theme-input-border-hover focus:outline-none focus:ring-2 focus:ring-theme-input-border-focus hover:border-theme-input-border-hover;
   }
   .label {
-    @apply mb-2 block text-sm font-medium text-zinc-600;
+    @apply mb-1.5 block text-sm font-medium text-theme-label;
   }
 }

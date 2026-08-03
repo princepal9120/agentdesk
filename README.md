@@ -14,7 +14,7 @@ python -m cli.init
 
 | Feature | Description |
 |---|---|
-| 🎙 **Live voice calls** | Real phone calls via Twilio + OpenAI Realtime |
+| 🎙 **Live voice calls** | Real phone calls via Twilio or Exotel + LiveKit/Sarvam voice models |
 | 🧠 **Niche templates** | Restaurant, dental, real estate, HR, e-commerce |
 | 📊 **Dashboard** | Call logs, transcripts, bookings, analytics |
 | 🗄 **Zero-install DB** | SQLite by default — no Postgres/Redis needed |
@@ -48,9 +48,9 @@ cd frontend && npm install && npm run dev
 git clone https://github.com/princepal9120/agentdesk
 cd agentdesk
 
-# Copy and fill in ONLY your OpenAI key
+# Copy and fill in ONLY your Sarvam key
 cp backend/.env.example backend/.env
-# Edit backend/.env and add: OPENAI_API_KEY=sk-...
+# Edit backend/.env and add: SARVAM_API_KEY=sk_...
 
 docker compose up
 ```
@@ -92,7 +92,7 @@ agentdesk/
 **Default stack (local dev):**
 - Database: SQLite (zero install — file at `agentdesk.db`)
 - Rate limiting: In-memory (no Redis needed)
-- Voice: OpenAI Realtime API
+- Voice: Sarvam Saaras + Sarvam-30B + Bulbul
 
 **Production stack:**
 - Database: PostgreSQL (`DATABASE_URL=postgresql+asyncpg://...`)
@@ -106,16 +106,31 @@ agentdesk/
 Only **one** variable required for local demo:
 
 ```env
-OPENAI_API_KEY=sk-...
+SARVAM_API_KEY=sk_...
 ```
 
-For real phone calls, add:
+For real US phone calls with the legacy path, add:
 
 ```env
 TWILIO_ACCOUNT_SID=AC...
 TWILIO_AUTH_TOKEN=...
 TWILIO_PHONE_NUMBER=+1...
 ```
+
+For Indian/local-number testing, use the Exotel trial path. Configure the
+trial ExoPhone and API credentials, then follow [EXOTEL_SETUP.md](EXOTEL_SETUP.md):
+
+```env
+TELEPHONY_PROVIDER=exotel
+EXOTEL_API_KEY=...
+EXOTEL_API_TOKEN=...
+EXOTEL_ACCOUNT_SID=...
+EXOTEL_CALLER_ID=+919876543210
+```
+
+Exotel inbound AI calls use SIP → LiveKit; reminder calls can use an Exotel
+Flow or the LiveKit SIP agent path. A regular personal SIM number cannot be
+used directly without carrier forwarding, SIP/BYOC, or porting.
 
 ---
 
@@ -131,8 +146,8 @@ TWILIO_PHONE_NUMBER=+1...
 
 ## 🗺 Roadmap
 
-- [x] Visual conversation flow builder (drag-drop)
-- [ ] Local LLM support (Ollama + Whisper + Kokoro)
+- [x] Call-flow builder (step-based MVP)
+- [x] Local-first Sarvam voice provider
 - [ ] PDF/document knowledge base upload
 - [ ] Multi-language voice support
 - [ ] One-click Railway/Render deploy button

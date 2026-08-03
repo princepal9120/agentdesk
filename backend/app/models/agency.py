@@ -11,14 +11,10 @@ class Agency(Base):
     id: Mapped[str] = mapped_column(
         String(36), primary_key=True, default=lambda: str(uuid.uuid4())
     )
-    clerk_org_id: Mapped[str | None] = mapped_column(String(255), unique=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     subdomain: Mapped[str | None] = mapped_column(String(100), unique=True)
     custom_domain: Mapped[str | None] = mapped_column(String(255), unique=True)
     branding: Mapped[dict | None] = mapped_column(JSON)  # {logo_url, primary_color, company_name}
-    stripe_customer_id: Mapped[str | None] = mapped_column(String(255))
-    stripe_subscription_id: Mapped[str | None] = mapped_column(String(255))
-    plan: Mapped[str] = mapped_column(String(50), default="starter")  # starter|pro|agency
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -32,10 +28,8 @@ class Agency(Base):
 
     @property
     def client_limit(self) -> int:
-        limits = {"starter": 3, "pro": 10, "agency": 9999}
-        return limits.get(self.plan, 3)
+        return 999999
 
     @property
     def monthly_call_limit(self) -> int:
-        limits = {"starter": 300, "pro": 1000, "agency": 999999}
-        return limits.get(self.plan, 300)
+        return 999999

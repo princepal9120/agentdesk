@@ -20,7 +20,7 @@ For open source local use, the backend is set up around a simple demo path:
 - Docker-first local development
 - auto-bootstrapped demo agency in development
 - no Clerk requirement for the OSS path
-- OpenAI-first config defaults
+- Sarvam end-to-end config defaults for local voice
 
 The current frontend flow is:
 
@@ -58,14 +58,16 @@ The frontend uses that local agency path directly.
 The most important local settings are:
 
 ```env
-OPENAI_API_KEY=sk-...
+SARVAM_API_KEY=sk_...
 VOICE_MODE=demo
-VOICE_PROVIDER=openai
+VOICE_PROVIDER=sarvam
 ```
 
 ## Important voice runtime note
 
-`VOICE_PROVIDER=openai` is the simplified local-first mode, but it does **not** mean the whole runtime has been reduced to OpenAI alone.
+`VOICE_PROVIDER=sarvam` is the local-first mode. It uses Sarvam's LiveKit
+plugins for Saaras STT and Bulbul TTS, plus Sarvam's OpenAI-compatible chat
+endpoint for the LLM.
 
 The repo still includes LiveKit-oriented runtime infrastructure, and the broader production stack is still represented in config and code.
 
@@ -73,8 +75,9 @@ For real phone workflows, expect production-oriented setup with services such as
 
 - LiveKit
 - Twilio
-- Deepgram
-- Cartesia
+
+For existing installations, `VOICE_PROVIDER=openai` and `VOICE_PROVIDER=full`
+remain supported as compatibility paths.
 
 ## API docs
 

@@ -1,192 +1,171 @@
 "use client";
 
-import React, { useState, useRef, useCallback, useEffect, use } from "react";
-import {
-  ReactFlow,
-  ReactFlowProvider,
-  addEdge,
-  useNodesState,
-  useEdgesState,
-  Controls,
-  Background,
-  Connection,
-  Edge,
-  Node,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
-import { v4 as uuidv4 } from "uuid";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, PhoneCall, Plus, Save } from "lucide-react";
+import { api, type Contact, type FlowVersion } from "@/lib/api";
 
-import { Sidebar } from "./Sidebar";
-import { MessageNode, ActionNode, ConditionNode } from "./Nodes";
-import { api, type AgentConfig } from "@/lib/api";
+type DraftNode = { type: "message" | "question" | "end"; text: string };
 
-const nodeTypes = {
-  message: MessageNode,
-  action: ActionNode,
-  condition: ConditionNode,
-};
-
-const initialNodes: Node[] = [
-  {
-    id: "start",
-    type: "input",
-    data: { label: "Call Starts" },
-    position: { x: 250, y: 50 },
-    className: "bg-gray-900 text-white border-none rounded-full px-4 py-2 font-medium shadow-md w-32 text-center",
-  },
+const starterNodes: DraftNode[] = [
+  { type: "message", text: "Hello, this is calling from our team." },
+  { type: "question", text: "Are you available to speak with us today?" },
+  { type: "end", text: "Thank you. Have a great day." },
 ];
 
-let id = 0;
-const getId = () => `dndnode_${id++}`;
+export default function FlowPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const [flows, setFlows] = useState<FlowVersion[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [name, setName] = useState("Customer call flow");
+  const [nodes, setNodes] = useState<DraftNode[]>(starterNodes);
+  const [contactName, setContactName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [selectedFlow, setSelectedFlow] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
 
-function FlowEditor({ businessId }: { businessId: string }) {
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [config, setConfig] = useState<AgentConfig | null>(null);
-
-  // Load existing flow from DB
   useEffect(() => {
-    api.businesses.getConfig(businessId)
-      .then((cfg) => {
-        setConfig(cfg);
-        if (cfg.flow_data) {
-          const { nodes: savedNodes, edges: savedEdges } = cfg.flow_data as any;
-          if (savedNodes && savedNodes.length > 0) {
-            setNodes(savedNodes || []);
-            setEdges(savedEdges || []);
-          }
-        }
-      })
-      .catch((err) => console.error("Failed to load config", err))
-      .finally(() => setLoading(false));
-  }, [businessId, setNodes, setEdges]);
+    Promise.all([api.flows.list(id), api.contacts.list(id)]).then(([f, c]) => {
+      setFlows(f);
+      setContacts(c);
+      if (f[0]) setSelectedFlow(f[0].id);
+    });
+  }, [id]);
 
-  const onConnect = useCallback(
-    (params: Connection | Edge) => setEdges((eds) => addEdge({ ...params, animated: true }, eds)),
-    [setEdges]
-  );
+  function updateNode(index: number, patch: Partial<DraftNode>) {
+    setNodes((current) => current.map((node, i) => (i === index ? { ...node, ...patch } : node)));
+  }
 
-  const onDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  }, []);
-
-  const onDrop = useCallback(
-    (event: React.DragEvent) => {
-      event.preventDefault();
-
-      if (!reactFlowInstance) return;
-
-      const type = event.dataTransfer.getData("application/reactflow");
-
-      if (typeof type === "undefined" || !type) {
-        return;
-      }
-
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+  async function saveFlow() {
+    setBusy(true);
+    setMessage("");
+    try {
+      const saved = await api.flows.create(id, {
+        name,
+        nodes: nodes.map((node, index) => ({
+          id: `node-${index + 1}`,
+          type: node.type,
+          text: node.text,
+          ...(index < nodes.length - 1 ? { next: `node-${index + 2}` } : {}),
+        })),
+        start_node_id: "node-1",
       });
-
-      let data = {};
-      if (type === "message") data = { text: "Hello! How can I help you today?" };
-      if (type === "action") data = { toolName: "book_appointment" };
-      if (type === "condition") data = { condition: "is_new_customer == true" };
-
-      const newNode: Node = {
-        id: getId(),
-        type,
-        position,
-        data,
-      };
-
-      setNodes((nds) => nds.concat(newNode));
-    },
-    [reactFlowInstance, setNodes]
-  );
-
-  const onSave = async () => {
-    if (reactFlowInstance) {
-      setSaving(true);
-      const flow = reactFlowInstance.toObject();
-      try {
-        await api.businesses.updateConfig(businessId, {
-          flow_data: flow,
-        });
-        // Could show a success toast here
-      } catch (err) {
-        console.error("Failed to save flow", err);
-      } finally {
-        setSaving(false);
-      }
+      setFlows((current) => [saved, ...current]);
+      setSelectedFlow(saved.id);
+      setMessage("Flow saved and activated.");
+    } catch (error) {
+      setMessage((error as Error).message);
+    } finally {
+      setBusy(false);
     }
-  };
+  }
 
-  if (loading) {
-    return <div className="p-10 text-gray-500">Loading flow editor...</div>;
+  async function addContact() {
+    if (!phone.trim()) return;
+    setBusy(true);
+    try {
+      const contact = await api.contacts.create(id, { name: contactName || undefined, phone_number: phone });
+      setContacts((current) => [contact, ...current]);
+      setContactName("");
+      setPhone("");
+      setMessage("Contact added.");
+    } catch (error) {
+      setMessage((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function startCall(contact: Contact) {
+    if (!selectedFlow) {
+      setMessage("Save a flow first.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const result = await api.calls.outbound({ business_id: id, phone_number: contact.phone_number, flow_version_id: selectedFlow });
+      setMessage(`Call created: ${result.room_name}`);
+    } catch (error) {
+      setMessage((error as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
-    <div className="flex h-screen flex-col bg-white">
-      {/* Header */}
-      <header className="flex h-14 items-center justify-between border-b border-gray-200 px-4 sm:px-6">
-        <div className="flex items-center gap-4">
-          <Link href={`/dashboard/${businessId}`} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-          <div>
-            <h1 className="text-sm font-semibold text-gray-900">Conversation Flow Editor</h1>
-            <p className="text-xs text-gray-500">Design agent behavior visually</p>
-          </div>
-        </div>
-        <button
-          onClick={onSave}
-          disabled={saving}
-          className="btn-primary inline-flex items-center gap-2 py-1.5 px-3 text-sm"
-        >
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {saving ? "Saving..." : "Save Flow"}
-        </button>
-      </header>
-
-      {/* Editor Body */}
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
-        <div className="flex-1" ref={reactFlowWrapper}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onInit={setReactFlowInstance}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            nodeTypes={nodeTypes}
-            fitView
-            className="bg-gray-50"
-          >
-            <Background color="#ccc" gap={16} />
-            <Controls />
-          </ReactFlow>
-        </div>
+    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <Link href={`/dashboard/${id}`} className="mb-6 inline-flex items-center gap-2 text-sm text-theme-label">
+        <ArrowLeft className="h-4 w-4" /> Back to workspace
+      </Link>
+      <div className="mb-8">
+        <p className="text-sm font-medium uppercase tracking-widest text-theme-btn-accent">Call-only MVP</p>
+        <h1 className="mt-2 text-4xl font-semibold text-theme-fg">Create a customer call flow</h1>
+        <p className="mt-3 max-w-2xl text-theme-label">Define what the agent says, add customers, and place calls from one workspace.</p>
       </div>
-    </div>
+
+      <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="surface p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-theme-fg">Flow steps</p>
+              <p className="mt-1 text-sm text-theme-label">The MVP runs these steps in order.</p>
+            </div>
+            <button className="btn-secondary" onClick={() => setNodes((current) => [...current, { type: "message", text: "" }])}>
+              <Plus className="mr-2 inline h-4 w-4" /> Add step
+            </button>
+          </div>
+          <input className="input mt-6" value={name} onChange={(event) => setName(event.target.value)} placeholder="Flow name" />
+          <div className="mt-4 space-y-3">
+            {nodes.map((node, index) => (
+              <div key={index} className="surface-muted grid gap-3 p-4 sm:grid-cols-[150px_1fr]">
+                <select className="input" value={node.type} onChange={(event) => updateNode(index, { type: event.target.value as DraftNode["type"] })}>
+                  <option value="message">Say something</option>
+                  <option value="question">Ask a question</option>
+                  <option value="end">End call</option>
+                </select>
+                <input className="input" value={node.text} onChange={(event) => updateNode(index, { text: event.target.value })} placeholder="What should the agent say?" />
+              </div>
+            ))}
+          </div>
+          <button className="btn-primary mt-5" disabled={busy} onClick={saveFlow}>
+            <Save className="mr-2 inline h-4 w-4" /> {busy ? "Saving..." : "Save and activate flow"}
+          </button>
+        </section>
+
+        <section className="surface p-6">
+          <p className="text-sm font-semibold text-theme-fg">Add a customer</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <input className="input" value={contactName} onChange={(event) => setContactName(event.target.value)} placeholder="Customer name" />
+            <input className="input" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+919876543210" />
+          </div>
+          <button className="btn-secondary mt-3" disabled={busy} onClick={addContact}>Add customer</button>
+
+          <div className="mt-8 flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold text-theme-fg">Customers</p>
+            <select className="input max-w-[180px]" value={selectedFlow} onChange={(event) => setSelectedFlow(event.target.value)}>
+              <option value="">Choose flow</option>
+              {flows.map((flow) => <option key={flow.id} value={flow.id}>{flow.name} v{flow.version}</option>)}
+            </select>
+          </div>
+          <div className="mt-3 space-y-3">
+            {contacts.map((contact) => (
+              <div key={contact.id} className="surface-muted flex items-center justify-between gap-3 p-4">
+                <div>
+                  <p className="font-medium text-theme-fg">{contact.name || "Unnamed customer"}</p>
+                  <p className="mt-1 font-mono text-xs text-theme-label">{contact.phone_number}</p>
+                </div>
+                <button className="btn-accent text-xs" disabled={busy || !selectedFlow} onClick={() => startCall(contact)}>
+                  <PhoneCall className="mr-1 inline h-3.5 w-3.5" /> Call
+                </button>
+              </div>
+            ))}
+            {!contacts.length && <p className="py-8 text-center text-sm text-theme-label">Add a phone number to create your first call.</p>}
+          </div>
+          {message && <p className="mt-5 rounded-xl border border-theme-border-muted bg-theme-surface-muted px-4 py-3 text-sm text-theme-label">{message}</p>}
+        </section>
+      </div>
+    </main>
   );
 }
 
-export default function FlowEditorPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
-  return (
-    <ReactFlowProvider>
-      <FlowEditor businessId={id} />
-    </ReactFlowProvider>
-  );
-}
