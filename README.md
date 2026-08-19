@@ -1,11 +1,11 @@
 # AgentDesk ☎
 
-> **Deploy a custom AI voice receptionist for ANY business in 5 minutes — no database setup required.**
+> **Run a white-label AI voice-agent dashboard locally in ONE command — no database, no keys required to boot.**
 
-AgentDesk is an open-source, white-label voice agent platform. Pick a template, answer 5 questions, and have a live AI phone agent handling real calls.
+AgentDesk is an open-source, white-label voice agent platform. Pick a template, answer 5 questions, and have a live AI phone agent handling real calls. The dashboard, templates, businesses, and API all run with zero configuration; voice needs one API key.
 
 ```bash
-python -m cli.init
+make up
 ```
 
 ---
@@ -18,44 +18,41 @@ python -m cli.init
 | 🧠 **Niche templates** | Restaurant, dental, real estate, HR, e-commerce |
 | 📊 **Dashboard** | Call logs, transcripts, bookings, analytics |
 | 🗄 **Zero-install DB** | SQLite by default — no Postgres/Redis needed |
-| 🌐 **Auto tunnel** | Cloudflare tunnel auto-configured for Twilio |
+| 🐳 **One-command Docker** | `make up` boots API + dashboard, zero keys |
 | 🔒 **Self-hosted** | Your data stays on your server |
 
 ---
 
-## ⚡ Quickstart (5 minutes)
+## ⚡ Quickstart (one command)
 
-### Option A — Interactive Setup Wizard (recommended)
+### Zero-key dashboard (recommended)
 
 ```bash
-# 1. Clone the repo
 git clone https://github.com/princepal9120/agentdesk
 cd agentdesk
+make up
+```
 
-# 2. Run the setup wizard (no dependencies needed!)
-python -m cli.init
+That's it. No `.env` file, no API keys. Open **http://localhost:3000** → dashboard ready. API docs at **http://localhost:8000/docs**.
 
-# 3. Start the backend
-cd backend && uvicorn app.main:app --reload
+### Add voice (one key)
 
-# 4. Start the frontend
+```bash
+cp backend/.env.example backend/.env
+# edit backend/.env and set SARVAM_API_KEY=sk_... (or OPENAI_API_KEY=sk-...)
+make voice
+```
+
+The voice worker only starts with `--profile voice`, so a key-free `make up` never waits on a missing key.
+
+### Legacy manual path (no Docker)
+
+```bash
+# backend
+cd backend && uv pip install --system -e . && uvicorn app.main:app --reload
+# frontend (another terminal)
 cd frontend && npm install && npm run dev
 ```
-
-### Option B — Docker (single command)
-
-```bash
-git clone https://github.com/princepal9120/agentdesk
-cd agentdesk
-
-# Copy and fill in ONLY your Sarvam key
-cp backend/.env.example backend/.env
-# Edit backend/.env and add: SARVAM_API_KEY=sk_...
-
-docker compose up
-```
-
-Open **http://localhost:3000** → dashboard ready.
 
 ---
 
@@ -78,7 +75,7 @@ The setup wizard lets you pick a niche preset. Each template includes a battle-t
 
 ```
 agentdesk/
-├── cli/               # Setup wizard (python -m cli.init)
+├── cli/               # (deprecated) use `make up` for local onboarding
 ├── backend/           # FastAPI + SQLAlchemy + SQLite/Postgres
 │   ├── app/
 │   │   ├── api/       # REST endpoints
@@ -103,13 +100,15 @@ agentdesk/
 
 ## 🔑 Minimum Configuration
 
-Only **one** variable required for local demo:
+**Zero variables required to boot the dashboard.** `make up` runs with no `.env` and no keys.
+
+For voice, set **one** variable in `backend/.env`:
 
 ```env
-SARVAM_API_KEY=sk_...
+SARVAM_API_KEY=sk_...      # or OPENAI_API_KEY=sk-...
 ```
 
-For real US phone calls with the legacy path, add:
+Then run `make voice`. For real US phone calls with the legacy path, add:
 
 ```env
 TWILIO_ACCOUNT_SID=AC...
@@ -139,7 +138,7 @@ used directly without carrier forwarding, SIP/BYOC, or porting.
 1. **`agentdesk init`** — wizard asks your business type, name, website URL, and API keys
 2. Scrapes your website to build an instant knowledge base
 3. Generates a custom system prompt from your template
-4. Auto-configures Twilio webhooks via Cloudflare tunnel
+4. Connects to the local API for dashboard + call logs
 5. Saves everything to local SQLite — no external DB needed
 
 ---
