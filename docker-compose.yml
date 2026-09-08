@@ -1,13 +1,19 @@
-# ══════════════════════════════════════════════════════════════════
-# AgentDesk — Docker Compose
+# ═══════════════════════════════════════════════════════════════════════════
+# AgentDesk — Docker Compose (local OSS quickstart)
 #
-# DEV MODE (default): SQLite + no Redis. Just set SARVAM_API_KEY.
-#   docker compose up
-#   Set SARVAM_API_KEY in backend/.env for the default local voice path.
+# ONE COMMAND, ZERO KEYS:
+#   git clone https://github.com/princepal9120/agentdesk.git
+#   cd agentdesk
+#   make up
 #
-# PROD MODE: Postgres + Redis included.
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up
-# ══════════════════════════════════════════════════════════════════
+# That boots the API + dashboard at http://localhost:3000 with NO env file
+# and NO API keys. The dashboard, templates, businesses, and API docs all work.
+#
+# ADD VOICE (needs a SARVAM_API_KEY or OPENAI_API_KEY):
+#   cp backend/.env.example backend/.env   # then set your key
+#   make voice
+#   (or: docker compose --profile voice up --build)
+# ═══════════════════════════════════════════════════════════════════════════
 
 services:
   api:
@@ -18,7 +24,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./backend/.env
+      # required:false => boots even when backend/.env is absent (zero-key start)
+      - path: ./backend/.env
+        required: false
     environment:
       # SQLite by default — no database container needed
       DATABASE_URL: sqlite+aiosqlite:////app/data/agentdesk.db
@@ -28,20 +36,12 @@ services:
       - agentdesk_data:/app/data
     command: >
       sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-
-  agent:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    env_file:
-      - ./backend/.env
-    environment:
-      DATABASE_URL: sqlite+aiosqlite:////app/data/agentdesk.db
-      VOICE_MODE: ${VOICE_MODE:-demo}
-    volumes:
-      - agentdesk_data:/app/data
-    command: python run_agent.py
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   frontend:
     build:
@@ -49,11 +49,34 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "8001:3000"
+      # Expose on 3000 so the dashboard is at http://localhost:3000 (matches docs)
+      - "3000:3000"
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+
+  # OPT-IN voice worker. Off by default so a key-free `make up` never restarts
+  # in a loop waiting for a missing API key. Enable with `make voice`.
+  agent:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    profiles: ["voice"]
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////app/data/agentdesk.db
+      VOICE_MODE: ${VOICE_MODE:-demo}
+    volumes:
+      - agentdesk_data:/app/data
+    command: python run_agent.py
+    depends_on:
+      api:
+        condition: service_healthy
 
 volumes:
   agentdesk_data:

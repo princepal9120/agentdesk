@@ -29,7 +29,7 @@ AgentDesk is divided into three components:
 2. **Initialize Local Database & Environment:**
    Run the interactive CLI setup wizard to bootstrap the environment variables and SQLite database:
    ```bash
-   python -m cli.init
+   make up
    ```
 
 3. **Backend Setup:**

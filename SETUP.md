@@ -1,48 +1,21 @@
 # AgentDesk Setup
 
-## Recommended path
-
-Start with the local Sarvam end-to-end demo path.
-
-That is the most honest and supported way to experience the repo today.
-
-## What you are setting up
-
-The current launch flow is:
-
-1. landing page at `/`
-2. first-run local setup
-3. dashboard workspace at `/dashboard`
-
-The goal of local setup is to get that flow running quickly without requiring Clerk or a full production telephony stack.
-
-## Requirements
-
-- Docker
-- Docker Compose
-- Sarvam API key
-
-## Quickstart
+## Recommended path (one command)
 
 ```bash
 git clone https://github.com/princepal9120/agentdesk.git
 cd agentdesk
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
+make up
 ```
 
-Edit `backend/.env` to at least include:
+That boots the API + dashboard with **no `.env` file and no API keys**. Dashboard: <http://localhost:3000>. API: <http://localhost:8000>.
 
-```env
-SARVAM_API_KEY=sk_...
-VOICE_MODE=demo
-VOICE_PROVIDER=sarvam
-```
-
-Then run:
+To add voice later:
 
 ```bash
-docker compose up --build
+make setup        # copies .env templates if missing
+# edit backend/.env and set SARVAM_API_KEY or OPENAI_API_KEY
+make voice        # starts the voice worker too
 ```
 
 ## Local URLs
