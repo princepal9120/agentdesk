@@ -1,5 +1,7 @@
 # AgentDesk ☎
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **Deploy a custom AI voice receptionist for ANY business in 5 minutes — no database setup required.**
 
 AgentDesk is an open-source, white-label voice agent platform. Pick a template, answer 5 questions, and have a live AI phone agent handling real calls.
@@ -56,6 +58,8 @@ docker compose up
 ```
 
 Open **http://localhost:3000** → dashboard ready.
+
+Live landing: **https://agentdesk.princepal.dev**
 
 ---
 
@@ -169,7 +173,7 @@ New templates especially welcome — each niche helps more businesses deploy voi
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+[MIT](https://opensource.org/licenses/MIT) — OSI-approved. SPDX: `MIT`. Full text in [LICENSE](LICENSE).
 
 ---
 
