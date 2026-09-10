@@ -97,4 +97,6 @@ If you add a new template, make sure to add it to the table in the main `README.
 3. Push to your fork and submit a Pull Request to our `main` branch.
 4. Ensure your PR description lists the issue it solves and outlines how you tested the changes.
 
+By contributing, you agree your work is licensed under the same [MIT](https://opensource.org/licenses/MIT) license as this project.
+
 Thank you again for making AgentDesk amazing! 🚀

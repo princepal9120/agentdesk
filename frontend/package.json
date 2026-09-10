@@ -2,10 +2,13 @@
   "name": "agentdesk-frontend",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev -p 8001",
     "build": "next build",
-    "start": "next start -p 8001"
+    "start": "next start -p 8001",
+    "build:cf": "CLOUDFLARE=1 next build",
+    "deploy:cf": "npm run build:cf && npx wrangler@latest pages deploy ./out --project-name=agentdesk"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

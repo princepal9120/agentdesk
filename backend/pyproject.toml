@@ -3,6 +3,8 @@ name = "agentdesk-backend"
 version = "0.1.0"
 description = "AgentDesk — White-label AI voice agent platform"
 requires-python = ">=3.12"
+license = {text = "MIT"}
+# ponytail: SPDX MIT; LICENSE lives at repo root, not backend/
 
 dependencies = [
     # Web framework

@@ -1,5 +1,7 @@
 # AgentDesk ☎
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > **Run a white-label AI voice-agent dashboard locally in ONE command — no database, no keys required to boot.**
 
 AgentDesk is an open-source, white-label voice agent platform. Pick a template, answer 5 questions, and have a live AI phone agent handling real calls. The dashboard, templates, businesses, and API all run with zero configuration; voice needs one API key.
@@ -54,6 +56,18 @@ cd backend && uv pip install --system -e . && uvicorn app.main:app --reload
 cd frontend && npm install && npm run dev
 ```
 
+### Docker deployment
+
+```bash
+git clone https://github.com/princepal9120/agentdesk
+cd agentdesk
+docker compose up
+```
+
+Open **http://localhost:3000** → dashboard ready.
+
+Live landing: **https://agentdesk.princepal.dev**
+
 ---
 
 ## 🧩 Templates
@@ -95,81 +109,3 @@ agentdesk/
 - Database: PostgreSQL (`DATABASE_URL=postgresql+asyncpg://...`)
 - Rate limiting: Redis (`REDIS_URL=redis://...`)
 - Voice: LiveKit + Deepgram + Cartesia
-
----
-
-## 🔑 Minimum Configuration
-
-**Zero variables required to boot the dashboard.** `make up` runs with no `.env` and no keys.
-
-For voice, set **one** variable in `backend/.env`:
-
-```env
-SARVAM_API_KEY=sk_...      # or OPENAI_API_KEY=sk-...
-```
-
-Then run `make voice`. For real US phone calls with the legacy path, add:
-
-```env
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
-TWILIO_PHONE_NUMBER=+1...
-```
-
-For Indian/local-number testing, use the Exotel trial path. Configure the
-trial ExoPhone and API credentials, then follow [EXOTEL_SETUP.md](EXOTEL_SETUP.md):
-
-```env
-TELEPHONY_PROVIDER=exotel
-EXOTEL_API_KEY=...
-EXOTEL_API_TOKEN=...
-EXOTEL_ACCOUNT_SID=...
-EXOTEL_CALLER_ID=+919876543210
-```
-
-Exotel inbound AI calls use SIP → LiveKit; reminder calls can use an Exotel
-Flow or the LiveKit SIP agent path. A regular personal SIM number cannot be
-used directly without carrier forwarding, SIP/BYOC, or porting.
-
----
-
-## 📖 How It Works
-
-1. **`agentdesk init`** — wizard asks your business type, name, website URL, and API keys
-2. Scrapes your website to build an instant knowledge base
-3. Generates a custom system prompt from your template
-4. Connects to the local API for dashboard + call logs
-5. Saves everything to local SQLite — no external DB needed
-
----
-
-## 🗺 Roadmap
-
-- [x] Call-flow builder (step-based MVP)
-- [x] Local-first Sarvam voice provider
-- [ ] PDF/document knowledge base upload
-- [ ] Multi-language voice support
-- [ ] One-click Railway/Render deploy button
-
----
-
-## 🤝 Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on local environment setup, style guidelines, and our pull request process.
-
-1. Fork the repo
-2. Create a feature branch: `git checkout -b feat/my-feature`
-3. Add a template or improve DX
-4. Open a PR
-
-New templates especially welcome — each niche helps more businesses deploy voice AI.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-Built with ❤ by [Prince Pal](https://github.com/princepal9120)
